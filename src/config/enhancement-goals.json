@@ -1,0 +1,27 @@
+[
+  {
+    "id": "vivid",
+    "label": "Add vividness",
+    "icon": "🎨"
+  },
+  {
+    "id": "conflict",
+    "label": "Add conflict",
+    "icon": "⚔️"
+  },
+  {
+    "id": "believable",
+    "label": "Make it more believable",
+    "icon": "🎯"
+  },
+  {
+    "id": "stitch",
+    "label": "Stitch chunks together",
+    "icon": "🧵"
+  },
+  {
+    "id": "less-ai",
+    "label": "Make it less AI-ish",
+    "icon": "🤖"
+  }
+]

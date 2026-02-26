@@ -1,0 +1,22 @@
+[
+  {
+    "id": "reddit",
+    "name": "Reddit",
+    "metrics": ["upvotes", "comments"]
+  },
+  {
+    "id": "reels",
+    "name": "Reels",
+    "metrics": ["views", "avgWatchTime", "shares"]
+  },
+  {
+    "id": "tiktok",
+    "name": "TikTok",
+    "metrics": ["views", "likes", "shares"]
+  },
+  {
+    "id": "blog",
+    "name": "Blog",
+    "metrics": ["views", "readTime"]
+  }
+]

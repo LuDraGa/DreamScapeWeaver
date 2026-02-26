@@ -1,0 +1,13 @@
+[
+  { "id": "hook-strong", "label": "Hook strong", "positive": true },
+  { "id": "hook-weak", "label": "Hook weak", "positive": false },
+  { "id": "natural", "label": "Natural", "positive": true },
+  { "id": "too-ai", "label": "Too AI", "positive": false },
+  { "id": "cohesion-strong", "label": "Cohesion strong", "positive": true },
+  { "id": "cohesion-weak", "label": "Cohesion weak", "positive": false },
+  { "id": "twist-good", "label": "Twist unpredictable", "positive": true },
+  { "id": "twist-predictable", "label": "Twist predictable", "positive": false },
+  { "id": "pace-good", "label": "Pace good", "positive": true },
+  { "id": "pace-fast", "label": "Pace fast", "positive": false },
+  { "id": "pace-slow", "label": "Pace slow", "positive": false }
+]

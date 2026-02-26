@@ -1,0 +1,190 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Post-commit hook to archive planning and execution documents
+# This hook runs after each commit and archives active docs to preserve session history
+
+# Get the commit hash and date
+COMMIT_HASH=$(git rev-parse --short HEAD)
+COMMIT_DATE=$(date +%Y-%m-%d)
+COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+
+# Function to check if file has substantial content beyond template
+has_substantial_content() {
+    local file="$1"
+    local min_lines="$2"
+
+    if [ ! -f "$file" ] || [ ! -s "$file" ]; then
+        return 1
+    fi
+
+    local lines=$(wc -l < "$file")
+    if [ "$lines" -lt "$min_lines" ]; then
+        return 1
+    fi
+
+    # Check for actual task content (not just templates)
+    if grep -q "✅ Completed\|🔄 In Progress\|### Completed Tasks" "$file"; then
+        return 0
+    fi
+
+    if grep -q "## Discussion Points\|## Execution Status\|### Proposed Approach" "$file"; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Archive planning document if it has substantial content
+PLANNING_FILE="execution_docs/_active/planning.md"
+if has_substantial_content "$PLANNING_FILE" 10; then
+    # Create planning directory if it doesn't exist
+    mkdir -p execution_docs/archive
+
+    # Archive with commit info header
+    PLANNING_ARCHIVE="execution_docs/archive/${COMMIT_DATE}-${COMMIT_HASH}-planning-to-be-renamed.md"
+    cat > "$PLANNING_ARCHIVE" << EOF
+---
+**Commit**: ${COMMIT_HASH}
+**Date**: $(date +"%Y-%m-%d %H:%M:%S")
+**Message**: ${COMMIT_MSG}
+---
+
+EOF
+    cat "$PLANNING_FILE" >> "$PLANNING_ARCHIVE"
+
+    # Reset the active planning document
+    cat > "$PLANNING_FILE" << 'EOF'
+# StoryWeaver - Active Planning
+
+## Task: [New Task Name]
+
+**Session**: [Date]
+**Context**: [Brief description of what needs to be planned]
+
+## Discussion Points
+
+### Current Situation
+*Describe the current state and what needs to be changed*
+
+### Proposed Approach
+*Outline the planned approach and alternatives considered*
+
+### Design Alternatives
+*List and compare different approaches considered*
+
+### Key Decisions
+*Document important decisions made during planning*
+
+### Dependencies & Considerations
+*Note any dependencies, constraints, or special considerations*
+
+### Success Criteria
+*How do we know this task is complete?*
+- [ ]
+- [ ]
+
+---
+
+*This document is actively being edited during the planning phase*
+EOF
+
+    echo "✓ Archived planning document: $PLANNING_ARCHIVE"
+fi
+
+# Archive execution document if it has substantial content
+EXECUTION_FILE="execution_docs/_active/execution.md"
+if has_substantial_content "$EXECUTION_FILE" 15; then
+    # Create archive directory if it doesn't exist
+    mkdir -p execution_docs/archive
+
+    # Archive with commit info header
+    EXECUTION_ARCHIVE="execution_docs/archive/${COMMIT_DATE}-${COMMIT_HASH}-execution-to-be-renamed.md"
+    cat > "$EXECUTION_ARCHIVE" << EOF
+---
+**Commit**: ${COMMIT_HASH}
+**Date**: $(date +"%Y-%m-%d %H:%M:%S")
+**Message**: ${COMMIT_MSG}
+---
+
+EOF
+    cat "$EXECUTION_FILE" >> "$EXECUTION_ARCHIVE"
+
+    # Reset the active execution document
+    cat > "$EXECUTION_FILE" << 'EOF'
+# StoryWeaver - Active Execution
+
+## Task: [Task Name]
+
+**Session**: [Date]
+**Context**: [Brief description of what is being implemented]
+
+## Execution Status
+
+### ✅ Completed Tasks
+
+*None yet - starting implementation*
+
+### 🔄 In Progress
+
+*None currently*
+
+### ⏳ Pending Tasks
+
+*List tasks to be completed*
+
+## Changes Made
+
+### Files Modified
+-
+
+### Files Created
+-
+
+### Files Deleted
+-
+
+## Implementation Notes
+
+### Key Technical Details
+*Document important implementation decisions and technical details*
+
+### Challenges & Solutions
+*Note any challenges encountered and how they were resolved*
+
+## Testing Notes
+*Manual testing performed, test results, etc.*
+
+## Developer Actions Required
+- [ ] Test feature manually
+- [ ] Run any necessary commands
+
+---
+
+*This document tracks active implementation progress*
+EOF
+
+    echo "✓ Archived execution document: $EXECUTION_ARCHIVE"
+fi
+
+if [ -f "$PLANNING_ARCHIVE" ] || [ -f "$EXECUTION_ARCHIVE" ]; then
+    # Add archived docs to git
+    [ -f "$PLANNING_ARCHIVE" ] && git add "$PLANNING_ARCHIVE"
+    [ -f "$EXECUTION_ARCHIVE" ] && git add "$EXECUTION_ARCHIVE"
+
+    # Add reset templates to git
+    git add "$PLANNING_FILE" "$EXECUTION_FILE"
+
+    # Amend the commit to include archived docs
+    git commit --amend --no-edit --no-verify
+
+    echo "================================================================"
+    echo "📋 POST-COMMIT: Documentation archived successfully"
+    echo "📅 Commit: $COMMIT_HASH on $COMMIT_DATE"
+    echo "⚠️  IMPORTANT: Next Claude Code session should rename archived files"
+    echo "   Example: ${COMMIT_DATE}-${COMMIT_HASH}-planning-to-be-renamed.md"
+    echo "          → ${COMMIT_DATE}-${COMMIT_HASH}-add-backend-api.md"
+    echo "================================================================"
+else
+    echo "ℹ️  No substantial content in active docs to archive"
+fi
