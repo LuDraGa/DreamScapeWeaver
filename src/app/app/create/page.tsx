@@ -9,11 +9,34 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/design-system/skeleton'
 import { Toast } from '@/components/design-system/toast'
-import { PlusIcon, WandIcon, SparklesIcon, SaveIcon, XIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons'
+import { PlusIcon, WandIcon, Wand2Icon, SparklesIcon, SaveIcon, XIcon, ChevronDownIcon, ChevronUpIcon, RefreshCwIcon, DownloadIcon, Star } from '@/components/icons'
+
+const ENHANCEMENT_GOALS = [
+  { id: 'vivid', label: 'Add vividness', icon: '🎨' },
+  { id: 'conflict', label: 'Add conflict', icon: '⚔️' },
+  { id: 'believable', label: 'Make it more believable', icon: '🎯' },
+  { id: 'stitch', label: 'Stitch chunks together', icon: '🧵' },
+  { id: 'less-ai', label: 'Make it less AI-ish', icon: '🤖' },
+]
+
+const FEEDBACK_CHIPS = [
+  { id: 'hook-strong', label: 'Hook strong', positive: true },
+  { id: 'hook-weak', label: 'Hook weak', positive: false },
+  { id: 'natural', label: 'Natural', positive: true },
+  { id: 'too-ai', label: 'Too AI', positive: false },
+  { id: 'cohesion-strong', label: 'Cohesion strong', positive: true },
+  { id: 'cohesion-weak', label: 'Cohesion weak', positive: false },
+  { id: 'twist-good', label: 'Twist unpredictable', positive: true },
+  { id: 'twist-predictable', label: 'Twist predictable', positive: false },
+  { id: 'pace-good', label: 'Pace good', positive: true },
+  { id: 'pace-fast', label: 'Pace fast', positive: false },
+]
 import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
-import { PRESETS } from '@/lib/config'
-import type { Dreamscape } from '@/lib/types'
+import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
+import type { Dreamscape, DialState, IntensityValues } from '@/lib/types'
+import { LabeledSlider } from '@/components/design-system/labeled-slider'
+import { CopyButton } from '@/components/design-system/copy-button'
 
 /**
  * Create Page - 4-step story generation workflow
@@ -35,6 +58,11 @@ export default function CreatePage() {
     currentDreamscape?.chunks || [{ id: uid(), title: '', text: '' }]
   )
   const [showGenPanel, setShowGenPanel] = useState(false)
+  const [showMergeView, setShowMergeView] = useState(false)
+  const [showEnhanceDrawer, setShowEnhanceDrawer] = useState(false)
+  const [enhanceGoal, setEnhanceGoal] = useState<string>('')
+  const [enhancing, setEnhancing] = useState(false)
+  const [enhanceResult, setEnhanceResult] = useState<any>(null)
   const [genVibe, setGenVibe] = useState('')
   const [genCount, setGenCount] = useState(3)
   const [genLoading, setGenLoading] = useState(false)
@@ -42,9 +70,34 @@ export default function CreatePage() {
 
   // Preset state (Step B)
   const [selectedPreset, setSelectedPreset] = useState(settings.defaultPreset)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // Initialize dialState from selected preset
+  const getInitialDialState = (): DialState => {
+    const preset = PRESETS.find((p) => p.id === selectedPreset) || PRESETS[0]
+    return {
+      presetId: preset.id,
+      platform: preset.platform,
+      outputFormat: preset.outputFormat,
+      wordCount: preset.wordCount,
+      tone: preset.tone,
+      intensity: preset.intensity,
+      avoidPhrases: settings.avoidPhrases,
+      cohesionStrictness: 5,
+    }
+  }
+
+  const [dialState, setDialState] = useState<DialState>(getInitialDialState())
 
   // Generate state (Step C)
   const [generating, setGenerating] = useState(false)
+  const [generatedOutputs, setGeneratedOutputs] = useState<any[]>([])
+
+  // Rate & Save state (Step D)
+  const [activeVariant, setActiveVariant] = useState(0)
+  const [ratings, setRatings] = useState<Record<number, number>>({})
+  const [feedback, setFeedback] = useState<Record<number, string[]>>({})
+  const [notes, setNotes] = useState<Record<number, string>>({})
 
   // UI state
   const [toast, setToast] = useState('')
@@ -69,6 +122,24 @@ export default function CreatePage() {
   const removeChunk = (id: string) => {
     if (chunks.length === 1) return
     setChunks((prev) => prev.filter((c) => c.id !== id))
+  }
+
+  const moveChunkUp = (index: number) => {
+    if (index === 0) return
+    setChunks((prev) => {
+      const newChunks = [...prev]
+      ;[newChunks[index - 1], newChunks[index]] = [newChunks[index], newChunks[index - 1]]
+      return newChunks
+    })
+  }
+
+  const moveChunkDown = (index: number) => {
+    if (index === chunks.length - 1) return
+    setChunks((prev) => {
+      const newChunks = [...prev]
+      ;[newChunks[index], newChunks[index + 1]] = [newChunks[index + 1], newChunks[index]]
+      return newChunks
+    })
   }
 
   const handleGenerateDreamscapes = async () => {
@@ -116,12 +187,68 @@ export default function CreatePage() {
     showToast('Saved to library!')
   }
 
+  const handleEnhance = async () => {
+    if (!enhanceGoal) return
+    setEnhancing(true)
+    try {
+      const result = await api.dreamscapes.enhance({ chunks, goalPreset: enhanceGoal as any })
+      setEnhanceResult(result)
+      showToast('Enhancement complete!')
+    } catch (error) {
+      showToast('Failed to enhance dreamscape')
+      console.error(error)
+    } finally {
+      setEnhancing(false)
+    }
+  }
+
+  const applyEnhancement = () => {
+    if (enhanceResult?.enhancedChunks) {
+      setChunks(enhanceResult.enhancedChunks)
+    } else if (enhanceResult?.stitchedSeed) {
+      setChunks([{ id: uid(), title: 'Stitched', text: enhanceResult.stitchedSeed }])
+    }
+    setEnhanceResult(null)
+    setShowEnhanceDrawer(false)
+    showToast('Enhancement applied')
+  }
+
   // ============================================================
   // Step B: Preset handlers
   // ============================================================
 
   const selectPreset = (presetId: string) => {
     setSelectedPreset(presetId)
+    const preset = PRESETS.find((p) => p.id === presetId) || PRESETS[0]
+    setDialState({
+      presetId: preset.id,
+      platform: preset.platform,
+      outputFormat: preset.outputFormat,
+      wordCount: preset.wordCount,
+      tone: preset.tone,
+      intensity: preset.intensity,
+      genrePrimary: dialState.genrePrimary,
+      genreSecondary: dialState.genreSecondary,
+      avoidPhrases: dialState.avoidPhrases,
+      cohesionStrictness: dialState.cohesionStrictness,
+    })
+  }
+
+  const randomizeIntensity = () => {
+    const preset = PRESETS.find((p) => p.id === selectedPreset)
+    if (!preset) return
+
+    const randomized = Object.fromEntries(
+      Object.entries(preset.intensity).map(([key, value]) => [
+        key,
+        Math.max(1, Math.min(10, value + Math.floor(Math.random() * 5) - 2)),
+      ])
+    ) as IntensityValues
+
+    setDialState((prev) => ({
+      ...prev,
+      intensity: randomized,
+    }))
   }
 
   // ============================================================
@@ -129,30 +256,31 @@ export default function CreatePage() {
   // ============================================================
 
   const handleGenerateStory = async () => {
-    if (!currentDreamscape) {
-      showToast('Please save dreamscape first')
-      return
+    // Auto-create dreamscape if it doesn't exist
+    let dreamscape = currentDreamscape
+    if (!dreamscape) {
+      dreamscape = {
+        id: uid(),
+        title: chunks[0].text.slice(0, 50) || 'Untitled',
+        chunks,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      setCurrentDreamscape(dreamscape)
     }
 
     setGenerating(true)
     try {
-      const preset = PRESETS.find((p) => p.id === selectedPreset) || PRESETS[0]
-      const dialState = {
-        presetId: preset.id,
-        platform: preset.platform,
-        outputFormat: preset.outputFormat,
-        wordCount: preset.wordCount,
-        tone: preset.tone,
-        intensity: preset.intensity,
-        avoidPhrases: settings.avoidPhrases,
-        cohesionStrictness: 5,
-      }
-
       const outputs = await api.outputs.generate({
-        dreamscape: currentDreamscape,
+        dreamscape,
         dialState,
       })
 
+      setGeneratedOutputs(outputs)
+      setActiveVariant(0)
+      setRatings({})
+      setFeedback({})
+      setNotes({})
       showToast(`Generated ${outputs.length} variants!`)
       setStep(3) // Move to Rate & Save step
     } catch (error) {
@@ -174,6 +302,11 @@ export default function CreatePage() {
     setGenVibe('')
     setShowGenPanel(false)
     setCurrentDreamscape(null)
+    setGeneratedOutputs([])
+    setActiveVariant(0)
+    setRatings({})
+    setFeedback({})
+    setNotes({})
   }
 
   const canProceed = chunks.some((c) => c.text.trim().length > 10)
@@ -235,6 +368,15 @@ export default function CreatePage() {
             >
               <SparklesIcon className="w-4 h-4 mr-2" />
               Generate Ideas
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowEnhanceDrawer(true)}
+              className="bg-transparent border-purple-500/30 text-purple-400"
+            >
+              <WandIcon className="w-4 h-4 mr-2" />
+              Enhance
             </Button>
             <Button
               size="sm"
@@ -329,6 +471,34 @@ export default function CreatePage() {
           </ThemedCard>
         )}
 
+        {/* Merge View Button */}
+        {chunks.length > 1 && (
+          <div className="flex justify-end mb-4">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowMergeView(!showMergeView)}
+              className="bg-transparent border-[#1e293b] text-text-secondary"
+            >
+              {showMergeView ? <ChevronUpIcon className="w-4 h-4 mr-2" /> : <ChevronDownIcon className="w-4 h-4 mr-2" />}
+              {showMergeView ? 'Hide' : 'Show'} Merged View
+            </Button>
+          </div>
+        )}
+
+        {/* Merge View */}
+        {showMergeView && chunks.length > 1 && (
+          <ThemedCard className="mb-4 bg-[rgba(30,41,59,0.5)] border-[#334155]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-text-secondary">Combined Preview (read-only)</span>
+              <CopyButton text={chunks.map((c) => c.text).join('\n\n---\n\n')} />
+            </div>
+            <p className="text-sm whitespace-pre-wrap text-text-secondary">
+              {chunks.map((c) => c.text).join('\n\n---\n\n')}
+            </p>
+          </ThemedCard>
+        )}
+
         {/* Chunks */}
         <div className="space-y-4 mb-6">
           {chunks.map((chunk, index) => (
@@ -337,16 +507,42 @@ export default function CreatePage() {
                 <label className="text-sm font-medium text-text-secondary">
                   Part {index + 1}
                 </label>
-                {chunks.length > 1 && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeChunk(chunk.id)}
-                    className="h-6 text-xs text-text-muted hover:text-text-primary"
-                  >
-                    Remove
-                  </Button>
-                )}
+                <div className="flex items-center gap-1">
+                  {/* Reorder buttons */}
+                  {chunks.length > 1 && (
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => moveChunkUp(index)}
+                        disabled={index === 0}
+                        className="h-6 w-6 p-0 text-text-muted hover:text-text-primary disabled:opacity-30"
+                      >
+                        <ChevronUpIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => moveChunkDown(index)}
+                        disabled={index === chunks.length - 1}
+                        className="h-6 w-6 p-0 text-text-muted hover:text-text-primary disabled:opacity-30"
+                      >
+                        <ChevronDownIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                  {/* Remove button */}
+                  {chunks.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeChunk(chunk.id)}
+                      className="h-6 text-xs text-text-muted hover:text-text-primary"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
               </div>
               <Textarea
                 value={chunk.text}
@@ -380,6 +576,80 @@ export default function CreatePage() {
             Next: Choose Preset
           </Button>
         </div>
+
+        {/* Enhance Drawer */}
+        {showEnhanceDrawer && (
+          <div className="fixed inset-0 z-50 flex justify-end" onClick={() => setShowEnhanceDrawer(false)}>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300" />
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md h-full overflow-y-auto p-6 bg-[#0f172a] border-l border-[#1e293b] shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-base font-semibold text-text-primary">Enhance Dreamscape</h3>
+                <button onClick={() => setShowEnhanceDrawer(false)} className="text-text-muted hover:text-text-primary">
+                  <XIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-sm mb-4 text-text-secondary">Pick an enhancement goal:</p>
+              <div className="grid gap-2 mb-6">
+                {ENHANCEMENT_GOALS.map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => setEnhanceGoal(g.id)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all"
+                    style={{
+                      background: enhanceGoal === g.id ? 'rgba(99,102,241,0.15)' : 'rgba(30,41,59,0.5)',
+                      color: enhanceGoal === g.id ? '#a5b4fc' : '#cbd5e1',
+                      border: enhanceGoal === g.id ? '1px solid rgba(99,102,241,0.3)' : '1px solid #1e293b',
+                    }}
+                  >
+                    <span className="text-lg">{g.icon}</span> {g.label}
+                  </button>
+                ))}
+              </div>
+              <Button
+                onClick={handleEnhance}
+                disabled={!enhanceGoal || enhancing}
+                className="w-full mb-4"
+                style={{
+                  background: enhanceGoal ? '#6366f1' : '#1e293b',
+                  color: enhanceGoal ? '#fff' : '#475569',
+                }}
+              >
+                {enhancing ? 'Enhancing...' : 'Apply Enhancement'}
+              </Button>
+              {enhancing && (
+                <div className="mt-4">
+                  <Skeleton className="h-32 w-full" />
+                </div>
+              )}
+              {enhanceResult && (
+                <div className="mt-4 space-y-3">
+                  <ThemedCard className="bg-green-500/10 border-green-500/20">
+                    <span className="text-xs font-medium mb-1 block text-green-500">Enhanced Preview</span>
+                    <p className="text-sm whitespace-pre-wrap text-text-secondary">
+                      {enhanceResult.stitchedSeed ||
+                        enhanceResult.enhancedChunks?.map((c: any) => c.text).join('\n\n---\n\n')}
+                    </p>
+                  </ThemedCard>
+                  <div className="flex gap-2">
+                    <Button onClick={applyEnhancement} className="flex-1 bg-green-600 hover:bg-green-700 text-white">
+                      Accept
+                    </Button>
+                    <Button
+                      onClick={() => setEnhanceResult(null)}
+                      variant="outline"
+                      className="flex-1 bg-transparent border-[#1e293b] text-text-secondary"
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* STEP B: Presets */}
@@ -410,6 +680,211 @@ export default function CreatePage() {
             </ThemedCard>
           ))}
         </div>
+
+        {/* Advanced Options */}
+        <ThemedCard className="mb-6 overflow-hidden border-[#1e293b]">
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium bg-[rgba(15,23,42,0.5)] text-text-secondary hover:text-text-primary transition-colors"
+          >
+            <span>Advanced Options</span>
+            {showAdvanced ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
+          </button>
+
+          {showAdvanced && (
+            <div className="p-4 space-y-5 bg-[rgba(15,23,42,0.3)]">
+              {/* Word Count */}
+              <LabeledSlider
+                label="Word Count"
+                value={dialState.wordCount}
+                onChange={(v) => setDialState((s) => ({ ...s, wordCount: v }))}
+                min={100}
+                max={5000}
+              />
+
+              {/* Platform */}
+              <div>
+                <label className="text-xs font-medium mb-2 block text-text-secondary">Platform</label>
+                <div className="flex gap-2 flex-wrap">
+                  {PLATFORMS.map((pl) => (
+                    <button
+                      key={pl.id}
+                      onClick={() => setDialState((s) => ({ ...s, platform: pl.id as any }))}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{
+                        background: dialState.platform === pl.id ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
+                        color: dialState.platform === pl.id ? '#a5b4fc' : '#94a3b8',
+                        border: dialState.platform === pl.id ? '1px solid rgba(99,102,241,0.3)' : '1px solid #334155',
+                      }}
+                    >
+                      {pl.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Output Format */}
+              <div>
+                <label className="text-xs font-medium mb-2 block text-text-secondary">Output Format</label>
+                <div className="flex gap-2 flex-wrap">
+                  {OUTPUT_FORMATS.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setDialState((s) => ({ ...s, outputFormat: f.id as any }))}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{
+                        background: dialState.outputFormat === f.id ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
+                        color: dialState.outputFormat === f.id ? '#a5b4fc' : '#94a3b8',
+                        border: dialState.outputFormat === f.id ? '1px solid rgba(99,102,241,0.3)' : '1px solid #334155',
+                      }}
+                    >
+                      {f.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tone */}
+              <div>
+                <label className="text-xs font-medium mb-2 block text-text-secondary">Tone</label>
+                <div className="flex gap-2 flex-wrap">
+                  {TONES.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setDialState((s) => ({ ...s, tone: t as any }))}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all"
+                      style={{
+                        background: dialState.tone === t ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
+                        color: dialState.tone === t ? '#a5b4fc' : '#94a3b8',
+                        border: dialState.tone === t ? '1px solid rgba(99,102,241,0.3)' : '1px solid #334155',
+                      }}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Genre */}
+              <div>
+                <label className="text-xs font-medium mb-2 block text-text-secondary">Genre (optional)</label>
+                <div className="flex gap-2 flex-wrap">
+                  {GENRES.map((g) => (
+                    <button
+                      key={g}
+                      onClick={() =>
+                        setDialState((s) => ({
+                          ...s,
+                          genrePrimary: s.genrePrimary === g ? undefined : g,
+                        }))
+                      }
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{
+                        background: dialState.genrePrimary === g ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
+                        color: dialState.genrePrimary === g ? '#a5b4fc' : '#94a3b8',
+                        border: dialState.genrePrimary === g ? '1px solid rgba(99,102,241,0.3)' : '1px solid #334155',
+                      }}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Intensity Dials */}
+              <div>
+                <label className="text-xs font-medium mb-3 block text-text-secondary">Intensity Dials</label>
+                <div className="space-y-2">
+                  {Object.entries(DIALS).map(([key, dial]) => (
+                    <LabeledSlider
+                      key={key}
+                      label={dial.label}
+                      value={dialState.intensity?.[key as keyof IntensityValues] || 5}
+                      onChange={(v) =>
+                        setDialState((s) => ({
+                          ...s,
+                          intensity: { ...s.intensity, [key]: v },
+                        }))
+                      }
+                      min={dial.min}
+                      max={dial.max}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Cohesion */}
+              <LabeledSlider
+                label="Cohesion Strictness"
+                value={dialState.cohesionStrictness || 5}
+                onChange={(v) => setDialState((s) => ({ ...s, cohesionStrictness: v }))}
+                min={1}
+                max={10}
+              />
+
+              {/* Avoid Phrases */}
+              <div>
+                <label className="text-xs font-medium mb-2 block text-text-secondary">Avoid Phrases</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {dialState.avoidPhrases.map((phrase, i) => (
+                    <span
+                      key={i}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs"
+                      style={{
+                        background: 'rgba(239,68,68,0.1)',
+                        color: '#fca5a5',
+                        border: '1px solid rgba(239,68,68,0.2)',
+                      }}
+                    >
+                      {phrase}
+                      <button
+                        onClick={() =>
+                          setDialState((s) => ({
+                            ...s,
+                            avoidPhrases: s.avoidPhrases.filter((_, j) => j !== i),
+                          }))
+                        }
+                        className="ml-0.5"
+                      >
+                        <XIcon className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <Input
+                  placeholder="Type phrase and press Enter"
+                  className="bg-[rgba(15,23,42,0.6)] border-[#334155] text-text-primary"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      const value = e.currentTarget.value.trim()
+                      if (value) {
+                        setDialState((s) => ({
+                          ...s,
+                          avoidPhrases: [...(s.avoidPhrases || []), value],
+                        }))
+                        e.currentTarget.value = ''
+                      }
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Randomize Button */}
+              <button
+                onClick={randomizeIntensity}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+                style={{
+                  background: 'rgba(30,41,59,0.6)',
+                  color: '#94a3b8',
+                  border: '1px solid #334155',
+                }}
+              >
+                🎲 Randomize Intensity Dials
+              </button>
+            </div>
+          )}
+        </ThemedCard>
 
         {/* Navigation */}
         <div className="flex justify-between">
@@ -491,7 +966,7 @@ export default function CreatePage() {
           </Button>
           <Button
             onClick={handleGenerateStory}
-            disabled={generating || !currentDreamscape}
+            disabled={generating}
             className="bg-primary hover:bg-primary-light text-white"
           >
             {generating ? 'Generating...' : 'Generate Stories'}
@@ -500,28 +975,179 @@ export default function CreatePage() {
       </div>
 
       {/* STEP D: Rate & Save */}
-      <div style={{ display: step === 3 ? 'block' : 'none' }}>
+      <div style={{ display: step === 3 && generatedOutputs.length > 0 ? 'block' : 'none' }}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-lg font-semibold text-text-primary">Rate & Save</h2>
-            <p className="text-sm text-text-muted">Review variants and provide feedback</p>
+            <h2 className="text-lg font-semibold text-text-primary">Your Variants</h2>
+            <p className="text-sm text-text-muted">Rate, refine, and save.</p>
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setStep(2)
+              setGeneratedOutputs([])
+            }}
+            className="bg-transparent border-[#334155] text-text-secondary"
+          >
+            <RefreshCwIcon className="w-3.5 h-3.5 mr-2" />
+            Generate More
+          </Button>
         </div>
 
-        <ThemedCard>
-          <p className="text-center text-text-muted py-8">
-            Story variants will appear here after generation
-          </p>
+        {/* Variant Tabs */}
+        <div className="flex gap-1 mb-4 p-1 rounded-xl bg-[rgba(15,23,42,0.5)]">
+          {generatedOutputs.map((output, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveVariant(idx)}
+              className="flex-1 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
+              style={{
+                background: activeVariant === idx ? '#6366f1' : 'transparent',
+                color: activeVariant === idx ? '#fff' : '#94a3b8',
+              }}
+            >
+              {output.label || `Variant ${String.fromCharCode(65 + idx)}`}
+            </button>
+          ))}
+        </div>
+
+        {/* Variant Content */}
+        <ThemedCard className="mb-4 border-[#1e293b]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-text-muted">
+              {generatedOutputs[activeVariant]?.text?.split(/\s+/).length || 0} words
+            </span>
+            <div className="flex items-center gap-2">
+              <CopyButton text={generatedOutputs[activeVariant]?.text || ''} />
+              <button
+                onClick={() => {
+                  // TODO: Implement regen variant
+                  showToast('Regenerate variant coming soon')
+                }}
+                disabled={generating}
+                className="flex items-center gap-1 text-xs font-medium text-text-muted hover:text-text-primary transition-all"
+              >
+                <RefreshCwIcon className="w-3.5 h-3.5" />
+                Regen
+              </button>
+            </div>
+          </div>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto pr-2 text-text-primary">
+            {generatedOutputs[activeVariant]?.text}
+          </div>
         </ThemedCard>
 
-        {/* Navigation */}
-        <div className="flex justify-between mt-6">
+        {/* Rating */}
+        <ThemedCard className="mb-4 bg-[rgba(15,23,42,0.3)] border-[#1e293b]">
+          <div className="flex items-center gap-4 mb-3">
+            <span className="text-xs font-medium text-text-secondary">Rating</span>
+            <div className="flex gap-0.5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setRatings((prev) => ({ ...prev, [activeVariant]: i + 1 }))}
+                  className="p-0.5 transition-all"
+                >
+                  <Star
+                    className="w-5 h-5"
+                    style={{
+                      color: i < (ratings[activeVariant] || 0) ? '#eab308' : '#334155',
+                      fill: i < (ratings[activeVariant] || 0) ? '#eab308' : 'none',
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+            {ratings[activeVariant] && (
+              <span className="text-xs font-mono text-yellow-500">{ratings[activeVariant]}/10</span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {FEEDBACK_CHIPS.map((chip) => {
+              const isActive = (feedback[activeVariant] || []).includes(chip.id)
+              return (
+                <button
+                  key={chip.id}
+                  onClick={() =>
+                    setFeedback((prev) => {
+                      const current = prev[activeVariant] || []
+                      return {
+                        ...prev,
+                        [activeVariant]: isActive
+                          ? current.filter((x) => x !== chip.id)
+                          : [...current, chip.id],
+                      }
+                    })
+                  }
+                  className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                  style={{
+                    background: isActive
+                      ? chip.positive
+                        ? 'rgba(34,197,94,0.15)'
+                        : 'rgba(239,68,68,0.15)'
+                      : 'rgba(30,41,59,0.5)',
+                    color: isActive ? (chip.positive ? '#4ade80' : '#f87171') : '#64748b',
+                    border: isActive
+                      ? chip.positive
+                        ? '1px solid rgba(34,197,94,0.3)'
+                        : '1px solid rgba(239,68,68,0.3)'
+                      : '1px solid #334155',
+                  }}
+                >
+                  {chip.label}
+                </button>
+              )
+            })}
+          </div>
+          <Input
+            value={notes[activeVariant] || ''}
+            onChange={(e) => setNotes((prev) => ({ ...prev, [activeVariant]: e.target.value }))}
+            placeholder="Add a note (optional)"
+            className="bg-[rgba(15,23,42,0.6)] border-[#334155] text-text-primary"
+          />
+        </ThemedCard>
+
+        {/* Save Actions */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            onClick={() => {
+              // TODO: Implement save to library with rating
+              showToast('Saved to library!')
+            }}
+            className="bg-primary hover:bg-primary-light text-white"
+          >
+            <SaveIcon className="w-4 h-4 mr-2" />
+            Save to Library
+          </Button>
           <Button
             variant="outline"
-            onClick={() => setStep(2)}
-            className="bg-transparent border-[#1e293b] text-text-secondary"
+            onClick={() => {
+              setChunks([{ id: uid(), title: '', text: generatedOutputs[activeVariant]?.text || '' }])
+              setGeneratedOutputs([])
+              setStep(0)
+            }}
+            className="bg-[rgba(30,41,59,0.6)] border-[#334155] text-text-secondary"
           >
-            Back to Generate
+            Duplicate as new project
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const text = generatedOutputs[activeVariant]?.text || ''
+              const blob = new Blob([text], { type: 'text/plain' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `story-${Date.now()}.txt`
+              a.click()
+              URL.revokeObjectURL(url)
+              showToast('Downloaded!')
+            }}
+            className="bg-[rgba(30,41,59,0.6)] border-[#334155] text-text-secondary"
+          >
+            <DownloadIcon className="w-4 h-4 mr-2" />
+            Export .txt
           </Button>
         </div>
       </div>

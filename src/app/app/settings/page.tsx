@@ -96,7 +96,7 @@ export default function SettingsPage() {
       </ThemedCard>
 
       {/* Auto-Avoid AI */}
-      <ThemedCard>
+      <ThemedCard className="mb-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-medium text-text-primary">Auto-Avoid AI-ish Language</h2>
@@ -115,6 +115,35 @@ export default function SettingsPage() {
             }
           >
             {settings.autoAvoidAI ? 'Enabled' : 'Disabled'}
+          </Button>
+        </div>
+      </ThemedCard>
+
+      {/* Reset Data */}
+      <ThemedCard className="border-red-500/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-medium text-red-400">Reset All Local Data</h2>
+            <p className="text-sm text-text-muted mt-1">
+              Clear all saved dreamscapes, stories, and settings
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (
+                confirm(
+                  'Are you sure you want to reset all local data? This action cannot be undone.'
+                )
+              ) {
+                localStorage.clear()
+                window.location.reload()
+              }
+            }}
+            className="bg-transparent border-red-500/30 text-red-400 hover:bg-red-500/10"
+          >
+            Reset Data
           </Button>
         </div>
       </ThemedCard>
