@@ -1,9 +1,9 @@
 import type { Dreamscape, OutputVariant, AppSettings } from '@/lib/types'
 
 const STORAGE_KEYS = {
-  DREAMSCAPES: 'storyweaver_dreamscapes',
-  OUTPUTS: 'storyweaver_outputs',
-  SETTINGS: 'storyweaver_settings',
+  DREAMSCAPES: 'sg:dreamscapes',
+  OUTPUTS: 'sg:outputs',
+  SETTINGS: 'sg:settings',
 } as const
 
 /**
@@ -13,6 +13,8 @@ const STORAGE_KEYS = {
 export const localStorageAdapter = {
   // Dreamscapes
   async getDreamscapes(): Promise<Dreamscape[]> {
+    if (typeof window === 'undefined') return []
+
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.DREAMSCAPES)
       return raw ? JSON.parse(raw) : []
@@ -23,6 +25,8 @@ export const localStorageAdapter = {
   },
 
   async saveDreamscape(dreamscape: Dreamscape): Promise<void> {
+    if (typeof window === 'undefined') return
+
     try {
       const existing = await this.getDreamscapes()
       const filtered = existing.filter((d) => d.id !== dreamscape.id)
@@ -35,6 +39,8 @@ export const localStorageAdapter = {
   },
 
   async deleteDreamscape(id: string): Promise<void> {
+    if (typeof window === 'undefined') return
+
     try {
       const existing = await this.getDreamscapes()
       const filtered = existing.filter((d) => d.id !== id)
@@ -47,6 +53,8 @@ export const localStorageAdapter = {
 
   // Outputs
   async getOutputs(): Promise<OutputVariant[]> {
+    if (typeof window === 'undefined') return []
+
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.OUTPUTS)
       return raw ? JSON.parse(raw) : []
@@ -57,6 +65,8 @@ export const localStorageAdapter = {
   },
 
   async saveOutput(output: OutputVariant): Promise<void> {
+    if (typeof window === 'undefined') return
+
     try {
       const existing = await this.getOutputs()
       const filtered = existing.filter((o) => o.id !== output.id)
@@ -69,6 +79,8 @@ export const localStorageAdapter = {
   },
 
   async deleteOutput(id: string): Promise<void> {
+    if (typeof window === 'undefined') return
+
     try {
       const existing = await this.getOutputs()
       const filtered = existing.filter((o) => o.id !== id)
@@ -81,6 +93,14 @@ export const localStorageAdapter = {
 
   // Settings
   async getSettings(): Promise<AppSettings> {
+    if (typeof window === 'undefined') {
+      return {
+        defaultPreset: 'reddit-aitah',
+        avoidPhrases: ["It's worth noting that", "I couldn't help but", 'Little did I know'],
+        autoAvoidAI: true,
+      }
+    }
+
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS)
       return raw
@@ -101,6 +121,8 @@ export const localStorageAdapter = {
   },
 
   async saveSettings(settings: AppSettings): Promise<void> {
+    if (typeof window === 'undefined') return
+
     try {
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings))
     } catch (error) {
@@ -108,4 +130,46 @@ export const localStorageAdapter = {
       throw error
     }
   },
+}
+
+/**
+ * Clear all app data from localStorage
+ * Only removes keys that start with 'sg:' prefix
+ * Safe to call - won't affect other apps' localStorage
+ */
+export function clearAllAppData(): void {
+  if (typeof window === 'undefined') return
+
+  // Clear all sg:* keys
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('sg:')) {
+      localStorage.removeItem(key)
+    }
+  })
+}
+
+/**
+ * Migrate old storage keys to new sg:* format
+ * Call once on app initialization to preserve existing user data
+ * TODO: Remove this migration code after 2026-03-26 (1 month)
+ */
+export function migrateStorageKeys(): void {
+  if (typeof window === 'undefined') return
+
+  const migrations = [
+    { old: 'storyweaver_dreamscapes', new: 'sg:dreamscapes' },
+    { old: 'storyweaver_outputs', new: 'sg:outputs' },
+    { old: 'storyweaver_settings', new: 'sg:settings' },
+    { old: 'storyweaver-storage', new: 'sg:store' },
+  ]
+
+  migrations.forEach(({ old, new: newKey }) => {
+    const data = localStorage.getItem(old)
+    if (data) {
+      // Copy to new key
+      localStorage.setItem(newKey, data)
+      // Remove old key
+      localStorage.removeItem(old)
+    }
+  })
 }

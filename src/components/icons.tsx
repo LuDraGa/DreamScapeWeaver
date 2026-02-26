@@ -9,6 +9,12 @@ import {
   RefreshCw,
   Download,
   Star,
+  PenSquare,
+  Book,
+  Settings,
+  Trash2,
+  Check,
+  Copy,
 } from 'lucide-react'
 
 export {
@@ -23,4 +29,10 @@ export {
   RefreshCw as RefreshCwIcon,
   Download as DownloadIcon,
   Star,
+  PenSquare as PenIcon,
+  Book as BookIcon,
+  Settings as GearIcon,
+  Trash2 as TrashIcon,
+  Check as CheckIcon,
+  Copy as CopyIcon,
 }

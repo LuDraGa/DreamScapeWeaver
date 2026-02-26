@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PRESETS } from '@/lib/config'
 import { XIcon } from '@/components/icons'
+import { clearAllAppData } from '@/lib/persistence/local'
 
 /**
  * Settings Page - Configure app preferences
@@ -137,7 +138,7 @@ export default function SettingsPage() {
                   'Are you sure you want to reset all local data? This action cannot be undone.'
                 )
               ) {
-                localStorage.clear()
+                clearAllAppData()
                 window.location.reload()
               }
             }}

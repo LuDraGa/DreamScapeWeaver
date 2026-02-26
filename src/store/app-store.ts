@@ -195,7 +195,7 @@ export const useAppStore = create<AppState>()(
         }),
     }),
     {
-      name: 'storyweaver-storage', // localStorage key
+      name: 'sg:store', // localStorage key
       // Only persist library and settings, not create flow state
       partialize: (state) => ({
         savedDreamscapes: state.savedDreamscapes,

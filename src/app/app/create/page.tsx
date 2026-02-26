@@ -156,7 +156,7 @@ export default function CreatePage() {
     }
   }
 
-  const useGeneratedIdea = (dreamscape: Dreamscape) => {
+  const handleUseGeneratedIdea = (dreamscape: Dreamscape) => {
     setChunks((prev) => {
       const firstChunk = prev[0]
       if (!firstChunk.text.trim()) {
@@ -243,7 +243,7 @@ export default function CreatePage() {
         key,
         Math.max(1, Math.min(10, value + Math.floor(Math.random() * 5) - 2)),
       ])
-    ) as IntensityValues
+    ) as unknown as IntensityValues
 
     setDialState((prev) => ({
       ...prev,
@@ -452,7 +452,7 @@ export default function CreatePage() {
                     <p className="text-sm flex-1 text-text-secondary">{d.chunks[0]?.text}</p>
                     <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => useGeneratedIdea(d)}
+                        onClick={() => handleUseGeneratedIdea(d)}
                         className="px-2 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-light"
                       >
                         Use
@@ -908,7 +908,7 @@ export default function CreatePage() {
       <div style={{ display: step === 2 ? 'block' : 'none' }}>
         <h2 className="text-lg font-semibold mb-1 text-text-primary">Generate Story</h2>
         <p className="text-sm mb-5 text-text-muted">
-          We'll create 3 variants based on your dreamscape and preset.
+          We&apos;ll create 3 variants based on your dreamscape and preset.
         </p>
 
         <ThemedCard className="mb-6">
@@ -1152,7 +1152,7 @@ export default function CreatePage() {
         </div>
       </div>
 
-      {toast && <Toast message={toast} />}
+      {toast && <Toast message={toast} show={!!toast} onClose={() => setToast('')} />}
     </div>
   )
 }
