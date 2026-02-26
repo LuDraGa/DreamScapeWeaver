@@ -1,8 +1,11 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
-
 # Post-commit hook to archive planning and execution documents
 # This hook runs after each commit and archives active docs to preserve session history
+
+# Prevent infinite loop - exit if we're already running
+if [ -n "$HUSKY_POST_COMMIT_RUNNING" ]; then
+    exit 0
+fi
+export HUSKY_POST_COMMIT_RUNNING=1
 
 # Get the commit hash and date
 COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -168,19 +171,16 @@ EOF
 fi
 
 if [ -f "$PLANNING_ARCHIVE" ] || [ -f "$EXECUTION_ARCHIVE" ]; then
-    # Add archived docs to git
-    [ -f "$PLANNING_ARCHIVE" ] && git add "$PLANNING_ARCHIVE"
-    [ -f "$EXECUTION_ARCHIVE" ] && git add "$EXECUTION_ARCHIVE"
-
-    # Add reset templates to git
-    git add "$PLANNING_FILE" "$EXECUTION_FILE"
-
-    # Amend the commit to include archived docs
-    git commit --amend --no-edit --no-verify
-
     echo "================================================================"
     echo "📋 POST-COMMIT: Documentation archived successfully"
     echo "📅 Commit: $COMMIT_HASH on $COMMIT_DATE"
+    echo ""
+    echo "⚠️  Archived files are unstaged. Include them in your next commit:"
+    [ -f "$PLANNING_ARCHIVE" ] && echo "   - $PLANNING_ARCHIVE"
+    [ -f "$EXECUTION_ARCHIVE" ] && echo "   - $EXECUTION_ARCHIVE"
+    echo "   - $PLANNING_FILE (reset)"
+    echo "   - $EXECUTION_FILE (reset)"
+    echo ""
     echo "⚠️  IMPORTANT: Next Claude Code session should rename archived files"
     echo "   Example: ${COMMIT_DATE}-${COMMIT_HASH}-planning-to-be-renamed.md"
     echo "          → ${COMMIT_DATE}-${COMMIT_HASH}-add-backend-api.md"
