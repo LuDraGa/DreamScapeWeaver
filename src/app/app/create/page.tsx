@@ -71,7 +71,7 @@ export default function CreatePage() {
   const [step, setStep] = useState(0)
   const steps = [
     { label: 'Dreamscape', s: 'A' },
-    { label: 'Preset', s: 'B' },
+    { label: 'Platform & Style', s: 'B' },
     { label: 'Generate', s: 'C' },
     { label: 'Rate & Save', s: 'D' },
   ]
@@ -145,7 +145,7 @@ export default function CreatePage() {
     if (!settings.developerMode) return
 
     const currentPreset = PRESETS.find((p) => p.id === dialState.presetId) || PRESETS[0]
-    const genres = [dialState.genrePrimary, dialState.genreSecondary].filter(Boolean)
+    const genres = dialState.genres || []
 
     // Enhancement prompts (highest priority - when enhance drawer is open)
     if (showEnhanceDrawer && enhanceGoal && chunks.length > 0) {
@@ -389,8 +389,7 @@ Next step: Select a preset and configure advanced settings.`
       wordCount: preset.wordCount,
       tone: preset.tone,
       intensity: preset.intensity,
-      genrePrimary: dialState.genrePrimary,
-      genreSecondary: dialState.genreSecondary,
+      genres: dialState.genres,
       avoidPhrases: dialState.avoidPhrases,
       cohesionStrictness: dialState.cohesionStrictness,
     })
@@ -795,7 +794,7 @@ Next step: Select a preset and configure advanced settings.`
             }}
             className="bg-primary hover:bg-primary-light text-white"
           >
-            Next: Choose Preset
+            Next: Platform & Style
           </Button>
         </div>
 
@@ -901,11 +900,11 @@ Next step: Select a preset and configure advanced settings.`
         )}
       </div>
 
-      {/* STEP B: Presets */}
+      {/* STEP B: Platform & Style */}
       <div style={{ display: step === 1 ? 'block' : 'none' }}>
-        <h2 className="text-lg font-semibold mb-1 text-text-primary">Choose a Preset</h2>
+        <h2 className="text-lg font-semibold mb-1 text-text-primary">Platform & Style</h2>
         <p className="text-sm mb-5 text-text-muted">
-          Sets the vibe for your story. Tweak details in Advanced.
+          Choose a preset to set the vibe for your story. Tweak details in Advanced.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
@@ -1014,29 +1013,36 @@ Next step: Select a preset and configure advanced settings.`
                 </div>
               </div>
 
-              {/* Genre */}
+              {/* Genre (Multi-Select) */}
               <div>
-                <label className="text-xs font-medium mb-2 block text-text-secondary">Genre (optional)</label>
+                <label className="text-xs font-medium mb-2 block text-text-secondary">
+                  Genres (optional, select multiple)
+                </label>
                 <div className="flex gap-2 flex-wrap">
-                  {GENRES.map((g) => (
-                    <button
-                      key={g}
-                      onClick={() =>
-                        setDialState((s) => ({
-                          ...s,
-                          genrePrimary: s.genrePrimary === g ? undefined : g,
-                        }))
-                      }
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                      style={{
-                        background: dialState.genrePrimary === g ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
-                        color: dialState.genrePrimary === g ? '#a5b4fc' : '#94a3b8',
-                        border: dialState.genrePrimary === g ? '1px solid rgba(99,102,241,0.3)' : '1px solid #334155',
-                      }}
-                    >
-                      {g}
-                    </button>
-                  ))}
+                  {GENRES.map((g) => {
+                    const isSelected = (dialState.genres || []).includes(g)
+                    return (
+                      <button
+                        key={g}
+                        onClick={() =>
+                          setDialState((s) => ({
+                            ...s,
+                            genres: isSelected
+                              ? (s.genres || []).filter((genre) => genre !== g)
+                              : [...(s.genres || []), g],
+                          }))
+                        }
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                        style={{
+                          background: isSelected ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
+                          color: isSelected ? '#a5b4fc' : '#94a3b8',
+                          border: isSelected ? '1px solid rgba(99,102,241,0.3)' : '1px solid #334155',
+                        }}
+                      >
+                        {g}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 

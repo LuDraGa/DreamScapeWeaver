@@ -29,8 +29,7 @@ export interface DialState {
   wordCount: number
   tone: Tone
   intensity: IntensityValues
-  genrePrimary?: string
-  genreSecondary?: string
+  genres?: string[]
   avoidPhrases: string[]
   cohesionStrictness: number // 1-10
 }

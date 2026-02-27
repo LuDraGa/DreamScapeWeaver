@@ -162,8 +162,7 @@ ${buildIntensityPrompt(dialState.intensity)}
 
 CONSTRAINTS:
 - Target word count: ~${dialState.wordCount} words (±10% is acceptable)
-${dialState.genrePrimary ? `- Primary genre: ${dialState.genrePrimary}` : ''}
-${dialState.genreSecondary ? `- Secondary genre: ${dialState.genreSecondary}` : ''}
+${dialState.genres && dialState.genres.length > 0 ? `- Genres: ${dialState.genres.join(', ')}` : ''}
 ${dialState.avoidPhrases.length > 0 ? `- NEVER use these phrases: ${dialState.avoidPhrases.join(', ')}` : ''}
 - Write naturally and authentically
 - Avoid obviously AI-generated language patterns
