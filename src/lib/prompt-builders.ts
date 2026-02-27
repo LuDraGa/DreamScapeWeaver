@@ -103,11 +103,13 @@ Return engaging story seeds.`
 export function buildEnhancementPrompt({
   chunks,
   goalPreset,
+  customGoal,
   intensity,
   avoidPhrases,
 }: {
   chunks: DreamscapeChunk[]
   goalPreset: string
+  customGoal?: string
   intensity: IntensityValues
   avoidPhrases: string[]
 }): PromptData {
@@ -119,6 +121,7 @@ export function buildEnhancementPrompt({
     believable: 'Make the story more grounded and believable',
     stitch: 'Combine multiple chunks into a cohesive narrative',
     'less-ai': 'Remove AI-sounding phrases and make it more human',
+    custom: customGoal || 'Custom enhancement',
   }
 
   const userPrompt = `Enhancement goal: ${enhancementGoals[goalPreset]}

@@ -84,6 +84,7 @@ export default function CreatePage() {
   const [showMergeView, setShowMergeView] = useState(false)
   const [showEnhanceDrawer, setShowEnhanceDrawer] = useState(false)
   const [enhanceGoal, setEnhanceGoal] = useState<string>('')
+  const [customEnhanceGoal, setCustomEnhanceGoal] = useState<string>('')
   const [enhancing, setEnhancing] = useState(false)
   const [enhanceResult, setEnhanceResult] = useState<any>(null)
   const [genVibe, setGenVibe] = useState('')
@@ -146,8 +147,20 @@ export default function CreatePage() {
     const currentPreset = PRESETS.find((p) => p.id === dialState.presetId) || PRESETS[0]
     const genres = [dialState.genrePrimary, dialState.genreSecondary].filter(Boolean)
 
+    // Enhancement prompts (highest priority - when enhance drawer is open)
+    if (showEnhanceDrawer && enhanceGoal && chunks.length > 0) {
+      setInspectorPromptData(
+        buildEnhancementPrompt({
+          chunks,
+          goalPreset: enhanceGoal,
+          customGoal: customEnhanceGoal,
+          intensity: dialState.intensity,
+          avoidPhrases: dialState.avoidPhrases,
+        })
+      )
+    }
     // Step 0: Dreamscape - Show generation prompt when Gen panel is open
-    if (step === 0 && showGenPanel) {
+    else if (step === 0 && showGenPanel) {
       console.log('📊 Prompt Inspector updating with genIntensity:', genIntensity)
       setInspectorPromptData(
         buildDreamscapePrompt({
@@ -229,18 +242,7 @@ Next step: Select a preset and configure advanced settings.`
         })
       )
     }
-    // Enhancement prompts (when drawer is open)
-    else if (enhanceGoal && chunks.length > 0) {
-      setInspectorPromptData(
-        buildEnhancementPrompt({
-          chunks,
-          goalPreset: enhanceGoal,
-          intensity: dialState.intensity,
-          avoidPhrases: dialState.avoidPhrases,
-        })
-      )
-    }
-  }, [step, dialState, enhanceGoal, chunks, settings.developerMode, showGenPanel, genVibe, genCount, genIntensity])
+  }, [step, dialState, enhanceGoal, customEnhanceGoal, chunks, settings.developerMode, showGenPanel, showEnhanceDrawer, genVibe, genCount, genIntensity])
 
   // ============================================================
   // Step A: Dreamscape handlers
@@ -291,7 +293,7 @@ Next step: Select a preset and configure advanced settings.`
       const results = await api.dreamscapes.generate({
         count: genCount,
         vibe: genVibe,
-        intensity: randomizedIntensity,
+        intensity: genIntensity,
       })
       setGenResults(results)
       showToast(`Generated ${results.length} ideas!`)
@@ -336,10 +338,23 @@ Next step: Select a preset and configure advanced settings.`
 
   const handleEnhance = async () => {
     if (!enhanceGoal) return
+    if (enhanceGoal === 'custom' && !customEnhanceGoal.trim()) {
+      showToast('Please enter a custom enhancement goal')
+      return
+    }
     setEnhancing(true)
     try {
-      const result = await api.dreamscapes.enhance({ chunks, goalPreset: enhanceGoal as any })
+      const result = await api.dreamscapes.enhance({
+        chunks,
+        goalPreset: enhanceGoal as any,
+        customGoal: customEnhanceGoal,
+        intensity: genIntensity,
+        avoidPhrases: dialState.avoidPhrases,
+      })
       setEnhanceResult(result)
+      if (result.promptData) {
+        setInspectorPromptData(result.promptData)
+      }
       showToast('Enhancement complete!')
     } catch (error) {
       showToast('Failed to enhance dreamscape')
@@ -814,7 +829,34 @@ Next step: Select a preset and configure advanced settings.`
                     <span className="text-lg">{g.icon}</span> {g.label}
                   </button>
                 ))}
+                {settings.powerUserMode && (
+                  <button
+                    onClick={() => setEnhanceGoal('custom')}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all"
+                    style={{
+                      background: enhanceGoal === 'custom' ? 'rgba(99,102,241,0.15)' : 'rgba(30,41,59,0.5)',
+                      color: enhanceGoal === 'custom' ? '#a5b4fc' : '#cbd5e1',
+                      border: enhanceGoal === 'custom' ? '1px solid rgba(99,102,241,0.3)' : '1px solid #1e293b',
+                    }}
+                  >
+                    <span className="text-lg">✨</span> Custom enhancement
+                  </button>
+                )}
               </div>
+              {enhanceGoal === 'custom' && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Custom Enhancement Goal
+                  </label>
+                  <textarea
+                    value={customEnhanceGoal}
+                    onChange={(e) => setCustomEnhanceGoal(e.target.value)}
+                    placeholder="e.g., Add more humor and wit to the dialogue"
+                    className="w-full px-3 py-2 bg-surface-secondary border border-border-primary rounded-lg text-sm text-text-primary placeholder:text-text-muted resize-none"
+                    rows={3}
+                  />
+                </div>
+              )}
               <Button
                 onClick={handleEnhance}
                 disabled={!enhanceGoal || enhancing}

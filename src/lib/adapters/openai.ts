@@ -13,6 +13,7 @@ import type {
 } from '@/lib/types'
 import { uid } from '@/lib/utils'
 import { env } from '@/lib/env'
+import { buildEnhancementPrompt } from '@/lib/prompt-builders'
 
 /**
  * OpenAI adapter for story generation with structured outputs
@@ -275,6 +276,15 @@ export async function enhanceDreamscape(
   params: EnhanceDreamscapeParams
 ): Promise<EnhanceDreamscapeResult> {
   try {
+    // Build prompt data for inspector
+    const promptData = buildEnhancementPrompt({
+      chunks: params.chunks,
+      goalPreset: params.goalPreset,
+      customGoal: params.customGoal,
+      intensity: params.intensity,
+      avoidPhrases: params.avoidPhrases,
+    })
+
     // Special case: stitch multiple chunks together
     if (params.goalPreset === 'stitch' && params.chunks.length > 1) {
       const combined = params.chunks.map((c) => c.text).join('\n\n---\n\n')
@@ -304,35 +314,65 @@ export async function enhanceDreamscape(
         throw new Error('Failed to parse stitched seed response')
       }
 
-      return { stitchedSeed: result.stitchedSeed }
+      return { stitchedSeed: result.stitchedSeed, promptData }
     }
 
     // Normal enhancement goals
     const goalPrompts: Record<string, string> = {
-      vivid: `You are a descriptive writing specialist. Enhance the story seed by adding:
-- Rich sensory details (visual, auditory, tactile, olfactory)
-- Atmospheric description
-- Vivid imagery
-Preserve the original plot and characters, just make it more immersive and cinematic.`,
+      vivid: `You are enhancing a short story IDEA/SEED (not writing a full story).
 
-      conflict: `You are a dramatic tension specialist. Enhance the story seed by adding:
-- Higher stakes and complications
-- Obstacles and opposing forces
-- Tension and dramatic pressure
-Preserve the original premise but raise the dramatic intensity.`,
+Take the provided story idea and add vivid sensory details and imagery while keeping it as a brief seed/concept (2-4 sentences).
 
-      believable: `You are a realism specialist. Enhance the story seed by adding:
-- Realistic, mundane details
-- Authenticity markers (specific locations, realistic dialogue tags)
-- Caveats and complications that make it feel more grounded
-- Less dramatic, more everyday language
-Make it feel like something that could actually happen.`,
+Enhancement goals:
+- Add rich sensory details (visual, auditory, tactile, olfactory)
+- Add atmospheric description
+- Add vivid imagery
 
-      'less-ai': `You are an editor who removes AI-generated language patterns. Rewrite the story seed to:
+IMPORTANT: Keep it brief - just enhance the seed, don't expand it into a full story. Preserve the original plot and premise.`,
+
+      conflict: `You are enhancing a short story IDEA/SEED (not writing a full story).
+
+Take the provided story idea and heighten the dramatic tension while keeping it as a brief seed/concept (2-4 sentences).
+
+Enhancement goals:
+- Add higher stakes and complications
+- Add obstacles and opposing forces
+- Add tension and dramatic pressure
+
+IMPORTANT: Keep it brief - just enhance the seed, don't expand it into a full story. Preserve the original premise.`,
+
+      believable: `You are enhancing a short story IDEA/SEED (not writing a full story).
+
+Take the provided story idea and make it more grounded/realistic while keeping it as a brief seed/concept (2-4 sentences).
+
+Enhancement goals:
+- Add realistic, mundane details
+- Add authenticity markers (specific locations, realistic dialogue tags)
+- Add caveats and complications that make it feel grounded
+- Use less dramatic, more everyday language
+
+IMPORTANT: Keep it brief - just enhance the seed, don't expand it into a full story.`,
+
+      'less-ai': `You are editing a short story IDEA/SEED (not writing a full story).
+
+Rewrite the provided story idea to sound more natural and human while keeping it as a brief seed/concept (2-4 sentences).
+
+Enhancement goals:
 - Remove clichéd phrases like "little did I know", "the plot thickens", "journey", etc.
 - Use more natural, conversational language
 - Replace generic descriptions with specific, concrete details
-- Make it sound like a real person wrote it, not an AI`,
+- Make it sound like a real person wrote it, not an AI
+
+IMPORTANT: Keep it brief - just enhance the seed, don't expand it into a full story.`,
+
+      custom:
+        params.customGoal
+          ? `You are enhancing a short story IDEA/SEED (not writing a full story).
+
+${params.customGoal}
+
+IMPORTANT: Keep it brief - just enhance the seed (2-4 sentences), don't expand it into a full story.`
+          : 'Enhance the following story seed while preserving its core premise. Keep it brief.',
     }
 
     const systemPrompt =
@@ -370,7 +410,7 @@ Make it feel like something that could actually happen.`,
       })
     )
 
-    return { enhancedChunks }
+    return { enhancedChunks, promptData }
   } catch (error) {
     console.error('OpenAI enhanceDreamscape error:', error)
     throw new Error('Failed to enhance dreamscape with OpenAI')

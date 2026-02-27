@@ -7,6 +7,7 @@ import type {
   OutputVariant,
 } from '@/lib/types'
 import { uid, sleep } from '@/lib/utils'
+import { buildEnhancementPrompt } from '@/lib/prompt-builders'
 
 const MOCK_DREAMSCAPE_SEEDS = [
   "A middle-aged accountant discovers their neighbor has been stealing their Wi-Fi for years - but the neighbor is a retired CIA operative who's been using it to monitor the HOA president.",
@@ -101,6 +102,15 @@ export const mockAdapter = {
   async enhanceDreamscape(params: EnhanceDreamscapeParams): Promise<EnhanceDreamscapeResult> {
     await sleep(2000 + Math.random() * 500)
 
+    // Build prompt data for inspector
+    const promptData = buildEnhancementPrompt({
+      chunks: params.chunks,
+      goalPreset: params.goalPreset,
+      customGoal: params.customGoal,
+      intensity: params.intensity,
+      avoidPhrases: params.avoidPhrases,
+    })
+
     const suffixes: Record<string, string> = {
       vivid:
         '\n\nThe fluorescent lights hummed overhead, casting everything in that sickly yellow-green tint that made even healthy skin look jaundiced. The coffee had gone cold hours ago, leaving a ring on the faux-wood desk.',
@@ -109,6 +119,7 @@ export const mockAdapter = {
       believable: ' (This actually happened to my coworker\'s sister, so I\'m changing some details.)',
       stitch: '',
       'less-ai': '',
+      custom: `\n\n[Custom enhancement applied: ${params.customGoal || 'generic enhancement'}]`,
     }
 
     // Special case: stitch multiple chunks together
@@ -116,6 +127,7 @@ export const mockAdapter = {
       const combined = params.chunks.map((c) => c.text).join('\n\n---\n\n')
       return {
         stitchedSeed: `What started as two separate incidents ended up being connected in a way nobody expected.\n\n${combined}\n\nThe thing is - these aren't two stories. They're the same story from different angles.`,
+        promptData,
       }
     }
 
@@ -126,6 +138,7 @@ export const mockAdapter = {
         id: uid(),
         text: c.text + (suffixes[params.goalPreset] || ''),
       })),
+      promptData,
     }
   },
 

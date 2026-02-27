@@ -111,7 +111,7 @@ export interface FeedbackChip {
 export type Platform = 'reddit' | 'reels' | 'tiktok' | 'blog'
 export type OutputFormat = 'reddit-post' | 'reel-script' | 'short-story' | 'series'
 export type Tone = 'narrative' | 'dialogue' | 'script' | 'mixed'
-export type EnhancementGoalId = 'vivid' | 'conflict' | 'believable' | 'stitch' | 'less-ai'
+export type EnhancementGoalId = 'vivid' | 'conflict' | 'believable' | 'stitch' | 'less-ai' | 'custom'
 
 // Settings
 export interface AppSettings {
@@ -132,11 +132,15 @@ export interface GenerateDreamscapesParams {
 export interface EnhanceDreamscapeParams {
   chunks: DreamscapeChunk[]
   goalPreset: EnhancementGoalId
+  customGoal?: string
+  intensity: IntensityValues
+  avoidPhrases: string[]
 }
 
 export interface EnhanceDreamscapeResult {
   stitchedSeed?: string
   enhancedChunks?: DreamscapeChunk[]
+  promptData?: import('@/lib/prompt-builders').PromptData
 }
 
 export interface GenerateOutputsParams {
