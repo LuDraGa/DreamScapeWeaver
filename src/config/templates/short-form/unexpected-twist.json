@@ -1,0 +1,42 @@
+{
+  "id": "short-unexpected-twist",
+  "displayName": "Unexpected Twist",
+  "category": "short-form",
+  "icon": "🎭",
+  "description": "Stories with surprising endings that make viewers rewatch immediately",
+  "duration": "30-45s",
+  "wordCount": 100,
+  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "settings": {
+    "tone": "narrative",
+    "genres": ["drama", "twist"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 5,
+      "pace": 8,
+      "twist": 10,
+      "realism": 6,
+      "catharsis": 7,
+      "moralClarity": 5
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "plot twist",
+      "wait for it",
+      "you won't believe",
+      "watch till the end",
+      "then I realized"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are a viral short-form video scriptwriter who specializes in misdirection and shocking plot twists. Your scripts set up one expectation then completely subvert it in the final seconds.",
+    "user": "Create a 30-45 second twist ending short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with SETUP (establish false narrative)\n- Use MISDIRECTION (lead viewer to wrong conclusion)\n- Plant SUBTLE CLUES (rewatchability factor)\n- End with SHOCKING TWIST (reframe everything)\n- Write in casual, conversational narrative\n- 100 words maximum\n- Use first-person POV\n- Make twist feel earned, not random\n- Format: [SETUP] → [MISDIRECTION] → [SUBTLE HINTS] → [TWIST]\n\nOptimize for:\n- Rewatchability (make them watch again to catch clues)\n- \"Wait, what?\" reactions\n- Comment debates and theories\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["twist", "surprise", "unexpected", "turns out", "actually"],
+    "goodFit": ["reveal", "secret", "hidden", "didn't expect", "discovery"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["any"]
+  },
+  "exampleOutput": "My wife has been acting strange lately.\n\nLeaving early. Coming home late. Hiding her phone.\n\nI followed her yesterday.\n\nShe went to a house I didn't recognize.\n\nI knocked on the door.\n\nShe answered... in scrubs?\n\nTurns out she's been secretly volunteering at a nursing home.\n\nHelping the resident who has no family.\n\nThe same one who raised her before she was adopted.\n\nI thought she was cheating.\n\nShe was just visiting her biological mother."
+}

@@ -1,0 +1,42 @@
+{
+  "id": "short-horror-creepy",
+  "displayName": "Horror/Creepy",
+  "category": "short-form",
+  "icon": "👻",
+  "description": "Quick horror stories with unsettling twists that viewers will rewatch",
+  "duration": "30-45s",
+  "wordCount": 100,
+  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "settings": {
+    "tone": "narrative",
+    "genres": ["horror", "thriller"],
+    "intensity": {
+      "stakes": 7,
+      "darkness": 9,
+      "pace": 8,
+      "twist": 9,
+      "realism": 6,
+      "catharsis": 3,
+      "moralClarity": 4
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "plot twist",
+      "wait for it",
+      "you won't believe",
+      "watch till the end",
+      "scary"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are a viral short-form horror scriptwriter who creates atmospheric, unsettling stories with shocking reveals. Your scripts build dread in seconds and deliver disturbing twists.",
+    "user": "Create a 30-45 second horror/creepy short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with NORMAL SITUATION (establish false security)\n- Introduce UNSETTLING DETAIL (something's wrong)\n- Build CREEPING DREAD (escalate tension)\n- End with SHOCKING REVEAL or unresolved horror\n- Write in atmospheric, first-person narrative\n- 100 words maximum\n- Use short sentences for tension\n- Include pauses for impact\n- Format: [NORMAL] → [UNSETTLING] → [DREAD] → [REVEAL]\n\nOptimize for:\n- Rewatchability (make them notice new details)\n- Visceral reaction (creep them out)\n- Comment speculation (leave them theorizing)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["creepy", "horror", "terrifying", "disturbing", "haunted"],
+    "goodFit": ["strange", "weird", "unsettling", "eerie", "unexplained"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["horror", "creepy", "supernatural"]
+  },
+  "exampleOutput": "I moved into my new apartment last week.\n\nEverything seemed normal.\n\nUntil I noticed the previous tenant's mail.\n\nSame name as me. Exact same name.\n\nI googled it.\n\nFound an obituary. From three years ago.\n\nSame apartment number.\n\nCause of death: Unknown.\n\nThen I heard footsteps upstairs.\n\nBut I'm on the top floor."
+}

@@ -1,0 +1,41 @@
+{
+  "id": "short-life-lesson",
+  "displayName": "Life Lesson",
+  "category": "short-form",
+  "icon": "💡",
+  "description": "Relatable stories that teach wisdom through experience",
+  "duration": "45-60s",
+  "wordCount": 150,
+  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "settings": {
+    "tone": "narrative",
+    "genres": ["wisdom", "educational"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 4,
+      "pace": 6,
+      "twist": 5,
+      "realism": 9,
+      "catharsis": 8,
+      "moralClarity": 9
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "wait for it",
+      "you won't believe",
+      "watch till the end",
+      "life-changing"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are a viral short-form video scriptwriter who specializes in relatable wisdom storytelling. Your scripts teach valuable lessons through authentic personal experiences.",
+    "user": "Create a 45-60 second life lesson short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with RELATABLE SCENARIO (everyday situation)\n- Show MISTAKE or REALIZATION (learning moment)\n- Reveal DEEPER INSIGHT (the lesson)\n- End with QUOTABLE WISDOM (shareable takeaway)\n- Write in reflective, authentic narrative tone\n- 150 words maximum\n- Use first-person POV\n- Make the lesson feel earned, not preachy\n- Format: [SCENARIO] → [MISTAKE] → [INSIGHT] → [WISDOM]\n\nOptimize for:\n- Relatability (make them nod in recognition)\n- Saves (valuable enough to revisit)\n- Shares (wisdom worth passing on)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["learned", "lesson", "realize", "understand now", "taught me"],
+    "goodFit": ["experience", "mistake", "wisdom", "truth", "discovered"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["any"]
+  },
+  "exampleOutput": "I used to think being the smartest person in the room was the goal.\n\nSo I'd correct people. Debate everything. Always had to be right.\n\nThen I got promoted to lead a team.\n\nAnd suddenly, being the smartest didn't matter.\n\nBecause smart people who can't listen? They can't lead.\n\nThe best ideas came from my quietest team member. The one I almost talked over in meetings.\n\nI learned more from admitting \"I don't know\" than I ever did from pretending I had all the answers.\n\nNow my goal isn't to be the smartest person in the room.\n\nIt's to make sure everyone in that room feels smart enough to speak up.\n\nBecause the best leaders don't have all the answers. They ask the best questions."
+}

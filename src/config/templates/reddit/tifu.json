@@ -1,0 +1,42 @@
+{
+  "id": "reddit-tifu",
+  "displayName": "r/TIFU",
+  "category": "reddit",
+  "icon": "🤦",
+  "description": "Today I F***ed Up - Funny failure stories with escalating chaos",
+  "duration": "90s narration",
+  "wordCount": 300,
+  "platforms": ["reddit"],
+  "subreddit": "tifu",
+  "settings": {
+    "tone": "narrative",
+    "genres": ["comedy", "embarrassment"],
+    "intensity": {
+      "stakes": 5,
+      "darkness": 3,
+      "pace": 7,
+      "twist": 6,
+      "realism": 8,
+      "catharsis": 7,
+      "moralClarity": 7
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "that's when things got interesting",
+      "this will probably get buried",
+      "obligatory not today",
+      "edit: thanks for the gold"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are an expert writer for r/TIFU, specializing in self-deprecating, humorous stories where small mistakes snowball into hilarious disasters.",
+    "user": "Create a 300-word r/TIFU post based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- MUST start with \"TIFU by [action]...\" or \"So this actually happened [timeframe] ago...\"\n- Write in self-deprecating, humorous first-person tone\n- Show ESCALATION (small mistake → bigger mistake → disaster)\n- Include specific, embarrassing details\n- End with consequences/aftermath\n- 300 words maximum\n- Make it relatable but absurd\n- Use casual language, contractions\n- Format: [SETUP] → [INITIAL MISTAKE] → [ESCALATION] → [DISASTER] → [AFTERMATH]\n\nOptimize for:\n- Humor (make readers laugh out loud)\n- Relatability (\"I would do this too\")\n- Escalation (each step makes it worse)\n\nSPECIAL RULES:\n- Low darkness (3) - keep it funny, not traumatic\n- High realism (8) - could actually happen\n- Self-aware humor throughout\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["mistake", "messed up", "embarrassing", "failed", "went wrong"],
+    "goodFit": ["accident", "oops", "disaster", "awkward", "regret"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["mistake", "failure", "accident"]
+  },
+  "exampleOutput": "TIFU by trying to impress my girlfriend with a fancy homemade dinner.\n\nSo I'm not a great cook, but I found this recipe for beef Wellington that looked doable. How hard could it be?\n\nVery hard, turns out.\n\nFirst mistake: I didn't defrost the puff pastry. I microwaved it. It turned into paste.\n\nSecond mistake: I confused tablespoons with teaspoons for the mustard. The beef was COATED in mustard.\n\nThird mistake: I forgot to turn off the oven's self-cleaning mode from earlier. It was at 900°F.\n\nThe beef Wellington looked like a charcoal brick. Smoke detector went off. My girlfriend arrived right as I was fanning the smoke alarm with a towel, wearing oven mitts, with mustard somehow on my face.\n\nShe took one look at the burnt disaster on my counter and said, \"Should we order pizza?\"\n\nWe did.\n\nBut wait, it gets better. Turns out I'd accidentally used her dog's beef treats instead of actual beef. I grabbed the wrong package from the freezer.\n\nSo I didn't just fail at beef Wellington. I made DOG FOOD Wellington.\n\nShe still brings it up at parties.\n\nTL;DR: Tried to cook fancy dinner, made dog food instead, set off smoke alarm, ordered pizza."
+}

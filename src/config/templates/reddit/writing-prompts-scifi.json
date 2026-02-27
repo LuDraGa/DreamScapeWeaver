@@ -1,0 +1,43 @@
+{
+  "id": "reddit-wp-scifi",
+  "displayName": "r/WritingPrompts: Sci-Fi",
+  "category": "reddit",
+  "icon": "🚀",
+  "description": "Science fiction stories with futuristic concepts and speculative technology",
+  "duration": "5-7min read",
+  "wordCount": 700,
+  "platforms": ["reddit"],
+  "subreddit": "WritingPrompts",
+  "genre": "sci-fi",
+  "settings": {
+    "tone": "narrative",
+    "genres": ["sci-fi", "speculative"],
+    "intensity": {
+      "stakes": 7,
+      "darkness": 5,
+      "pace": 6,
+      "twist": 7,
+      "realism": 4,
+      "catharsis": 7,
+      "moralClarity": 5
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "that's when things got interesting",
+      "this will probably get buried",
+      "in the year 3000",
+      "it was the future"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are an expert science fiction writer for r/WritingPrompts, specializing in imaginative yet grounded sci-fi stories with compelling human elements and thought-provoking concepts.",
+    "user": "Create a 700-word sci-fi story for r/WritingPrompts based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Establish FUTURISTIC/SPECULATIVE SETTING quickly\n- Focus on HUMAN ELEMENT (character-driven, not tech-driven)\n- Include THOUGHT-PROVOKING CONCEPT (philosophical or ethical)\n- Build to SATISFYING RESOLUTION with insight\n- Can use third-person OR first-person narrative\n- 700 words maximum\n- Balance world-building with story momentum\n- Make technology serve the story, not dominate it\n- Format: [WORLD/CONCEPT INTRO] → [CHARACTER/CONFLICT] → [ESCALATION] → [RESOLUTION/INSIGHT]\n\nOptimize for:\n- Imaginative concepts (make readers think \"what if?\")\n- Emotional resonance (sci-fi with heart)\n- Satisfying story arc (complete narrative)\n\nSCI-FI CONVENTIONS:\n- Ground tech in plausible extrapolation\n- Focus on social/ethical implications\n- Show don't tell for world-building\n- Earn your twist/revelation\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["future", "technology", "ai", "space", "alien", "robot"],
+    "goodFit": ["discovery", "experiment", "advanced", "civilization", "colonization"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["any"]
+  },
+  "exampleOutput": "[Note: This would be a full 700-word story. Showing concept only]\n\nThe Memory Market had been open for three years when Sarah first walked through its doors.\n\nSelling memories wasn't illegal, exactly. The government called it \"cognitive commerce.\" You could sell happy memories to people who'd never experienced joy, traumatic ones to therapists for research, even mundane memories to AI training datasets.\n\nThe pay was good. Really good.\n\nSarah needed rent money...\n\n[CONFLICT: She sells her memories, loses parts of herself]\n[ESCALATION: Realizes she's sold something irreplaceable]\n[TWIST: Discovers who's been buying her memories and why]\n[RESOLUTION: Philosophical meditation on what makes us human]\n\n[Complete story with character arc, sci-fi concept, emotional payoff]"
+}

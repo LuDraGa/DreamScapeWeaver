@@ -1,0 +1,42 @@
+{
+  "id": "reddit-nosleep",
+  "displayName": "r/NoSleep",
+  "category": "reddit",
+  "icon": "🌙",
+  "description": "First-person horror stories told as 'true' experiences with unresolved dread",
+  "duration": "10-12min read",
+  "wordCount": 1500,
+  "platforms": ["reddit"],
+  "subreddit": "nosleep",
+  "settings": {
+    "tone": "narrative",
+    "genres": ["horror", "thriller"],
+    "intensity": {
+      "stakes": 9,
+      "darkness": 10,
+      "pace": 5,
+      "twist": 8,
+      "realism": 7,
+      "catharsis": 2,
+      "moralClarity": 3
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "that's when things got interesting",
+      "this will probably get buried",
+      "I know this sounds crazy but",
+      "you won't believe this"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are an expert writer for r/nosleep, specializing in atmospheric first-person horror that treats everything as absolutely true. Your stories build creeping dread through realistic details and leave readers disturbed.",
+    "user": "Create a 1500-word r/nosleep story based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Write as if EVERYTHING IS TRUE (r/nosleep's golden rule)\n- Use first-person, present or recent past tense\n- Build ATMOSPHERE with specific, realistic details\n- Create CREEPING DREAD (slow escalation of wrongness)\n- Include UNEXPLAINED ELEMENTS (don't over-explain)\n- End with UNRESOLVED HORROR or disturbing implication\n- 1500 words maximum\n- Make it feel like a real person's account\n- Include mundane details that make horror feel real\n- Format: [NORMAL SITUATION] → [FIRST SIGN] → [ESCALATION] → [HORROR REVEALED] → [UNRESOLVED ENDING]\n\nOptimize for:\n- Atmosphere (make them feel uneasy)\n- Believability (could this be real?)\n- Lingering dread (they think about it later)\n\nSPECIAL RULES:\n- Maximum darkness (10) - genuinely scary\n- Low catharsis (2) - no comforting resolution\n- Moderate realism (7) - realistic enough to believe\n- NEVER break the \"this is true\" illusion\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["horror", "creepy", "terrifying", "haunted", "stalker", "disappeared"],
+    "goodFit": ["strange", "unexplained", "eerie", "disturbing", "unsettling"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["horror", "supernatural", "thriller"]
+  },
+  "exampleOutput": "[Note: This would be a full 1500-word story. For brevity, showing structure only]\n\nI need to write this down while I still remember everything clearly. Something's wrong with my apartment, and I don't know who else to tell.\n\nIt started three weeks ago when I moved in...\n\n[MUNDANE DETAILS establish normalcy]\n[FIRST STRANGE OCCURRENCE - easily dismissed]\n[PATTERN EMERGES - can't be coincidence]\n[ESCALATION - things get actively threatening]\n[REVELATION - horrifying explanation or implication]\n[UNRESOLVED - situation ongoing, reader left disturbed]\n\nI'm writing this from a hotel room. I can't go back there. But here's the thing that really scares me - I just got a text from my landlord. Someone reported a noise complaint... from MY apartment.\n\nI'm not there.\n\nNo one should be there.\n\n[END - no resolution, maximum dread]"
+}

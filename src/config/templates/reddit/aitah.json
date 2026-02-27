@@ -1,0 +1,42 @@
+{
+  "id": "reddit-aitah",
+  "displayName": "r/AITAH",
+  "category": "reddit",
+  "icon": "🤔",
+  "description": "Am I the A**hole? - Moral dilemma stories that spark debate",
+  "duration": "60s narration",
+  "wordCount": 200,
+  "platforms": ["reddit"],
+  "subreddit": "AITAH",
+  "settings": {
+    "tone": "narrative",
+    "genres": ["drama", "conflict"],
+    "intensity": {
+      "stakes": 7,
+      "darkness": 5,
+      "pace": 6,
+      "twist": 6,
+      "realism": 9,
+      "catharsis": 6,
+      "moralClarity": 4
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "that's when things got interesting",
+      "unbeknownst to me",
+      "this will probably get buried",
+      "obligatory mobile formatting"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are an expert writer for r/AITAH (Am I The A**hole), specializing in morally ambiguous conflict stories that generate massive debate in the comments.",
+    "user": "Create a 200-word r/AITAH post based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Follow AITAH structure: Situation → Conflict → Question\n- Write in first-person, conversational tone\n- Make the moral ambiguity CLEAR (both sides have valid points)\n- Include specific, realistic details\n- MUST end with \"So, AITAH?\" or \"AITAH?\"\n- 200 words maximum\n- Make readers genuinely unsure who's right\n- Avoid obvious villains/heroes\n- Use natural language, some casual errors/typos okay\n- Format: [SITUATION SETUP] → [CONFLICT/INCIDENT] → [QUESTION]\n\nOptimize for:\n- Comment engagement (50/50 split in judgment)\n- Realistic scenario (could happen to anyone)\n- Moral complexity (no clear answer)\n\nSPECIAL RULES:\n- Must end with some variation of \"AITAH?\"\n- Keep realism very high (intensity: 9)\n- Moral clarity very low (intensity: 4)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["conflict", "argument", "disagreement", "am I wrong", "fight"],
+    "goodFit": ["family", "relationship", "friends", "workplace", "dilemma"],
+    "checkType": "conflict-based",
+    "dreamscapeTypes": ["conflict", "moral-dilemma", "argument"]
+  },
+  "exampleOutput": "My (28F) sister (32F) asked me to be her maid of honor. I said yes, but I have one condition - I won't wear the dress she picked.\n\nIt's bright neon pink, super tight, and costs $400. I told her I'm uncomfortable spending that much on something I'll never wear again, and the color genuinely doesn't suit my skin tone.\n\nShe got really upset and said I'm being selfish, that it's HER day and I should just suck it up. I offered to pay for an alternate dress in a similar style/different color, or wear something I already own that matches her theme.\n\nNow she's saying if I won't wear HER choice, I can't be in the wedding at all. My parents are calling me dramatic and saying I should just wear the dress.\n\nBut it's my body and my money? I don't think I'm asking for much.\n\nSo, AITAH?"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "short-drama-confession",
+  "displayName": "Drama/Confession",
+  "category": "short-form",
+  "icon": "💔",
+  "description": "Emotional revelations and vulnerable storytelling that spark deep engagement",
+  "duration": "60-90s",
+  "wordCount": 175,
+  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "settings": {
+    "tone": "narrative",
+    "genres": ["drama", "confession"],
+    "intensity": {
+      "stakes": 8,
+      "darkness": 7,
+      "pace": 6,
+      "twist": 6,
+      "realism": 9,
+      "catharsis": 6,
+      "moralClarity": 4
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "wait for it",
+      "you won't believe",
+      "watch till the end",
+      "keep watching"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are a viral short-form video scriptwriter who specializes in emotionally vulnerable, intimate storytelling. Your scripts create deep connection through honest, raw confessions.",
+    "user": "Create a 60-90 second drama/confession short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with EMOTIONAL HOOK (vulnerable admission)\n- Build with RAW HONESTY (no sugar-coating)\n- Include INTERNAL CONFLICT (complexity, not simple)\n- End with CATHARTIC RESOLUTION or lingering question\n- Write in intimate, first-person confessional tone\n- 175 words maximum\n- Use emotional beats and pauses\n- Make it feel like a secret being shared\n- Format: [CONFESSION] → [BACKSTORY] → [CONFLICT] → [RESOLUTION/QUESTION]\n\nOptimize for:\n- Emotional resonance (make them feel deeply)\n- Comment engagement (people sharing their stories)\n- Vulnerability (authentic connection)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["confession", "secret", "never told anyone", "truth is", "admit"],
+    "goodFit": ["regret", "guilt", "shame", "burden", "emotional", "hidden"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["emotional", "confession", "drama"]
+  },
+  "exampleOutput": "I need to confess something I've never told anyone.\n\nMy best friend died five years ago. Car accident.\n\nEveryone thinks I've moved on.\n\nBut I haven't.\n\nBecause we had a fight the night before. A stupid, meaningless fight about nothing.\n\nThe last thing I said to her was \"I don't care.\"\n\nShe texted me the next morning: \"Can we talk?\"\n\nI left her on read.\n\nTwo hours later, she was gone.\n\nI keep that text thread. I've never deleted it.\n\nSometimes I type replies. Long ones. Apologies. Everything I wish I'd said.\n\nI just never hit send.\n\nBecause where would they even go?\n\nI'm sorry, Sarah. I cared. I always cared."
+}

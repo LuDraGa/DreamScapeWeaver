@@ -1,0 +1,42 @@
+{
+  "id": "reddit-petty-revenge",
+  "displayName": "r/PettyRevenge",
+  "category": "reddit",
+  "icon": "😏",
+  "description": "Satisfying small-scale revenge stories with creative payback",
+  "duration": "75s narration",
+  "wordCount": 250,
+  "platforms": ["reddit"],
+  "subreddit": "pettyrevenge",
+  "settings": {
+    "tone": "narrative",
+    "genres": ["revenge", "comedy"],
+    "intensity": {
+      "stakes": 4,
+      "darkness": 3,
+      "pace": 7,
+      "twist": 7,
+      "realism": 8,
+      "catharsis": 10,
+      "moralClarity": 6
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "that's when things got interesting",
+      "this will probably get buried",
+      "sweet revenge",
+      "karma"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are an expert writer for r/pettyrevenge, specializing in satisfying small-scale revenge stories where creative payback fits the crime perfectly.",
+    "user": "Create a 250-word r/pettyrevenge post based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Show clear, petty INJUSTICE (minor but annoying wrongdoing)\n- Display creative, proportional REVENGE (fits the crime)\n- Deliver satisfying PAYBACK (reader cheers)\n- End with subtle or overt VICTORY\n- Write in deadpan, slightly smug narrative tone\n- 250 words maximum\n- Use first-person POV\n- Make revenge feel deserved, not cruel\n- Format: [INJUSTICE] → [PLANNING/OPPORTUNITY] → [REVENGE] → [SATISFACTION]\n\nOptimize for:\n- Satisfaction (\"they got what they deserved\")\n- Creativity (clever, not obvious revenge)\n- Proportionality (petty crime = petty revenge)\n\nSPECIAL RULES:\n- Very high catharsis (10) - maximum satisfaction\n- Low stakes (4) - keep it petty, not serious\n- Low darkness (3) - funny, not mean-spirited\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["revenge", "payback", "got back", "served them right", "deserved"],
+    "goodFit": ["annoying", "rude", "inconsiderate", "justice", "karma"],
+    "checkType": "conflict-based",
+    "dreamscapeTypes": ["revenge", "petty-conflict", "annoying-behavior"]
+  },
+  "exampleOutput": "My neighbor parks in front of my driveway. Every. Single. Day.\n\nI've asked nicely. Left notes. He doesn't care.\n\nSo I got creative.\n\nI noticed he has an HOA violation for his lawn (it's way too long). I also noticed he leaves for work at exactly 7:30am.\n\nSo every morning at 7:00am, I started parking MY car in front of my own driveway.\n\nThen I'd leave for my morning jog. 45-minute jog.\n\nHe'd have to wait for me to get back to move my car. Made him late three days in a row.\n\nDay four, I get back from my jog to find a note: \"Can you please not block your own driveway in the mornings? I need to get to work.\"\n\nI wrote back: \"Can you please not block my driveway at all? I need to use it.\"\n\nHe parks on his own property now.\n\nAnd I still take my morning jogs, but now I don't have to wake up early just to inconvenience him.\n\nPetty? Absolutely. Effective? 100%."
+}

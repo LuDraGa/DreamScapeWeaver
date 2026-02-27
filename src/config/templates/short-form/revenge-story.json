@@ -1,0 +1,42 @@
+{
+  "id": "short-revenge-story",
+  "displayName": "Revenge Story",
+  "category": "short-form",
+  "icon": "😈",
+  "description": "Satisfying payback stories that hook viewers in the first 3 seconds",
+  "duration": "30-60s",
+  "wordCount": 125,
+  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "settings": {
+    "tone": "narrative",
+    "genres": ["revenge", "drama"],
+    "intensity": {
+      "stakes": 4,
+      "darkness": 3,
+      "pace": 9,
+      "twist": 7,
+      "realism": 7,
+      "catharsis": 10,
+      "moralClarity": 6
+    },
+    "avoidPhrases": [
+      "little did I know",
+      "plot twist",
+      "wait for it",
+      "you won't believe what happened next",
+      "watch till the end",
+      "that's when things got interesting"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are a viral TikTok/Reels scriptwriter specializing in revenge stories that maximize engagement and shareability. Your scripts hook viewers in the first 3 seconds and deliver satisfying payback.",
+    "user": "Create a 30-60 second short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Open with a HOOK in the first 3 seconds (the injustice/wrongdoing)\n- Build tension quickly\n- Deliver satisfying, creative payback\n- End with a punchline or twist\n- Write in deadpan, slightly sarcastic narrative tone\n- 125 words maximum\n- Use first-person POV\n- Include natural pauses for dramatic effect (use ... or line breaks)\n- Format: [HOOK] → [BUILDUP] → [PAYBACK] → [PUNCHLINE]\n\nOptimize for:\n- Watch-through rate (keep them watching to the end)\n- Shareability (satisfying enough to send to friends)\n- Comment engagement (make people debate the revenge)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["revenge", "payback", "justice", "karma", "got back at"],
+    "goodFit": ["conflict", "wronged", "unfair", "deserved", "teach a lesson"],
+    "checkType": "conflict-based",
+    "dreamscapeTypes": ["conflict", "revenge", "injustice"]
+  },
+  "exampleOutput": "So my coworker kept stealing my lunch from the break room fridge.\n\nEvery. Single. Day.\n\nI asked nicely. I left notes. Nothing worked.\n\nSo I made a \"special\" sandwich...\n\nLoaded it with Carolina Reaper hot sauce. Extra spicy mayo. The works.\n\nNext day? I hear screaming from the break room.\n\nHe never touched my lunch again.\n\nAnd HR had some questions about why he was crying at his desk."
+}
