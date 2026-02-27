@@ -120,6 +120,54 @@ export default function SettingsPage() {
         </div>
       </ThemedCard>
 
+      {/* Power User Mode */}
+      <ThemedCard className="mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-medium text-text-primary">Power User Mode</h2>
+            <p className="text-sm text-text-muted mt-1">
+              Show advanced controls and expert features
+            </p>
+          </div>
+          <Button
+            variant={settings.powerUserMode ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => updateSettings({ powerUserMode: !settings.powerUserMode })}
+            className={
+              settings.powerUserMode
+                ? 'bg-primary hover:bg-primary-light text-white'
+                : 'bg-transparent border-[#1e293b] text-text-secondary'
+            }
+          >
+            {settings.powerUserMode ? 'Enabled' : 'Disabled'}
+          </Button>
+        </div>
+      </ThemedCard>
+
+      {/* Developer Mode */}
+      <ThemedCard className="mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-medium text-text-primary">Developer Mode</h2>
+            <p className="text-sm text-text-muted mt-1">
+              Show prompt inspector for debugging AI prompts
+            </p>
+          </div>
+          <Button
+            variant={settings.developerMode ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => updateSettings({ developerMode: !settings.developerMode })}
+            className={
+              settings.developerMode
+                ? 'bg-primary hover:bg-primary-light text-white'
+                : 'bg-transparent border-[#1e293b] text-text-secondary'
+            }
+          >
+            {settings.developerMode ? 'Enabled' : 'Disabled'}
+          </Button>
+        </div>
+      </ThemedCard>
+
       {/* Reset Data */}
       <ThemedCard className="border-red-500/20">
         <div className="flex items-center justify-between">

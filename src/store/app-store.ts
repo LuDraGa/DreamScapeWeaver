@@ -60,6 +60,8 @@ export const useAppStore = create<AppState>()(
         defaultPreset: 'reddit-aitah',
         avoidPhrases: ["It's worth noting that", "I couldn't help but", 'Little did I know'],
         autoAvoidAI: true,
+        developerMode: false,
+        powerUserMode: false,
       },
 
       // Create flow actions

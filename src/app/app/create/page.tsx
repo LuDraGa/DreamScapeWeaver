@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
 import { ThemedCard } from '@/components/design-system/themed-card'
 import { Button } from '@/components/ui/button'
@@ -37,6 +37,29 @@ import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/
 import type { Dreamscape, DialState, IntensityValues } from '@/lib/types'
 import { LabeledSlider } from '@/components/design-system/labeled-slider'
 import { CopyButton } from '@/components/design-system/copy-button'
+import { PromptInspector } from '@/components/dev-tools/prompt-inspector'
+import {
+  buildPresetPrompt,
+  buildDreamscapePrompt,
+  buildEnhancementPrompt,
+  buildOutputPrompt,
+  type PromptData,
+} from '@/lib/prompt-builders'
+
+/**
+ * Helper: Randomize intensity values (1-10) for dreamscape generation
+ */
+function randomizeIntensity(): IntensityValues {
+  return {
+    stakes: Math.floor(Math.random() * 10) + 1,
+    darkness: Math.floor(Math.random() * 10) + 1,
+    pace: Math.floor(Math.random() * 10) + 1,
+    twist: Math.floor(Math.random() * 10) + 1,
+    realism: Math.floor(Math.random() * 10) + 1,
+    catharsis: Math.floor(Math.random() * 10) + 1,
+    moralClarity: Math.floor(Math.random() * 10) + 1,
+  }
+}
 
 /**
  * Create Page - 4-step story generation workflow
@@ -67,6 +90,8 @@ export default function CreatePage() {
   const [genCount, setGenCount] = useState(3)
   const [genLoading, setGenLoading] = useState(false)
   const [genResults, setGenResults] = useState<Dreamscape[]>([])
+  const [genIntensity, setGenIntensity] = useState<IntensityValues>(() => randomizeIntensity())
+  const [showGenAdvanced, setShowGenAdvanced] = useState(false)
 
   // Preset state (Step B)
   const [selectedPreset, setSelectedPreset] = useState(settings.defaultPreset)
@@ -102,10 +127,120 @@ export default function CreatePage() {
   // UI state
   const [toast, setToast] = useState('')
 
+  // Prompt Inspector state (Developer Mode)
+  const [inspectorPromptData, setInspectorPromptData] = useState<PromptData | null>(null)
+  const [inspectorOpen, setInspectorOpen] = useState(false)
+
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 2000)
   }
+
+  // ============================================================
+  // Prompt Inspector: Live Prompt Updates
+  // ============================================================
+
+  useEffect(() => {
+    if (!settings.developerMode) return
+
+    const currentPreset = PRESETS.find((p) => p.id === dialState.presetId) || PRESETS[0]
+    const genres = [dialState.genrePrimary, dialState.genreSecondary].filter(Boolean)
+
+    // Step 0: Dreamscape - Show generation prompt when Gen panel is open
+    if (step === 0 && showGenPanel) {
+      console.log('📊 Prompt Inspector updating with genIntensity:', genIntensity)
+      setInspectorPromptData(
+        buildDreamscapePrompt({
+          count: genCount,
+          vibe: genVibe,
+          intensity: genIntensity,
+        })
+      )
+    }
+    // Step 0: Dreamscape - Show chunk preview (default)
+    else if (step === 0 && chunks.length > 0) {
+      const systemPrompt = `You are viewing the Dreamscape step.`
+      const userPrompt = `Current dreamscape chunks:
+
+${chunks.map((c, i) => `Chunk ${i + 1}:
+${c.title ? `Title: ${c.title}` : '(No title)'}
+${c.text ? `Text: ${c.text}` : '(No text yet)'}`).join('\n\n')}
+
+Total chunks: ${chunks.length}
+
+Next step: Select a preset and configure advanced settings.`
+
+      setInspectorPromptData({
+        step: 'Dreamscape (Step 0)',
+        messages: [
+          { role: 'system', content: systemPrompt, variables: {} },
+          {
+            role: 'user',
+            content: userPrompt,
+            variables: { chunkCount: chunks.length, chunks: chunks.map((c) => ({ title: c.title, text: c.text })) },
+          },
+        ],
+        fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
+      })
+    }
+    // Step 1: Preset + Advanced Settings
+    else if (step === 1) {
+      setInspectorPromptData(
+        buildPresetPrompt({
+          preset: currentPreset,
+          platform: dialState.platform,
+          format: dialState.outputFormat,
+          intensity: dialState.intensity,
+          genres,
+          tone: dialState.tone,
+          wordCount: dialState.wordCount,
+        })
+      )
+    }
+    // Step 2: Generate (show output generation preview)
+    else if (step === 2 && chunks.length > 0) {
+      const dreamscape = { id: uid(), chunks }
+      setInspectorPromptData(
+        buildOutputPrompt({
+          dreamscape,
+          intensity: dialState.intensity,
+          platform: dialState.platform,
+          format: dialState.outputFormat,
+          wordCount: dialState.wordCount,
+          tone: dialState.tone,
+          genres,
+          avoidPhrases: dialState.avoidPhrases,
+        })
+      )
+    }
+    // Step 3: Rate & Save (show output generation prompt)
+    else if (step === 3 && chunks.length > 0) {
+      const dreamscape = { id: uid(), chunks }
+      setInspectorPromptData(
+        buildOutputPrompt({
+          dreamscape,
+          intensity: dialState.intensity,
+          platform: dialState.platform,
+          format: dialState.outputFormat,
+          wordCount: dialState.wordCount,
+          tone: dialState.tone,
+          genres,
+          avoidPhrases: dialState.avoidPhrases,
+        })
+      )
+    }
+    // Enhancement prompts (when drawer is open)
+    else if (enhanceGoal && chunks.length > 0) {
+      setInspectorPromptData(
+        buildEnhancementPrompt({
+          chunks,
+          goalPreset: enhanceGoal,
+          intensity: dialState.intensity,
+          avoidPhrases: dialState.avoidPhrases,
+        })
+      )
+    }
+  }, [step, dialState, enhanceGoal, chunks, settings.developerMode, showGenPanel, genVibe, genCount, genIntensity])
 
   // ============================================================
   // Step A: Dreamscape handlers
@@ -143,9 +278,21 @@ export default function CreatePage() {
   }
 
   const handleGenerateDreamscapes = async () => {
+    // Only randomize intensity for non-power users
+    // Power users manually control intensity via advanced controls
+    if (!settings.powerUserMode) {
+      const randomizedIntensity = randomizeIntensity()
+      console.log('🎲 Randomized intensity (non-power user):', randomizedIntensity)
+      setGenIntensity(randomizedIntensity)
+    }
+
     setGenLoading(true)
     try {
-      const results = await api.dreamscapes.generate({ count: genCount, vibe: genVibe })
+      const results = await api.dreamscapes.generate({
+        count: genCount,
+        vibe: genVibe,
+        intensity: randomizedIntensity,
+      })
       setGenResults(results)
       showToast(`Generated ${results.length} ideas!`)
     } catch (error) {
@@ -234,7 +381,7 @@ export default function CreatePage() {
     })
   }
 
-  const randomizeIntensity = () => {
+  const randomizeDialIntensity = () => {
     const preset = PRESETS.find((p) => p.id === selectedPreset)
     if (!preset) return
 
@@ -432,6 +579,66 @@ export default function CreatePage() {
               >
                 {genLoading ? 'Generating...' : 'Generate'}
               </Button>
+            </div>
+
+            {/* Advanced Intensity Controls (Power User Feature) */}
+            <div
+              data-advanced-feature="true"
+              className={settings.powerUserMode ? 'mb-3' : 'hidden'}
+            >
+              <button
+                onClick={() => setShowGenAdvanced(!showGenAdvanced)}
+                className="flex items-center gap-2 text-xs font-medium text-text-muted hover:text-text-primary transition-colors mb-2"
+              >
+                {showGenAdvanced ? (
+                  <ChevronUpIcon className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDownIcon className="w-3.5 h-3.5" />
+                )}
+                Advanced Intensity
+              </button>
+
+              {showGenAdvanced && (
+                <div className="space-y-1.5 p-3 rounded-lg bg-[rgba(15,23,42,0.4)] border border-[#1e293b]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] uppercase tracking-wide text-text-muted">
+                      Manual Override
+                    </span>
+                    <button
+                      onClick={() => setGenIntensity(randomizeIntensity())}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-[rgba(30,41,59,0.6)] text-text-muted hover:text-text-primary border border-[#334155] transition-colors"
+                    >
+                      🎲 Randomize
+                    </button>
+                  </div>
+                  <div className="grid gap-1.5">
+                    {Object.entries(DIALS).map(([key, dial]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <label className="text-[10px] w-20 text-text-muted shrink-0">
+                          {dial.label}
+                        </label>
+                        <input
+                          type="range"
+                          min={dial.min}
+                          max={dial.max}
+                          value={genIntensity[key as keyof IntensityValues]}
+                          onChange={(e) =>
+                            setGenIntensity((prev) => ({
+                              ...prev,
+                              [key]: Number(e.target.value),
+                            }))
+                          }
+                          className="flex-1 h-1 bg-[rgba(30,41,59,0.6)] rounded-lg appearance-none cursor-pointer accent-primary"
+                          style={{ maxWidth: '20vw' }}
+                        />
+                        <span className="text-[10px] w-6 text-right text-text-muted font-mono">
+                          {genIntensity[key as keyof IntensityValues]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {genLoading && (
@@ -872,7 +1079,7 @@ export default function CreatePage() {
 
               {/* Randomize Button */}
               <button
-                onClick={randomizeIntensity}
+                onClick={randomizeDialIntensity}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all hover:opacity-80"
                 style={{
                   background: 'rgba(30,41,59,0.6)',
@@ -1153,6 +1360,25 @@ export default function CreatePage() {
       </div>
 
       {toast && <Toast message={toast} show={!!toast} onClose={() => setToast('')} />}
+
+      {/* Prompt Inspector (Developer Mode) */}
+      {settings.developerMode && (
+        <>
+          <button
+            onClick={() => setInspectorOpen(!inspectorOpen)}
+            className="fixed bottom-4 right-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 z-40 transition-colors"
+          >
+            🔍 Prompt Inspector
+            {step > 0 && <span className="text-xs bg-indigo-500 px-2 py-0.5 rounded">Step {step}</span>}
+          </button>
+
+          <PromptInspector
+            isOpen={inspectorOpen}
+            onClose={() => setInspectorOpen(false)}
+            promptData={inspectorPromptData}
+          />
+        </>
+      )}
     </div>
   )
 }

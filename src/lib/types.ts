@@ -118,12 +118,15 @@ export interface AppSettings {
   defaultPreset: string
   avoidPhrases: string[]
   autoAvoidAI: boolean
+  developerMode: boolean
+  powerUserMode: boolean
 }
 
 // API interfaces
 export interface GenerateDreamscapesParams {
   count: number
   vibe?: string
+  intensity: IntensityValues
 }
 
 export interface EnhanceDreamscapeParams {

@@ -4,6 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Quick Reference
 
+- **[docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md)**: ⭐ **ALWAYS READ FIRST** - Significant architectural decisions (feature flags in Settings, no URL params, code style, etc.)
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: File structure, key concepts (Dreamscapes, Intensity Dials, Presets), data model, mock API layer
 - **[docs/WORKFLOWS.md](docs/WORKFLOWS.md)**: CreatePage 4-step flow, LibraryPage, SettingsPage, data flow diagrams
 - **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)**: Colors, typography, spacing, component patterns, animations

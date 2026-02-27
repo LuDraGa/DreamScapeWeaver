@@ -1,164 +1,181 @@
 # StoryWeaver - Active Execution
 
-## Task: SSR-Safe Persistence Implementation
+## Task: Prompt Inspector Implementation (Next.js Version)
 
-**Session**: 2026-02-26
-**Context**: P1 Production MVP Item #6 - Making localStorage persistence safe for Next.js SSR/SSG builds on Vercel
+**Session**: 2026-02-27
+**Context**: Implementing live prompt inspector for debugging AI prompts across Create workflow in Next.js app
 
 ## Execution Status
 
 ### ✅ Completed Tasks
 
-**Phase 1: SSR Guards**
-- ✅ Added SSR guard to all 8 methods in `local.ts`
-- ✅ Tested SSR build - successful (10/10 pages generated)
-- ✅ Fixed pre-existing build errors (missing icons, ESLint issues, TypeScript errors)
+#### Documentation
+- Created `docs/DESIGN_DECISIONS.md` with feature flags architecture
+- Updated `CLAUDE.md` to reference design decisions doc prominently
 
-**Phase 2: Namespaced Reset**
-- ✅ Created `clearAllAppData()` function in `local.ts`
-- ✅ Replaced `localStorage.clear()` in settings page
-- ✅ Added proper import in settings page
+#### Fix #1: Developer Mode Toggle Not Showing
+- Added `developerMode: boolean` to `AppSettings` interface in `src/lib/types.ts`
+- Added `developerMode: false` to default settings in `src/store/app-store.ts`
+- Added Developer Mode toggle in `src/app/app/settings/page.tsx`
 
-**Phase 3: Key Migration**
-- ✅ Updated `STORAGE_KEYS` to `sg:*` format
-- ✅ Created `migrateStorageKeys()` helper function
-- ✅ Updated Zustand persist key to `sg:store`
-- ✅ Created `ClientMigration` component
-- ✅ Added migration call to root layout
+#### Fix #2: Remove Next.js Dev Indicator ("N" button)
+- Disabled Next.js dev indicators in `next.config.ts` by adding:
+  ```typescript
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+  }
+  ```
 
-**Final Verification:**
-- ✅ Final build test passed - no localStorage errors
-- ✅ All pages render successfully during SSR/SSG
+#### Prompt Inspector Feature
+- **Created `src/lib/prompt-builders.ts`**: Utility functions to build prompts for inspector
+  - `buildPresetPrompt()`: Shows preview of preset + platform + advanced settings
+  - `buildDreamscapePrompt()`: Shows initial dreamscape generation prompt
+  - `buildEnhancementPrompt()`: Shows enhancement goal prompts
+  - `buildOutputPrompt()`: Shows final story generation prompt with all dials
+- **Created `src/components/dev-tools/prompt-inspector.tsx`**: Bottom drawer component
+  - Resizable (20-80% viewport height, default 40%)
+  - Expandable sections for System/User prompts
+  - Nested expandable variables section
+  - Copy-to-clipboard functionality
+  - Drag-to-resize with mouse
+- **Modified `src/app/app/create/page.tsx`**: Integrated inspector into Create page
+  - Imported prompt builders and PromptInspector component
+  - Added inspector state (`inspectorPromptData`, `inspectorOpen`)
+  - Added useEffect to build prompts live based on step/dialState/enhanceGoal/chunks
+  - Added floating trigger button (bottom-right, only visible when `settings.developerMode === true`)
+  - Added PromptInspector component to render tree
 
 ### 🔄 In Progress
-
-*All tasks completed*
+- None
 
 ### ⏳ Pending Tasks
-
-*None - all tasks completed successfully*
+- Manual testing by user
 
 ## Changes Made
 
 ### Files Modified
-
-1. **`src/lib/persistence/local.ts`**
-   - Added `if (typeof window === 'undefined')` guards to all 8 methods
-   - Updated STORAGE_KEYS from `storyweaver_*` to `sg:*`
-   - Added `clearAllAppData()` function
-   - Added `migrateStorageKeys()` function
-
-2. **`src/app/app/settings/page.tsx`**
-   - Added import for `clearAllAppData`
-   - Replaced `localStorage.clear()` with `clearAllAppData()`
-
-3. **`src/store/app-store.ts`**
-   - Changed persist key from `'storyweaver-storage'` to `'sg:store'`
-
-4. **`src/app/layout.tsx`**
-   - Added import for `ClientMigration`
-   - Added `<ClientMigration />` component
-
-5. **`src/components/icons.tsx`**
-   - Added missing icon exports (PenIcon, BookIcon, GearIcon, TrashIcon, CheckIcon, CopyIcon)
-
-6. **`src/app/app/create/page.tsx`**
-   - Fixed ESLint error: renamed `useGeneratedIdea` to `handleUseGeneratedIdea`
-   - Fixed unescaped apostrophe: `We'll` → `We&apos;ll`
-   - Fixed TypeScript error: added `as unknown as IntensityValues` type assertion
-   - Fixed Toast component usage: added missing `show` and `onClose` props
+- `CLAUDE.md` - Added DESIGN_DECISIONS.md reference
+- `docs/DESIGN_DECISIONS.md` - Updated to remove outdated sections (removed ASI, single-file, mock API references based on user feedback)
+- `next.config.ts` - Disabled dev indicators
+- `src/lib/types.ts` - Added `developerMode` field to AppSettings
+- `src/store/app-store.ts` - Added `developerMode: false` to default settings
+- `src/app/app/settings/page.tsx` - Added Developer Mode toggle
+- `src/app/app/create/page.tsx` - Full prompt inspector integration
 
 ### Files Created
-
-1. **`src/components/client-migration.tsx`**
-   - Client component that runs migration on mount
-   - Calls `migrateStorageKeys()` in useEffect
+- `docs/DESIGN_DECISIONS.md` - Architectural decisions document
+- `src/lib/prompt-builders.ts` - Prompt building utilities
+- `src/components/dev-tools/prompt-inspector.tsx` - Prompt inspector component
 
 ### Files Deleted
-
-*None*
+- None
 
 ## Implementation Notes
 
 ### Key Technical Details
 
-**SSR Guard Pattern Applied:**
-```typescript
-if (typeof window === 'undefined') return []  // or appropriate default
-```
+**Feature Flags Architecture**:
+- All feature flags defined in Settings page only (no URL params per design decision)
+- Current: `settings.developerMode` for prompt inspector
+- Future: Backend controls which flags available based on user role
+- Easy migration: Wrap Settings toggles in `{user?.role === 'admin' && ...}`
 
-**Storage Key Migration:**
-- Old format: `storyweaver_dreamscapes`, `storyweaver_outputs`, `storyweaver_settings`, `storyweaver-storage`
-- New format: `sg:dreamscapes`, `sg:outputs`, `sg:settings`, `sg:store`
+**Prompt Builder Functions** (`src/lib/prompt-builders.ts`):
+- Return `PromptData` object with:
+  - `step`: String describing which step
+  - `messages`: Array of `{role, content, variables}` objects
+  - `fullPrompt`: Complete concatenated prompt string
+- All builders use DIALS config to format intensity values
+- Variables section shows all inputs that affect the prompt
 
-**Migration Strategy:**
-- Runs once on app load via `ClientMigration` component
-- Copies data from old keys to new keys
-- Removes old keys after successful copy
-- SSR-safe (guards against server-side execution)
+**PromptInspector Component** (`src/components/dev-tools/prompt-inspector.tsx`):
+- Bottom drawer pattern (familiar from browser DevTools)
+- Mouse drag-to-resize functionality
+- Expandable sections: Click to expand/collapse System/User prompts
+- Nested variables: Each prompt message can show its variable inputs
+- Copy-to-clipboard: Button to copy full prompt to clipboard
+- Only renders when `isOpen && isDevMode`
 
-**Files Affected:**
-1. `src/lib/persistence/local.ts` - Core persistence layer
-2. `src/app/app/settings/page.tsx` - Reset functionality
-3. `src/store/app-store.ts` - Zustand persist configuration
-4. `src/app/layout.tsx` - Migration initialization
-5. `src/components/client-migration.tsx` - Migration wrapper (new file)
-6. `src/components/icons.tsx` - Icon exports (bug fix)
-7. `src/app/app/create/page.tsx` - Bug fixes for build
+**Live Updates in Create Page**:
+- useEffect watches: `[step, dialState, enhanceGoal, chunks, settings.developerMode]`
+- Updates prompt data in real-time as user adjusts dials, genres, formats, etc.
+- Covers steps:
+  - Step 0 (Dreamscape): (no prompt yet, could add chunk preview)
+  - Step 1 (Preset): Shows preset + advanced settings prompt
+  - Step 2 (Generate): Shows dreamscape generation prompt
+  - Step 3 (Rate & Save): Shows output generation prompt
+  - Enhancement (when drawer open): Shows enhancement prompt
+
+**Important Note**: Step numbers in Next.js version differ from planning doc
+- Planning doc referenced steps 0-3 as Preset/Generate/Enhance/Output
+- Next.js implementation uses steps 0-3 as Dreamscape/Preset/Generate/Rate&Save
+- Adjusted implementation to match actual step flow
 
 ### Challenges & Solutions
-
-**Challenge 1: Build failed with missing icon exports**
-- Solution: Added missing lucide-react icon exports to icons.tsx
-
-**Challenge 2: ESLint error - React Hook called in callback**
-- Solution: Renamed `useGeneratedIdea` to `handleUseGeneratedIdea` (not a hook)
-
-**Challenge 3: TypeScript error - Object.fromEntries incompatible type**
-- Solution: Added `as unknown as IntensityValues` type assertion
-
-**Challenge 4: Toast component missing required props**
-- Solution: Added `show={!!toast}` and `onClose={() => setToast('')}` props
+- ✅ Developer Mode toggle not showing → Added to types, store, and settings page
+- ✅ Next.js "N" dev indicator showing → Disabled via devIndicators config
+- ✅ Step numbering mismatch → Adjusted to match actual Next.js implementation
 
 ## Testing Notes
 
-**Build Test Results:**
-```bash
-pnpm build
-```
+**Ready for manual testing**:
+1. **Enable Developer Mode**:
+   - Go to Settings
+   - Toggle "Developer Mode" to Enabled
+   - Should persist across page reloads
 
-**Result:** ✅ SUCCESS
-- ✓ Compiled successfully
-- ✓ Generating static pages (10/10)
-- ○ All pages prerendered as static content
-- No localStorage errors during SSR/SSG
-- No hydration errors
+2. **Verify Inspector Appears**:
+   - Go to Create page
+   - Should see floating "🔍 Prompt Inspector" button in bottom-right corner
+   - Button should only appear when Developer Mode is enabled
 
-**Manual Testing Required:**
-- [ ] Test dreamscape creation and storage
-- [ ] Test library page loads saved items
-- [ ] Test settings persist correctly
-- [ ] Test reset button only clears app data
-- [ ] Test migration preserves existing data
+3. **Test Prompt Inspector in Each Step**:
+   - **Step 1 (Preset)**: Verify preset + platform + advanced settings (dials, genres) visible
+   - **Step 2 (Generate)**: Verify dreamscape generation prompt
+   - **Step 3 (Rate & Save)**: Verify full output generation prompt
+
+4. **Test Live Updates** (Critical for debugging):
+   - Adjust intensity dials → Prompt should update in real-time
+   - Change platform/format → Prompt should reflect changes
+   - Add/remove genres → Prompt should update
+
+5. **Test Drawer Functionality**:
+   - Click drag handle (top edge) and drag up/down → Should resize
+   - Should respect min (20%) and max (80%) height constraints
+   - Should be scrollable for long prompts
+
+6. **Test Expandable Sections**:
+   - Click [System Prompt] / [User Prompt] → Should expand/collapse
+   - Click "Variables" → Should show all input variables
+   - Variables should show correct values from state
+
+7. **Test Copy-to-Clipboard**:
+   - Click "Copy All" → Should copy full prompt
+   - Verify paste works in text editor
+
+8. **Verify No Dev Indicator**:
+   - Next.js "N" button in bottom-left should be gone
+   - Check console for no errors
 
 ## Developer Actions Required
-
-- [x] Test build after Phase 1
-- [x] Test build after Phase 2
-- [x] Test build after Phase 3
-- [ ] Manual browser testing (create, save, load, reset)
-- [ ] Commit changes when satisfied
-
-## Success Criteria
-
-✅ `pnpm build` completes without errors
-✅ All pages render successfully during SSR
-✅ No hydration errors in browser console
-✅ localStorage functionality works in browser (requires manual test)
-✅ Reset button only clears app data (requires manual test)
-✅ Storage keys follow `sg:*` format
-✅ Existing user data preserved after migration (requires manual test)
+- [ ] Restart dev server (`npm run dev` or similar) for Next.js config changes to take effect
+- [ ] Test developer mode toggle in Settings (enable/disable)
+- [ ] Verify inspector appears when enabled, hidden when disabled
+- [ ] Test prompt updates live with dial changes **(critical for debugging prompts!)**
+- [ ] Test all steps (Dreamscape/Preset/Generate/Rate&Save)
+- [ ] Test resize functionality (drag handle)
+- [ ] Test expandable sections and variables
+- [ ] Test copy-to-clipboard
+- [ ] Verify no errors in console
+- [ ] Test on different screen sizes
+- [ ] Verify Next.js "N" dev indicator is gone
 
 ---
 
-**Status**: ✅ IMPLEMENTATION COMPLETE - Ready for manual testing and commit
+**Status**: Implementation complete - ready for testing
+
+**Next Steps**:
+1. User tests feature
+2. User provides feedback on prompt visibility
+3. Iterate on prompt builders based on actual debugging needs
