@@ -112,6 +112,46 @@ export type OutputFormat = 'reddit-post' | 'reel-script' | 'short-story' | 'seri
 export type Tone = 'narrative' | 'dialogue' | 'script' | 'mixed'
 export type EnhancementGoalId = 'vivid' | 'conflict' | 'believable' | 'stitch' | 'less-ai' | 'custom'
 
+// Templates (Normal User Mode)
+export type TemplateCategory = 'short-form' | 'reddit'
+export type CompatibilityLevel = 'perfect' | 'good' | 'maybe'
+export type CompatibilityCheckType = 'any' | 'story-based' | 'conflict-based' | 'opinion-based'
+
+export interface Template {
+  id: string
+  displayName: string
+  category: TemplateCategory
+  icon: string
+  description: string
+  duration: string
+  wordCount: number
+  platforms: string[]
+  subreddit?: string
+  genre?: string
+  settings: {
+    tone: Tone
+    genres: string[]
+    intensity: IntensityValues
+    avoidPhrases: string[]
+  }
+  promptTemplate: {
+    system: string
+    user: string
+  }
+  compatibility: {
+    perfectMatch: string[]
+    goodFit: string[]
+    checkType: CompatibilityCheckType
+    dreamscapeTypes: string[]
+  }
+  exampleOutput: string
+}
+
+export interface TemplateCompatibility {
+  level: CompatibilityLevel
+  message?: string
+}
+
 // Settings
 export interface AppSettings {
   defaultPreset: string

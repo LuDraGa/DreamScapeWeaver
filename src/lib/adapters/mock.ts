@@ -145,6 +145,55 @@ export const mockAdapter = {
   async generateOutputs(params: GenerateOutputsParams): Promise<OutputVariant[]> {
     await sleep(2500 + Math.random() * 1000)
 
+    // Check if this is a template-based generation (template IDs start with category prefix)
+    const presetId = params.dialState.presetId
+    const isShortFormTemplate = presetId.startsWith('short-')
+    const isRedditTemplate = presetId.startsWith('reddit-')
+
+    // Short-form video templates: return mock video scripts
+    if (isShortFormTemplate) {
+      const mockVideoScript = `[SETUP — Mundane start]
+I was sitting in the office parking lot during a fire drill, scrolling my phone like everyone else. But our IT department is on the top floor, so I had my laptop with me.
+
+[MISDIRECTION — Setup false narrative]
+While everyone was complaining about the cold, I decided to run some network diagnostics. You know, typical IT nerd stuff. That's when I noticed a hidden subnet. Weird, but probably just an old dev environment someone forgot about.
+
+[SUBTLE HINTS — Plant rewatchability clues]
+I clicked through. There was a VR interface. Like… a full 3D simulation. And it had little avatars. I recognized one—it was Jim from accounting. Same tie, same coffee mug. Real-time.
+
+[TWIST — Reframe everything]
+Then I saw my own avatar. It was me, standing in the parking lot… holding my laptop…
+
+…running network diagnostics.
+
+[END — Let it land]`
+
+      return [
+        {
+          id: uid(),
+          projectId: '',
+          title: 'Variant A — Balanced',
+          text: mockVideoScript,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: uid(),
+          projectId: '',
+          title: 'Variant B — More Intense',
+          text: mockVideoScript.replace('[SETUP', '[INTENSE SETUP'),
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: uid(),
+          projectId: '',
+          title: 'Variant C — Subtle Version',
+          text: mockVideoScript.replace('…running network diagnostics.', '…doing exactly what I\'m doing right now.'),
+          createdAt: new Date().toISOString(),
+        },
+      ]
+    }
+
+    // Reddit templates or power user mode: return Reddit stories
     return [
       {
         id: uid(),

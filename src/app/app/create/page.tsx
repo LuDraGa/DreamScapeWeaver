@@ -34,7 +34,7 @@ const FEEDBACK_CHIPS = [
 import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
-import type { Dreamscape, DialState, IntensityValues } from '@/lib/types'
+import type { Dreamscape, DialState, IntensityValues, Template, TemplateCategory } from '@/lib/types'
 import { LabeledSlider } from '@/components/design-system/labeled-slider'
 import { CopyButton } from '@/components/design-system/copy-button'
 import { PromptInspector } from '@/components/dev-tools/prompt-inspector'
@@ -45,6 +45,10 @@ import {
   buildOutputPrompt,
   type PromptData,
 } from '@/lib/prompt-builders'
+import { getTemplatesByCategory, buildPromptFromTemplate, checkTemplateCompatibility } from '@/lib/templates'
+import { ContentTypeSelector } from '@/components/create/content-type-selector'
+import { TemplateGallery } from '@/components/create/template-gallery'
+import { TemplatePreview } from '@/components/create/template-preview'
 
 /**
  * Helper: Randomize intensity values (1-10) for dreamscape generation
@@ -69,12 +73,20 @@ export default function CreatePage() {
 
   // Step management
   const [step, setStep] = useState(0)
-  const steps = [
-    { label: 'Dreamscape', s: 'A' },
-    { label: 'Platform & Style', s: 'B' },
-    { label: 'Generate', s: 'C' },
-    { label: 'Rate & Save', s: 'D' },
-  ]
+
+  // Normal user mode has 3 steps (skip Generate review), power user has 4
+  const steps = settings.powerUserMode
+    ? [
+        { label: 'Dreamscape', s: 'A' },
+        { label: 'Platform & Style', s: 'B' },
+        { label: 'Generate', s: 'C' },
+        { label: 'Rate & Save', s: 'D' },
+      ]
+    : [
+        { label: 'Dreamscape', s: 'A' },
+        { label: 'Platform & Style', s: 'B' },
+        { label: 'Rate & Save', s: 'C' },
+      ]
 
   // Dreamscape state (Step A)
   const [chunks, setChunks] = useState(
@@ -94,9 +106,13 @@ export default function CreatePage() {
   const [genIntensity, setGenIntensity] = useState<IntensityValues>(() => randomizeIntensity())
   const [showGenAdvanced, setShowGenAdvanced] = useState(false)
 
-  // Preset state (Step B)
+  // Preset state (Step B) - Power User Mode
   const [selectedPreset, setSelectedPreset] = useState(settings.defaultPreset)
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // Template state (Step B) - Normal User Mode
+  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>('short-form')
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
 
   // Initialize dialState from selected preset
   const getInitialDialState = (): DialState => {
@@ -196,22 +212,97 @@ Next step: Select a preset and configure advanced settings.`
         fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
       })
     }
-    // Step 1: Preset + Advanced Settings
+    // Step 1: Platform & Style
     else if (step === 1) {
-      setInspectorPromptData(
-        buildPresetPrompt({
-          preset: currentPreset,
-          platform: dialState.platform,
-          format: dialState.outputFormat,
-          intensity: dialState.intensity,
-          genres,
-          tone: dialState.tone,
-          wordCount: dialState.wordCount,
+      // Normal User Mode: Show selected template prompts
+      if (!settings.powerUserMode && selectedTemplate && chunks.length > 0) {
+        // Build temporary dreamscape from chunks for preview
+        const tempDreamscape = {
+          id: 'preview',
+          title: chunks[0].text.slice(0, 50) || 'Untitled',
+          chunks,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, tempDreamscape)
+        setInspectorPromptData({
+          step: 'Template (Step 1)',
+          messages: [
+            { role: 'system', content: systemPrompt, variables: {} },
+            { role: 'user', content: userPrompt, variables: {} },
+          ],
+          fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
         })
-      )
+      }
+      // Power User Mode: Show preset configuration
+      else if (settings.powerUserMode) {
+        setInspectorPromptData(
+          buildPresetPrompt({
+            preset: currentPreset,
+            platform: dialState.platform,
+            format: dialState.outputFormat,
+            intensity: dialState.intensity,
+            genres,
+            tone: dialState.tone,
+            wordCount: dialState.wordCount,
+          })
+        )
+      }
+      // No template selected yet in normal mode
+      else {
+        setInspectorPromptData({
+          step: 'Platform & Style (Step 1)',
+          messages: [
+            {
+              role: 'system',
+              content: 'No template selected yet. Choose a template above to see the prompt that will be used.',
+              variables: {},
+            },
+          ],
+          fullPrompt: 'No template selected yet.',
+        })
+      }
     }
-    // Step 2: Generate (show output generation preview)
+    // Step 2: Generate (power user) OR Rate & Save (normal user with outputs)
     else if (step === 2 && chunks.length > 0) {
+      // Power user mode: show generate preview
+      if (settings.powerUserMode) {
+        const dreamscape = { id: uid(), chunks }
+        setInspectorPromptData(
+          buildOutputPrompt({
+            dreamscape,
+            intensity: dialState.intensity,
+            platform: dialState.platform,
+            format: dialState.outputFormat,
+            wordCount: dialState.wordCount,
+            tone: dialState.tone,
+            genres,
+            avoidPhrases: dialState.avoidPhrases,
+          })
+        )
+      }
+      // Normal user mode: show template prompts if available
+      else if (selectedTemplate) {
+        const tempDreamscape = {
+          id: 'preview',
+          title: chunks[0].text.slice(0, 50) || 'Untitled',
+          chunks,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, tempDreamscape)
+        setInspectorPromptData({
+          step: 'Output Generation (Step 2)',
+          messages: [
+            { role: 'system', content: systemPrompt, variables: {} },
+            { role: 'user', content: userPrompt, variables: {} },
+          ],
+          fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
+        })
+      }
+    }
+    // Step 3: Rate & Save (power user mode only)
+    else if (step === 3 && settings.powerUserMode && chunks.length > 0) {
       const dreamscape = { id: uid(), chunks }
       setInspectorPromptData(
         buildOutputPrompt({
@@ -226,23 +317,7 @@ Next step: Select a preset and configure advanced settings.`
         })
       )
     }
-    // Step 3: Rate & Save (show output generation prompt)
-    else if (step === 3 && chunks.length > 0) {
-      const dreamscape = { id: uid(), chunks }
-      setInspectorPromptData(
-        buildOutputPrompt({
-          dreamscape,
-          intensity: dialState.intensity,
-          platform: dialState.platform,
-          format: dialState.outputFormat,
-          wordCount: dialState.wordCount,
-          tone: dialState.tone,
-          genres,
-          avoidPhrases: dialState.avoidPhrases,
-        })
-      )
-    }
-  }, [step, dialState, enhanceGoal, customEnhanceGoal, chunks, settings.developerMode, showGenPanel, showEnhanceDrawer, genVibe, genCount, genIntensity])
+  }, [step, dialState, enhanceGoal, customEnhanceGoal, chunks, settings.developerMode, showGenPanel, showEnhanceDrawer, genVibe, genCount, genIntensity, selectedTemplate, currentDreamscape, settings.powerUserMode])
 
   // ============================================================
   // Step A: Dreamscape handlers
@@ -444,6 +519,64 @@ Next step: Select a preset and configure advanced settings.`
       setNotes({})
       showToast(`Generated ${outputs.length} variants!`)
       setStep(3) // Move to Rate & Save step
+    } catch (error) {
+      showToast('Failed to generate story')
+      console.error(error)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const handleGenerateFromTemplate = async (template: Template) => {
+    // Auto-create dreamscape if it doesn't exist
+    let dreamscape = currentDreamscape
+    if (!dreamscape) {
+      dreamscape = {
+        id: uid(),
+        title: chunks[0].text.slice(0, 50) || 'Untitled',
+        chunks,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      setCurrentDreamscape(dreamscape)
+    }
+
+    setGenerating(true)
+    try {
+      // Build prompts from template
+      const { systemPrompt, userPrompt } = buildPromptFromTemplate(template, dreamscape)
+
+      // Determine platform/format based on template category
+      const platform = template.category === 'short-form' ? 'tiktok' : 'reddit'
+      const outputFormat = template.category === 'short-form' ? 'short-form' : 'reddit-post'
+
+      // Create dialState from template settings
+      const templateDialState: DialState = {
+        presetId: template.id,
+        platform,
+        outputFormat,
+        wordCount: template.wordCount,
+        tone: template.settings.tone,
+        intensity: template.settings.intensity,
+        genres: template.settings.genres,
+        avoidPhrases: template.settings.avoidPhrases,
+        cohesionStrictness: 5,
+      }
+
+      // Generate using template
+      const outputs = await api.outputs.generate({
+        dreamscape,
+        dialState: templateDialState,
+      })
+
+      setGeneratedOutputs(outputs)
+      setActiveVariant(0)
+      setRatings({})
+      setFeedback({})
+      setNotes({})
+      showToast(`Generated ${outputs.length} variants!`)
+      // Normal mode: step 2 = Rate & Save, Power mode: step 3 = Rate & Save
+      setStep(settings.powerUserMode ? 3 : 2)
     } catch (error) {
       showToast('Failed to generate story')
       console.error(error)
@@ -902,10 +1035,233 @@ Next step: Select a preset and configure advanced settings.`
 
       {/* STEP B: Platform & Style */}
       <div style={{ display: step === 1 ? 'block' : 'none' }}>
-        <h2 className="text-lg font-semibold mb-1 text-text-primary">Platform & Style</h2>
-        <p className="text-sm mb-5 text-text-muted">
-          Choose a preset to set the vibe for your story. Tweak details in Advanced.
-        </p>
+        {/* Normal User Mode: Single-Page Template UI */}
+        {!settings.powerUserMode && (
+          <div>
+            <h2 className="text-lg font-semibold mb-1 text-text-primary">Platform & Style</h2>
+            <p className="text-sm mb-5 text-text-muted">
+              Choose a template optimized for your target platform
+            </p>
+
+            {/* Platform Tabs */}
+            <div className="flex gap-2 mb-6 p-1 rounded-xl bg-[rgba(15,23,42,0.5)]">
+              <button
+                onClick={() => {
+                  setSelectedCategory('short-form')
+                  setSelectedTemplate(null)
+                }}
+                className="flex-1 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200"
+                style={{
+                  background: selectedCategory === 'short-form' ? '#6366f1' : 'transparent',
+                  color: selectedCategory === 'short-form' ? '#fff' : '#94a3b8',
+                }}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xl">📱</span>
+                  <span>Short Videos</span>
+                </div>
+                <div className="text-xs opacity-75 mt-1">TikTok, Reels, Shorts</div>
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedCategory('reddit')
+                  setSelectedTemplate(null)
+                }}
+                className="flex-1 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200"
+                style={{
+                  background: selectedCategory === 'reddit' ? '#6366f1' : 'transparent',
+                  color: selectedCategory === 'reddit' ? '#fff' : '#94a3b8',
+                }}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xl">🗨️</span>
+                  <span>Reddit Stories</span>
+                </div>
+                <div className="text-xs opacity-75 mt-1">Text storytelling</div>
+              </button>
+            </div>
+
+            {/* Template Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {getTemplatesByCategory(selectedCategory).map((template) => {
+                const compatibility = checkTemplateCompatibility(
+                  {
+                    id: uid(),
+                    title: chunks[0]?.text?.slice(0, 50) || 'Untitled',
+                    chunks,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  },
+                  template
+                )
+                const isSelected = selectedTemplate?.id === template.id
+
+                return (
+                  <ThemedCard
+                    key={template.id}
+                    onClick={() => setSelectedTemplate(template)}
+                    className={`cursor-pointer transition-all ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
+                        : 'hover:border-primary/50 hover:bg-primary/5'
+                    }`}
+                  >
+                    {/* Template Card Content */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{template.icon}</span>
+                        <div>
+                          <h3 className={`font-semibold ${isSelected ? 'text-primary' : 'text-text-primary'} transition-colors`}>
+                            {template.displayName}
+                          </h3>
+                          <p className="text-xs text-text-muted">{template.duration}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-text-secondary mb-3 line-clamp-2">{template.description}</p>
+
+                    {/* Compatibility Badge */}
+                    <div
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        background:
+                          compatibility.level === 'perfect'
+                            ? 'rgba(34,197,94,0.1)'
+                            : compatibility.level === 'good'
+                              ? 'rgba(99,102,241,0.1)'
+                              : 'rgba(251,146,60,0.1)',
+                        color:
+                          compatibility.level === 'perfect'
+                            ? '#4ade80'
+                            : compatibility.level === 'good'
+                              ? '#a5b4fc'
+                              : '#fb923c',
+                        border:
+                          compatibility.level === 'perfect'
+                            ? '1px solid rgba(34,197,94,0.3)'
+                            : compatibility.level === 'good'
+                              ? '1px solid rgba(99,102,241,0.2)'
+                              : '1px solid rgba(251,146,60,0.3)',
+                      }}
+                    >
+                      <span>{compatibility.level === 'perfect' ? '✓' : compatibility.level === 'good' ? '→' : '⚠️'}</span>
+                      <span>
+                        {compatibility.level === 'perfect'
+                          ? 'Perfect match'
+                          : compatibility.level === 'good'
+                            ? 'Good fit'
+                            : 'May need tweaking'}
+                      </span>
+                    </div>
+                  </ThemedCard>
+                )
+              })}
+            </div>
+
+            {/* Inline Template Preview (shows when template selected) */}
+            {selectedTemplate && (
+              <ThemedCard className="mb-6 border-primary/30 bg-primary/5">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl">{selectedTemplate.icon}</span>
+                    <div>
+                      <h3 className="text-lg font-semibold text-text-primary">{selectedTemplate.displayName}</h3>
+                      <p className="text-sm text-text-muted">{selectedTemplate.description}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedTemplate(null)}
+                    className="text-text-muted hover:text-text-primary transition-colors"
+                  >
+                    <XIcon className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Template Settings Summary */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4 p-4 rounded-lg bg-surface-secondary/50">
+                  <div>
+                    <span className="text-text-muted">Duration:</span>
+                    <p className="text-text-primary font-medium">{selectedTemplate.duration}</p>
+                  </div>
+                  <div>
+                    <span className="text-text-muted">Word Count:</span>
+                    <p className="text-text-primary font-medium">~{selectedTemplate.wordCount}</p>
+                  </div>
+                  <div>
+                    <span className="text-text-muted">Tone:</span>
+                    <p className="text-text-primary font-medium capitalize">{selectedTemplate.settings.tone}</p>
+                  </div>
+                  <div>
+                    <span className="text-text-muted">
+                      {selectedTemplate.subreddit ? 'Subreddit:' : 'Platforms:'}
+                    </span>
+                    <p className="text-text-primary font-medium">
+                      {selectedTemplate.subreddit
+                        ? `r/${selectedTemplate.subreddit}`
+                        : selectedTemplate.platforms.length > 1
+                          ? 'Multi-platform'
+                          : selectedTemplate.platforms[0]}
+                    </p>
+                  </div>
+                </div>
+
+                {/* What This Creates */}
+                <div className="bg-surface-secondary/30 p-3 rounded-lg mb-4">
+                  <h4 className="text-xs font-medium text-text-secondary mb-2">This template will create:</h4>
+                  <ul className="text-sm text-text-secondary space-y-1 list-disc list-inside">
+                    {selectedTemplate.category === 'short-form' && (
+                      <>
+                        <li>Optimized for {selectedTemplate.platforms.join('/')}</li>
+                        <li>Hook viewers in the first 3 seconds</li>
+                        <li>Format ready for video narration</li>
+                      </>
+                    )}
+                    {selectedTemplate.category === 'reddit' && (
+                      <>
+                        <li>Written for r/{selectedTemplate.subreddit} community</li>
+                        <li>Follows subreddit conventions and rules</li>
+                        <li>Optimized for upvotes and engagement</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+
+                {/* Generate Button */}
+                <Button
+                  onClick={() => handleGenerateFromTemplate(selectedTemplate)}
+                  disabled={generating}
+                  size="lg"
+                  className="w-full bg-primary hover:bg-primary-light text-white"
+                >
+                  {generating ? 'Generating...' : 'Generate 3 Variants →'}
+                </Button>
+              </ThemedCard>
+            )}
+
+            {/* Navigation (Back button only - Next is in template preview) */}
+            {!selectedTemplate && (
+              <div className="flex justify-between">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep(0)}
+                  className="bg-transparent border-[#1e293b] text-text-secondary"
+                >
+                  Back
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Power User Mode: Original Preset UI */}
+        {settings.powerUserMode && (
+          <>
+            <h2 className="text-lg font-semibold mb-1 text-text-primary">Platform & Style</h2>
+            <p className="text-sm mb-5 text-text-muted">
+              Choose a preset to set the vibe for your story. Tweak details in Advanced.
+            </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
           {PRESETS.map((preset) => (
@@ -1157,10 +1513,13 @@ Next step: Select a preset and configure advanced settings.`
             Next: Generate Story
           </Button>
         </div>
+          </>
+        )}
       </div>
 
-      {/* STEP C: Generate */}
-      <div style={{ display: step === 2 ? 'block' : 'none' }}>
+      {/* STEP C: Generate (Power User Mode Only) */}
+      {settings.powerUserMode && (
+        <div style={{ display: step === 2 ? 'block' : 'none' }}>
         <h2 className="text-lg font-semibold mb-1 text-text-primary">Generate Story</h2>
         <p className="text-sm mb-5 text-text-muted">
           We&apos;ll create 3 variants based on your dreamscape and preset.
@@ -1228,9 +1587,18 @@ Next step: Select a preset and configure advanced settings.`
           </Button>
         </div>
       </div>
+      )}
 
-      {/* STEP D: Rate & Save */}
-      <div style={{ display: step === 3 && generatedOutputs.length > 0 ? 'block' : 'none' }}>
+      {/* STEP D: Rate & Save (Step 2 in normal mode, Step 3 in power user mode) */}
+      <div
+        style={{
+          display:
+            generatedOutputs.length > 0 &&
+            ((!settings.powerUserMode && step === 2) || (settings.powerUserMode && step === 3))
+              ? 'block'
+              : 'none',
+        }}
+      >
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">Your Variants</h2>
