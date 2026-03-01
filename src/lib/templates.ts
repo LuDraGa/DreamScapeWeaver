@@ -116,7 +116,10 @@ export function buildPromptFromTemplate(template: Template, dreamscape: Dreamsca
   userPrompt: string
 } {
   // Get dreamscape text
-  const dreamscapeText = dreamscape.chunks.map((c) => c.text).join('\n\n')
+  const dreamscapeText =
+    dreamscape.chunks.length === 1
+      ? dreamscape.chunks[0].text
+      : dreamscape.chunks.map((c, i) => `[Fragment ${i + 1}]\n${c.text}`).join('\n\n')
 
   // Replace variables in user prompt
   let userPrompt = template.promptTemplate.user
