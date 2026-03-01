@@ -8,12 +8,14 @@ import { PartCard } from './part-card'
 import { ThemedCard } from '@/components/design-system/themed-card'
 import { GeneratePartModal } from './generate-part-modal'
 import { SaveToProjectModal } from './save-to-project-modal'
-import type { Part } from '@/lib/types'
+import { TransformPartModal } from './transform-part-modal'
+import type { Part, PartType } from '@/lib/types'
 
 export function PartCanvas() {
-  const { unsavedParts, removeUnsavedPart, setActivePart } = useAppStore()
+  const { unsavedParts, removeUnsavedPart, setActivePart, addUnsavedPart } = useAppStore()
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [partToSave, setPartToSave] = useState<Part | null>(null)
+  const [partToTransform, setPartToTransform] = useState<Part | null>(null)
 
   const handleDeletePart = (id: string) => {
     const confirmed = window.confirm('Delete this part? This cannot be undone.')
@@ -32,6 +34,30 @@ export function PartCanvas() {
   const handleRegeneratePart = (id: string) => {
     // TODO: Implement regeneration
     alert('Regenerate (coming soon)')
+  }
+
+  const handleTransformPart = (id: string) => {
+    const part = unsavedParts.find((p) => p.id === id)
+    if (part) {
+      setPartToTransform(part)
+    }
+  }
+
+  const handleTransformGenerate = async (targetType: PartType) => {
+    if (!partToTransform) return
+
+    // Call transform API (Task 3.3)
+    const response = await fetch('/api/parts/transform', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourcePart: partToTransform,
+        targetType,
+      }),
+    })
+
+    const newPart = await response.json()
+    addUnsavedPart(newPart)
   }
 
   // Empty state - no unsaved parts
@@ -96,6 +122,7 @@ export function PartCanvas() {
             onDelete={() => handleDeletePart(part.id)}
             onSave={() => handleSavePart(part.id)}
             onRegenerate={() => handleRegeneratePart(part.id)}
+            onTransform={() => handleTransformPart(part.id)}
           />
         ))}
       </div>
@@ -106,6 +133,14 @@ export function PartCanvas() {
         onClose={() => setPartToSave(null)}
         partToSave={partToSave}
       />
+      {partToTransform && (
+        <TransformPartModal
+          isOpen={partToTransform !== null}
+          sourcePart={partToTransform}
+          onClose={() => setPartToTransform(null)}
+          onTransform={handleTransformGenerate}
+        />
+      )}
     </div>
   )
 }

@@ -10,10 +10,11 @@ interface PartCardProps {
   part: Part
   isActive?: boolean
   isSaved: boolean // Has projectId
-  onClick: () => void
+  onClick?: () => void
   onDelete: () => void
   onSave?: () => void // Only for unsaved parts
   onRegenerate?: () => void
+  onTransform?: () => void // Transform to other formats
 }
 
 export function PartCard({
@@ -24,6 +25,7 @@ export function PartCard({
   onDelete,
   onSave,
   onRegenerate,
+  onTransform,
 }: PartCardProps) {
   const partType = getPartType(part.type)
   const preview = part.content.slice(0, 80) + (part.content.length > 80 ? '...' : '')
@@ -49,6 +51,11 @@ export function PartCard({
   const handleRegenerate = (e: React.MouseEvent) => {
     e.stopPropagation()
     onRegenerate?.()
+  }
+
+  const handleTransform = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onTransform?.()
   }
 
   return (
@@ -114,6 +121,19 @@ export function PartCard({
             "
           >
             🔄 Regenerate
+          </button>
+        )}
+        {onTransform && (
+          <button
+            onClick={handleTransform}
+            className="
+              flex-1 px-3 py-1.5 text-xs rounded
+              bg-transparent hover:bg-background-secondary
+              border border-border-primary text-text-secondary
+              transition-colors
+            "
+          >
+            ✨ Transform
           </button>
         )}
         <button
