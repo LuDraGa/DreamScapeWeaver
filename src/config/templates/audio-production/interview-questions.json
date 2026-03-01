@@ -1,0 +1,35 @@
+{
+  "id": "audio-interview-questions",
+  "displayName": "Interview Questions",
+  "category": "audio-production",
+  "icon": "❓",
+  "description": "Prepared questions with follow-ups and conversation flow for interviews",
+  "duration": "30-60min",
+  "wordCount": 450,
+  "platforms": ["podcast", "radio", "interview"],
+  "settings": {
+    "tone": "dialogue",
+    "genres": ["interview", "conversation"],
+    "intensity": {
+      "stakes": 5,
+      "darkness": 5,
+      "pace": 5,
+      "twist": 5,
+      "realism": 9,
+      "catharsis": 5,
+      "moralClarity": 6
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a skilled interviewer preparing thoughtful questions that create natural, revealing conversations.",
+    "user": "Create interview questions based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- 10-15 main questions\n- 2-3 follow-up questions for each\n- Questions build on each other naturally\n- Mix of factual and emotional questions\n- Open-ended (avoid yes/no)\n- Note when to let silence work\n- Potential pivots if guest goes interesting direction\n- 450 words maximum\n\nWrite the questions now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["person", "character", "experience", "story"],
+    "goodFit": ["event", "decision", "conflict", "revelation"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["personal", "narrative"]
+  },
+  "exampleOutput": "OPENING (Warm-up):\n1. Walk me through a normal work-from-home day before this happened.\n   Follow-up: When did you first notice the internet issues?\n   Follow-up: How long did you tolerate it before investigating?\n\n2. What went through your mind when you saw 27 devices?\n   Follow-up: Did you think it was a glitch at first?\n   Follow-up: At what point did suspicion turn to certainty?\n   [Let them sit with this - don't rush]\n\nPIVOT (The Confrontation):\n3. Why did you decide to confront Greg directly instead of calling IT or your ISP?\n   Follow-up: What were you expecting when you knocked?\n   Follow-up: Describe his face when you asked about the WiFi.\n\n4. The basement moment - what did you see first?\n   [Let them describe fully before asking follow-ups]\n\nDEEPER (Moral Territory):\n5. When he handed you $600, what was going through your head?\n   Follow-up: Did the money feel like payment or hush money?\n\n6. Looking back, would you do anything differently?\n   Follow-up: What would you tell someone in a similar situation?"
+}

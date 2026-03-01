@@ -1,0 +1,35 @@
+{
+  "id": "audio-show-notes",
+  "displayName": "Show Notes",
+  "category": "audio-production",
+  "icon": "📝",
+  "description": "Episode summary with timestamps, links, and resources for podcast listeners",
+  "duration": "Reference doc",
+  "wordCount": 400,
+  "platforms": ["podcast", "spotify", "apple-podcasts"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["podcast", "reference"],
+    "intensity": {
+      "stakes": 4,
+      "darkness": 3,
+      "pace": 5,
+      "twist": 4,
+      "realism": 9,
+      "catharsis": 5,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a podcast producer creating comprehensive show notes with timestamps, summaries, and resources.",
+    "user": "Create show notes based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Episode title and one-line hook\n- 2-3 paragraph summary\n- Timestamp breakdown (5-8 key moments)\n- Links to resources mentioned\n- Guest info if applicable\n- Social media prompts\n- Sponsor acknowledgments\n- 400 words maximum\n- SEO-friendly language\n\nWrite the show notes now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["episode", "story", "discussion"],
+    "goodFit": ["any"],
+    "checkType": "any",
+    "dreamscapeTypes": ["any"]
+  },
+  "exampleOutput": "**Episode Title:** The Neighbor Who Wasn't Just Stealing WiFi\n\n**One-Line Hook:** What started as slow internet became a full-blown HOA conspiracy involving a retired CIA operative.\n\n**Summary:**\nIn this episode, we dive into a wild story about WiFi theft that uncovered something much bigger. When our protagonist discovered 27 unknown devices on their home network, they never expected their quiet neighbor Greg to be running a counter-intelligence operation from his basement—targeting the HOA president for embezzlement.\n\nWe explore the ethics of vigilante justice, the psychology of suburban surveillance, and answer the big question: would you have taken the $600 and exposed the scandal?\n\n**Timestamps:**\n- [0:00] Cold open: 27 devices revealed\n- [2:30] Act 1: The discovery and investigation\n- [9:00] Act 2: Confronting the neighbor\n- [15:00] The basement reveal\n- [21:00] Act 3: The HOA conspiracy details\n- [35:00] The moral dilemma and choice\n- [40:00] Outro and listener question\n\n**Resources:**\n- How to check your WiFi network security: [link]\n- HOA financial transparency laws: [link]\n\n**Connect:**\nTwitter/Instagram: @[handle]\nEmail: [email]\n\n**Sponsor:** This episode brought to you by ExpressVPN\n\n**Next Week:** Ring doorbell footage reveals an unexpected truth"
+}

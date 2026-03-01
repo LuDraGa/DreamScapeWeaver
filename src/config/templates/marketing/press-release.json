@@ -1,0 +1,35 @@
+{
+  "id": "marketing-press-release",
+  "displayName": "Press Release",
+  "category": "marketing",
+  "icon": "📰",
+  "description": "Official announcement in AP style with boilerplate and quotes",
+  "duration": "Press doc",
+  "wordCount": 500,
+  "platforms": ["pr-wire", "media", "news"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["pr", "journalism"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 1,
+      "pace": 5,
+      "twist": 3,
+      "realism": 10,
+      "catharsis": 5,
+      "moralClarity": 9
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a PR professional writing press releases in AP style for media distribution.",
+    "user": "Create a press release using this story angle:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Headline (newsworthy angle)\n- Dateline and city\n- Lead paragraph (who/what/when/where/why)\n- Supporting paragraphs with details\n- 2-3 quotes from stakeholders\n- Company boilerplate\n- Media contact info\n- AP style formatting\n- 500 words maximum\n\nWrite the press release now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["announcement", "launch", "news", "milestone"],
+    "goodFit": ["event", "achievement", "update"],
+    "checkType": "any",
+    "dreamscapeTypes": ["newsworthy"]
+  },
+  "exampleOutput": "FOR IMMEDIATE RELEASE\n\n**NetworkGuard Pro Launches Consumer WiFi Security Tool After Viral Story Exposes Home Network Vulnerabilities**\n\n*New app helps homeowners discover unauthorized WiFi users in seconds*\n\nSAN FRANCISCO, CA - March 1, 2026 - NetworkGuard Technologies today announced the launch of NetworkGuard Pro, a consumer-focused network security app, following increased awareness around home WiFi vulnerabilities sparked by a viral story of WiFi theft.\n\nThe announcement comes after a widely-shared social media post detailed how a homeowner discovered 27 unauthorized devices on their network—19 more than they owned.\n\n\"That story resonated because it's happening everywhere,\" said [Name], CEO of NetworkGuard Technologies. \"Most people have no idea who's actually on their WiFi. We're making that invisible problem visible.\"\n\nNetworkGuard Pro provides real-time monitoring of all devices connected to a home network, with one-click blocking and automatic threat detection.\n\nKey features include:\n- Real-time device monitoring\n- Unauthorized access alerts\n- Performance analytics\n- Cross-platform support (iOS, Android, Web)\n\n\"Network security shouldn't require a CIA background,\" added [Name]. \"We built NetworkGuard Pro for regular people who just want to know their internet is secure.\"\n\nThe app is available now with a 30-day free trial.\n\n**About NetworkGuard Technologies**\nNetworkGuard Technologies provides consumer-friendly network security solutions for home and small business users.\n\n**Media Contact:**\n[Name]\n[Email]\n[Phone]"
+}

@@ -1,0 +1,35 @@
+{
+  "id": "audio-transcript",
+  "displayName": "Full Transcript",
+  "category": "audio-production",
+  "icon": "📜",
+  "description": "Complete text transcription of audio content for accessibility and SEO",
+  "duration": "Reference doc",
+  "wordCount": 2500,
+  "platforms": ["podcast", "youtube", "accessibility"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["transcript", "accessibility"],
+    "intensity": {
+      "stakes": 5,
+      "darkness": 5,
+      "pace": 6,
+      "twist": 6,
+      "realism": 10,
+      "catharsis": 5,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are creating a full transcript of audio content with speaker labels, timestamps, and formatting for accessibility.",
+    "user": "Create a transcript based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Speaker labels ([HOST], [GUEST] if applicable)\n- Timestamp markers every 30-60 seconds\n- Capture verbal tics naturally (um, uh, pauses)\n- Note non-verbal sounds [laughter], [pause]\n- Clean up for readability but keep authentic\n- Include intro/outro/ad reads\n- ~2500 words for 20-30 min episode\n\nFormat:\n[00:00] [HOST]: Twenty-seven devices...\n\nWrite the transcript now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["spoken", "conversation", "dialogue", "podcast"],
+    "goodFit": ["story", "narrative"],
+    "checkType": "any",
+    "dreamscapeTypes": ["conversational"]
+  },
+  "exampleOutput": "[00:00] [MUSIC: Upbeat intro]\n\n[00:15] [HOST]: Twenty-seven devices on your WiFi. You own eight. What... do you do?\n\n[MUSIC STING]\n\n[00:20] [HOST]: Hey everyone, welcome to [SHOW NAME]. I'm [HOST], and, uh, today we have a story that starts with slow internet and ends with... honestly, potential federal crimes? Maybe? We'll get into it.\n\n[00:35] [HOST]: So our story comes from a listener who, for obvious reasons, wants to remain anonymous. We'll call them Sam.\n\n[00:45] [HOST]: Sam works from home. Entire job depends on WiFi. And for weeks—[pause]—their connection was garbage.\n\n[01:00] [HOST]: Dropped Zoom calls. Buffering on everything. Classic frustration.\n\n[01:10] [HOST]: But here's where it gets interesting. Sam's husband suggests checking the router. You know, standard troubleshooting.\n\n[01:20] [HOST]: And Sam logs into the admin page and sees... [pause for effect] twenty. seven. devices.\n\n[01:30] [HOST]: [slight laugh] They own eight.\n\n[01:35] [HOST]: And the names—oh, the device names are *chef's kiss*—we're talking \"SIGINT-NODE-7,\" \"OVERWATCHTABLET\"...\n\n[continues...]"
+}

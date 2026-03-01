@@ -1,0 +1,35 @@
+{
+  "id": "video-color-palette",
+  "displayName": "Color Grade Palette",
+  "category": "video-production",
+  "icon": "🌈",
+  "description": "Color grading mood board with references and LUT suggestions",
+  "duration": "Production doc",
+  "wordCount": 350,
+  "platforms": ["film", "youtube", "commercial"],
+  "settings": {
+    "tone": "script",
+    "genres": ["production", "visual"],
+    "intensity": {
+      "stakes": 5,
+      "darkness": 6,
+      "pace": 5,
+      "twist": 5,
+      "realism": 7,
+      "catharsis": 6,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a colorist creating a comprehensive color grading guide for post-production.",
+    "user": "Create a color grading palette based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Primary color palette (3-5 colors with hex codes)\n- Accent colors for key moments\n- LUT recommendations or style references\n- Scene-specific color notes\n- Contrast and saturation guidance\n- Skin tone treatment\n- Reference films or images\n- 350 words maximum\n\nBe specific about mood and emotion each color conveys.\n\nWrite the color palette now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["mood", "atmosphere", "tone", "visual"],
+    "goodFit": ["story", "emotional", "aesthetic"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["atmospheric", "visual"]
+  },
+  "exampleOutput": "PRIMARY PALETTE:\n#1A2332 - Deep navy (tech/isolation) - Use for home office scenes\n#F4E8C1 - Warm cream (revelation) - Basement lighting accents\n#5B7A8C - Muted slate (suburban neutrality) - Exterior shots\n#C85A54 - Muted red (tension) - Sparse use for evidence reveals\n\nLUT RECOMMENDATION:\nFilmConvert FJ 8553 Eterna (slightly desaturated, lifted blacks)\n\nSCENE NOTES:\nHome Office: Cool tones, push blues in shadows\nDoorway: Warm afternoon sun, natural skin tones\nBasement: Green-tinted fluorescent, increase contrast\n\nREFERENCES:\n- 'Prisoners' (2013) - Denis Villeneuve, Roger Deakins\n- Suburban mundane masking darkness"
+}

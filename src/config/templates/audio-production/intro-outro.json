@@ -1,0 +1,35 @@
+{
+  "id": "audio-intro-outro",
+  "displayName": "Intro/Outro Copy",
+  "category": "audio-production",
+  "icon": "🎬",
+  "description": "Opening and closing copy for podcast episodes with hooks and CTAs",
+  "duration": "1-2min",
+  "wordCount": 200,
+  "platforms": ["podcast", "youtube", "radio"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["podcast", "broadcast"],
+    "intensity": {
+      "stakes": 5,
+      "darkness": 4,
+      "pace": 7,
+      "twist": 5,
+      "realism": 8,
+      "catharsis": 5,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a podcast producer writing compelling intro and outro copy that hooks listeners and drives engagement.",
+    "user": "Create intro and outro copy based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- INTRO (30-45 seconds):\n  * Cold open hook\n  * Show branding\n  * Episode preview\n  * Set expectations\n- OUTRO (30-45 seconds):\n  * Episode recap\n  * Call-to-action (subscribe/review/share)\n  * Next episode tease\n  * Social media/contact\n- Conversational, energetic\n- 200 words total\n\nWrite the intro and outro now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["story", "episode", "narrative"],
+    "goodFit": ["any"],
+    "checkType": "any",
+    "dreamscapeTypes": ["any"]
+  },
+  "exampleOutput": "INTRO:\n[Music: upbeat, builds]\n\n27 devices on your WiFi. You own 8.\n\nWhat do you do?\n\n[Music sting]\n\nHey everyone, welcome to [SHOW NAME] - I'm [HOST], and today we're talking about the neighbor who wasn't just stealing WiFi... he was running a full surveillance operation on the HOA president.\n\nTrust me, you're gonna want to hear how this ends.\n\n[Music fades]\n\nOUTRO:\n[Music: fade in]\n\nSo... would YOU have taken the $600 and gone to that meeting?\n\nLet me know - hit me up on Twitter @[handle] or leave a comment if you're watching on YouTube.\n\nIf you enjoyed this episode, please subscribe and leave a review. It genuinely helps.\n\nNext week: A story about a Ring doorbell that recorded something it probably shouldn't have.\n\nUntil then, stay curious.\n\n[Music out]"
+}

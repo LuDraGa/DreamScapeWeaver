@@ -18,6 +18,42 @@ import youtubeExplainer from '@/config/templates/long-form/youtube-explainer.jso
 import youtubeStoryTime from '@/config/templates/long-form/youtube-story-time.json'
 import youtubeDocumentary from '@/config/templates/long-form/youtube-documentary.json'
 
+// Video Production templates
+import sceneBreakdown from '@/config/templates/video-production/scene-breakdown.json'
+import shotList from '@/config/templates/video-production/shot-list.json'
+import cinematography from '@/config/templates/video-production/cinematography-guide.json'
+import storyboard from '@/config/templates/video-production/storyboard.json'
+import directorNotes from '@/config/templates/video-production/director-notes.json'
+import brollList from '@/config/templates/video-production/broll-list.json'
+import soundDesign from '@/config/templates/video-production/sound-design.json'
+import editingGuide from '@/config/templates/video-production/editing-guide.json'
+import colorPalette from '@/config/templates/video-production/color-palette.json'
+import vfxRequirements from '@/config/templates/video-production/vfx-requirements.json'
+
+// Audio Production templates
+import podcastOutline from '@/config/templates/audio-production/podcast-outline.json'
+import interviewQuestions from '@/config/templates/audio-production/interview-questions.json'
+import voiceoverScript from '@/config/templates/audio-production/voiceover-script.json'
+import musicCues from '@/config/templates/audio-production/music-cues.json'
+import sfxList from '@/config/templates/audio-production/sfx-list.json'
+import adRead from '@/config/templates/audio-production/ad-read.json'
+import introOutro from '@/config/templates/audio-production/intro-outro.json'
+import showNotes from '@/config/templates/audio-production/show-notes.json'
+import transcript from '@/config/templates/audio-production/transcript.json'
+import audiogram from '@/config/templates/audio-production/audiogram.json'
+
+// Marketing templates
+import salesPage from '@/config/templates/marketing/sales-page.json'
+import productDescription from '@/config/templates/marketing/product-description.json'
+import landingPage from '@/config/templates/marketing/landing-page.json'
+import emailSequence from '@/config/templates/marketing/email-sequence.json'
+import socialCalendar from '@/config/templates/marketing/social-calendar.json'
+import pressRelease from '@/config/templates/marketing/press-release.json'
+import pitchDeck from '@/config/templates/marketing/pitch-deck.json'
+import testimonialRequest from '@/config/templates/marketing/testimonial-request.json'
+import faq from '@/config/templates/marketing/faq.json'
+import brandStory from '@/config/templates/marketing/brand-story.json'
+
 // All templates
 const ALL_TEMPLATES: Template[] = [
   // Short-form templates
@@ -39,6 +75,39 @@ const ALL_TEMPLATES: Template[] = [
   youtubeExplainer,
   youtubeStoryTime,
   youtubeDocumentary,
+  // Video Production templates
+  sceneBreakdown,
+  shotList,
+  cinematography,
+  storyboard,
+  directorNotes,
+  brollList,
+  soundDesign,
+  editingGuide,
+  colorPalette,
+  vfxRequirements,
+  // Audio Production templates
+  podcastOutline,
+  interviewQuestions,
+  voiceoverScript,
+  musicCues,
+  sfxList,
+  adRead,
+  introOutro,
+  showNotes,
+  transcript,
+  audiogram,
+  // Marketing templates
+  salesPage,
+  productDescription,
+  landingPage,
+  emailSequence,
+  socialCalendar,
+  pressRelease,
+  pitchDeck,
+  testimonialRequest,
+  faq,
+  brandStory,
 ] as Template[]
 
 /**
@@ -128,9 +197,22 @@ export function buildPromptFromTemplate(template: Template, dreamscape: Dreamsca
       ? dreamscape.chunks[0].text
       : dreamscape.chunks.map((c, i) => `[Fragment ${i + 1}]\n${c.text}`).join('\n\n')
 
+  // Fragment stitching instructions (injected automatically when multiple fragments exist)
+  const fragmentStitchingInstructions =
+    dreamscape.chunks.length > 1
+      ? `\n\n🔗 IMPORTANT - HANDLING MULTIPLE FRAGMENTS:
+The story seed above contains ${dreamscape.chunks.length} [Fragment] sections. You MUST:
+- Weave ALL fragments into ONE cohesive, chronological narrative
+- Connect fragments smoothly with transitions, context, and logical flow
+- Fill in necessary gaps between fragments to create seamless storytelling
+- Treat fragments as key story beats in a single unified narrative
+- If the complete story exceeds your target word count significantly, create a PART 1 that ends on a compelling cliffhanger/pause point, and note where PART 2 should begin
+- DO NOT treat fragments as separate stories - they are pieces of ONE story\n`
+      : ''
+
   // Replace variables in user prompt
   let userPrompt = template.promptTemplate.user
-  userPrompt = userPrompt.replace('{dreamscape}', dreamscapeText)
+  userPrompt = userPrompt.replace('{dreamscape}', dreamscapeText + fragmentStitchingInstructions)
   userPrompt = userPrompt.replace('{avoidPhrases}', template.settings.avoidPhrases.join(', '))
 
   return {

@@ -1,0 +1,35 @@
+{
+  "id": "audio-music-cues",
+  "displayName": "Music Cues",
+  "category": "audio-production",
+  "icon": "🎵",
+  "description": "Music placement, mood, and timing suggestions for audio/video production",
+  "duration": "Production doc",
+  "wordCount": 350,
+  "platforms": ["podcast", "youtube", "film"],
+  "settings": {
+    "tone": "script",
+    "genres": ["production", "music"],
+    "intensity": {
+      "stakes": 5,
+      "darkness": 5,
+      "pace": 6,
+      "twist": 5,
+      "realism": 7,
+      "catharsis": 6,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a music supervisor creating detailed music cue sheets for audio/video production.",
+    "user": "Create music cues based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- 8-12 music cues\n- For each cue include:\n  * Timestamp or scene\n  * Mood/emotion\n  * Instrumentation suggestions\n  * Volume/mix notes (foreground/background)\n  * Entry and exit (fade/cut/sting)\n  * BPM or tempo if relevant\n- Reference tracks if helpful\n- 350 words maximum\n\nWrite the music cues now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["mood", "emotion", "atmosphere", "tension"],
+    "goodFit": ["story", "narrative", "pacing"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["atmospheric", "emotional"]
+  },
+  "exampleOutput": "CUE 1: OPENING [0:00-0:45]\nMood: Subtle unease, domestic tension\nInstrumentation: Minimal piano, low strings\nMix: Background, under dialogue\nEntry: Fade in over 5 seconds\nTempo: 80 BPM, sparse\nRef: 'The Social Network' - Trent Reznor\n\nCUE 2: DEVICE DISCOVERY [2:15-3:00]\nMood: Growing suspicion, mystery\nInstrumentation: Electronic pulse, synth pad\nMix: Foreground during screen reveal, then under\nEntry: Sting on \"27 devices\" reveal\nExit: Sustain through next scene\n\nCUE 3: DOORWAY [4:30-5:00]\nMood: Anticipation\nInstrumentation: Silence, then single sustained note\nMix: Sparse, tension through absence\nEntry: Cut to single cello note\n\nCUE 4: BASEMENT REVEAL [6:00-7:30]\nMood: Dark discovery, thriller territory\nInstrumentation: Low drone, industrial elements\nMix: Foreground, build intensity\nTempo: Slow, ominous"
+}

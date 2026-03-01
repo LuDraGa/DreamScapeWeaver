@@ -1,0 +1,35 @@
+{
+  "id": "audio-podcast-outline",
+  "displayName": "Podcast Outline",
+  "category": "audio-production",
+  "icon": "📋",
+  "description": "Episode structure with segments, topics, and timing for podcast production",
+  "duration": "20-60min",
+  "wordCount": 600,
+  "platforms": ["podcast", "spotify", "apple-podcasts"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["podcast", "storytelling"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 5,
+      "pace": 6,
+      "twist": 6,
+      "realism": 7,
+      "catharsis": 6,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a podcast producer creating detailed episode outlines with segment timing and talking points.",
+    "user": "Create a podcast outline based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Episode title and hook\n- Segment breakdown with timestamps\n- Key talking points for each segment\n- Story beats and reveals\n- Natural ad break placements\n- Outro/CTA\n- Total runtime: 30-45 minutes\n- 600 words maximum\n\nFormat:\n[0:00-2:00] INTRO\n- Hook with the mystery\n- Episode preview\n\nWrite the outline now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["story", "narrative", "mystery", "discovery"],
+    "goodFit": ["conflict", "revelation", "investigation"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["narrative", "story"]
+  },
+  "exampleOutput": "[0:00-2:30] COLD OPEN\n- Hook: \"27 devices on my WiFi. I own 8.\"\n- Build intrigue with device names reveal\n- Episode promise\n\n[2:30-8:00] ACT 1: THE DISCOVERY\n- Home office frustration\n- Initial troubleshooting\n- Router admin page shock\n- Decision to confront neighbor\n\n[8:00-9:00] AD BREAK 1\n\n[9:00-20:00] ACT 2: THE CONFRONTATION\n- Knocking on Greg's door\n- Unexpected calm reaction\n- Basement reveal\n- CIA background drop\n\n[20:00-21:00] AD BREAK 2\n\n[21:00-35:00] ACT 3: THE CONSPIRACY\n- HOA president embezzlement details\n- Evidence walkthrough\n- $40K over 3 years\n- The choice\n\n[35:00-40:00] RESOLUTION\n- Taking the $600 check\n- Moral implications discussion\n- What would listeners do?\n\n[40:00-42:00] OUTRO\n- Episode recap\n- Next week tease\n- Social media CTA"
+}

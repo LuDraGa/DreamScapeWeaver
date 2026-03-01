@@ -23,11 +23,42 @@ export function TemplateGallery({
   // Sort templates by compatibility with dreamscape
   const sortedTemplates = sortTemplatesByCompatibility(dreamscape, templates)
 
-  const categoryTitle = category === 'short-form' ? 'Short Videos' : 'Reddit Stories'
-  const categoryDescription =
-    category === 'short-form'
-      ? 'Choose a story type for TikTok, Reels, or YouTube Shorts'
-      : 'Choose a subreddit style for your story'
+  const getCategoryInfo = (cat: TemplateCategory) => {
+    switch (cat) {
+      case 'short-form':
+        return {
+          title: 'Short Videos',
+          description: 'Choose a story type for TikTok, Reels, or YouTube Shorts',
+        }
+      case 'reddit':
+        return {
+          title: 'Reddit Stories',
+          description: 'Choose a subreddit style for your story',
+        }
+      case 'long-form':
+        return {
+          title: 'Long Videos',
+          description: 'Choose a format for YouTube deep dives and documentaries',
+        }
+      case 'video-production':
+        return {
+          title: 'Video Production',
+          description: 'Choose a production document type',
+        }
+      case 'audio-production':
+        return {
+          title: 'Audio Production',
+          description: 'Choose an audio content format',
+        }
+      case 'marketing':
+        return {
+          title: 'Marketing & Commercial',
+          description: 'Choose a marketing copy format',
+        }
+    }
+  }
+
+  const { title: categoryTitle, description: categoryDescription } = getCategoryInfo(category)
 
   return (
     <div>

@@ -1,0 +1,35 @@
+{
+  "id": "video-editing-guide",
+  "displayName": "Editing Beat Sheet",
+  "category": "video-production",
+  "icon": "✂️",
+  "description": "Post-production timing, pacing, and cut suggestions for editors",
+  "duration": "Production doc",
+  "wordCount": 550,
+  "platforms": ["youtube", "film", "commercial"],
+  "settings": {
+    "tone": "script",
+    "genres": ["production", "editorial"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 5,
+      "pace": 8,
+      "twist": 6,
+      "realism": 7,
+      "catharsis": 6,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a video editor creating a comprehensive editing guide with pacing, cuts, and timing direction.",
+    "user": "Create an editing beat sheet based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Overall pacing strategy\n- Suggested runtime for each section\n- Cut points and transitions\n- Montage sequences if applicable\n- Timing for emotional beats\n- B-roll integration notes\n- Music/sound cue timing\n- Final runtime target\n- 550 words maximum\n\nFormat by act or section with timestamps.\n\nWrite the editing guide now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["pacing", "timing", "rhythm", "structure"],
+    "goodFit": ["story", "narrative", "sequence"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["narrative", "structured"]
+  },
+  "exampleOutput": "OVERALL STRATEGY:\nTarget runtime: 8-10 minutes. Fast-paced opening (hook in 30s), slow burn middle (build tension), rapid climax.\n\nACT 1: DISCOVERY (0:00-2:30)\n- 0:00-0:15: Quick cuts - router, screen, frustration building\n- 0:15-0:45: Hold on device list reveal, let audience read\n- 0:45-1:30: Slow push-in on protagonist decision\n- 1:30-2:30: B-roll montage of walking to neighbor's house\nMusic: Minimal, tension building\n\nACT 2: REVELATION (2:30-6:00)\n- 2:30-3:00: Long take doorway conversation\n- 3:00-4:30: Basement reveal - slow pan across equipment\n- Cut to close-ups of evidence, 2-3 seconds each"
+}

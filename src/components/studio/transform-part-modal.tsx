@@ -5,7 +5,7 @@ import { ThemedCard } from '@/components/design-system/themed-card'
 import { Button } from '@/components/ui/button'
 import { XIcon } from '@/components/icons'
 import type { Part, PartType } from '@/lib/types'
-import { getPartType } from '@/lib/parts'
+import { getPartType, type PartTypeMetadata } from '@/lib/parts'
 import { getValidTargetTypes, getTransform } from '@/lib/transforms'
 
 interface TransformPartModalProps {
@@ -15,6 +15,46 @@ interface TransformPartModalProps {
   onTransform: (targetType: PartType) => void
 }
 
+// Category metadata for UI display
+const CATEGORIES = [
+  {
+    id: 'text-foundations' as const,
+    name: 'Text Foundations',
+    icon: '📚',
+    description: 'Core narrative building blocks',
+  },
+  {
+    id: 'short-form' as const,
+    name: 'Short-Form Content',
+    icon: '⚡',
+    description: 'Quick, engaging social content',
+  },
+  {
+    id: 'long-form' as const,
+    name: 'Long-Form Content',
+    icon: '📖',
+    description: 'In-depth articles and scripts',
+  },
+  {
+    id: 'video-production' as const,
+    name: 'Video Production',
+    icon: '🎬',
+    description: 'Production documents for video',
+  },
+  {
+    id: 'audio-production' as const,
+    name: 'Audio Production',
+    icon: '🎙️',
+    description: 'Podcast and audio content',
+  },
+  {
+    id: 'marketing' as const,
+    name: 'Marketing & Commercial',
+    icon: '💼',
+    description: 'Sales and marketing materials',
+  },
+]
+
 export function TransformPartModal({
   isOpen,
   sourcePart,
@@ -22,12 +62,23 @@ export function TransformPartModal({
   onTransform,
 }: TransformPartModalProps) {
   const [selectedTarget, setSelectedTarget] = useState<PartType | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
 
   if (!isOpen) return null
 
   const sourcePartType = getPartType(sourcePart.type)
   const validTargets = getValidTargetTypes(sourcePart.type)
+
+  // Group valid targets by category
+  const targetsByCategory = validTargets.reduce((acc, targetType) => {
+    const meta = getPartType(targetType)
+    if (!acc[meta.category]) {
+      acc[meta.category] = []
+    }
+    acc[meta.category].push(meta)
+    return acc
+  }, {} as Record<string, PartTypeMetadata[]>)
 
   const handleGenerate = async () => {
     if (!selectedTarget) return
@@ -37,6 +88,7 @@ export function TransformPartModal({
       await onTransform(selectedTarget)
       onClose()
       setSelectedTarget(null)
+      setSelectedCategory(null)
     } catch (error) {
       console.error('Transform failed:', error)
     } finally {
@@ -46,8 +98,12 @@ export function TransformPartModal({
 
   const handleCancel = () => {
     setSelectedTarget(null)
+    setSelectedCategory(null)
     onClose()
   }
+
+  // If category selected, show parts within that category
+  const showingCategoryParts = selectedCategory !== null
 
   return (
     <>
@@ -59,10 +115,32 @@ export function TransformPartModal({
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <ThemedCard className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <ThemedCard className="w-full max-w-4xl max-h-[85vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-text-primary">Transform Part</h2>
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">Transform Part</h2>
+              {/* Breadcrumb trail */}
+              <div className="flex items-center gap-2 text-xs text-text-secondary mt-1">
+                <span>Choose category</span>
+                {selectedCategory && (
+                  <>
+                    <span>→</span>
+                    <span>
+                      {CATEGORIES.find((c) => c.id === selectedCategory)?.name || 'Category'}
+                    </span>
+                  </>
+                )}
+                {selectedTarget && (
+                  <>
+                    <span>→</span>
+                    <span className="text-primary font-medium">
+                      {getPartType(selectedTarget).name}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
             <button
               onClick={handleCancel}
               className="text-text-muted hover:text-text-primary transition-colors"
@@ -87,24 +165,50 @@ export function TransformPartModal({
             </div>
           </div>
 
-          {/* Target Selection */}
+          {/* Breadcrumb navigation - always show if not at root */}
+          {(showingCategoryParts || selectedTarget !== null) && (
+            <button
+              onClick={() => {
+                if (selectedTarget !== null) {
+                  // If a target is selected, go back to category parts view
+                  setSelectedTarget(null)
+                } else if (selectedCategory !== null) {
+                  // If viewing category parts, go back to categories
+                  setSelectedCategory(null)
+                }
+              }}
+              className="flex items-center gap-2 mb-4 text-sm text-primary hover:text-primary-light transition-colors"
+            >
+              <span>←</span>
+              <span>
+                {selectedTarget !== null
+                  ? 'Back to formats'
+                  : 'Back to categories'}
+              </span>
+            </button>
+          )}
+
+          {/* Category Selection OR Part Selection */}
           <div className="mb-6">
-            <p className="text-sm text-text-secondary mb-3">Transform to:</p>
+            <p className="text-sm text-text-secondary mb-3">
+              {showingCategoryParts ? 'Transform to:' : 'Select category:'}
+            </p>
+
             {validTargets.length === 0 ? (
               <p className="text-sm text-text-muted text-center py-8">
                 No valid transformations available for this part type
               </p>
-            ) : (
+            ) : showingCategoryParts ? (
+              // Show parts in selected category
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {validTargets.map((targetType) => {
-                  const targetMeta = getPartType(targetType)
-                  const transform = getTransform(sourcePart.type, targetType)
-                  const isSelected = selectedTarget === targetType
+                {targetsByCategory[selectedCategory]?.map((targetMeta) => {
+                  const transform = getTransform(sourcePart.type, targetMeta.id)
+                  const isSelected = selectedTarget === targetMeta.id
 
                   return (
                     <button
-                      key={targetType}
-                      onClick={() => setSelectedTarget(targetType)}
+                      key={targetMeta.id}
+                      onClick={() => setSelectedTarget(targetMeta.id)}
                       className={`
                         p-4 rounded-lg border-2 transition-all text-left
                         ${isSelected
@@ -117,11 +221,55 @@ export function TransformPartModal({
                       <p className="font-medium text-sm text-text-primary mb-1">
                         {targetMeta.name}
                       </p>
+                      <p className="text-xs text-text-secondary line-clamp-2 mb-1">
+                        {targetMeta.description}
+                      </p>
                       {transform && (
-                        <p className="text-xs text-text-secondary capitalize">
+                        <p className="text-xs text-primary capitalize">
                           {transform.transformType}
                         </p>
                       )}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              // Show categories
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {CATEGORIES.map((category) => {
+                  const partsInCategory = targetsByCategory[category.id]?.length || 0
+                  const hasPartsInCategory = partsInCategory > 0
+
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => hasPartsInCategory && setSelectedCategory(category.id)}
+                      disabled={!hasPartsInCategory}
+                      className={`
+                        p-4 rounded-lg border-2 transition-all text-left
+                        ${hasPartsInCategory
+                          ? 'border-border-primary hover:border-primary/50 bg-background-secondary hover:bg-background-tertiary cursor-pointer'
+                          : 'border-border-secondary bg-background-secondary/50 opacity-50 cursor-not-allowed'
+                        }
+                      `}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-3xl">{category.icon}</span>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm text-text-primary mb-1">
+                            {category.name}
+                          </p>
+                          <p className="text-xs text-text-secondary mb-2">
+                            {category.description}
+                          </p>
+                          <p className="text-xs text-text-muted">
+                            {hasPartsInCategory
+                              ? `${partsInCategory} ${partsInCategory === 1 ? 'format' : 'formats'} available`
+                              : 'No formats available'
+                            }
+                          </p>
+                        </div>
+                      </div>
                     </button>
                   )
                 })}
@@ -142,7 +290,7 @@ export function TransformPartModal({
             <Button
               onClick={handleGenerate}
               disabled={!selectedTarget || generating}
-              className="flex-1 bg-primary hover:bg-primary-light text-white"
+              className="flex-1 bg-primary hover:bg-primary-light text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {generating ? 'Generating...' : 'Generate'}
             </Button>

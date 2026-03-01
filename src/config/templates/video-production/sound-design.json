@@ -1,0 +1,35 @@
+{
+  "id": "video-sound-design",
+  "displayName": "Sound Design Notes",
+  "category": "video-production",
+  "icon": "🔊",
+  "description": "Audio atmosphere, effects, and environmental sound cues for post-production",
+  "duration": "Production doc",
+  "wordCount": 450,
+  "platforms": ["film", "youtube", "podcast-video"],
+  "settings": {
+    "tone": "script",
+    "genres": ["production", "audio"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 6,
+      "pace": 6,
+      "twist": 5,
+      "realism": 8,
+      "catharsis": 6,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a sound designer creating detailed audio direction for video post-production.",
+    "user": "Create sound design notes based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Environmental/ambient sounds for each location\n- Sound effects for key moments\n- Foley details\n- Emotional/atmospheric audio cues\n- Music direction (when needed)\n- Audio transitions between scenes\n- Volume/mix notes\n- 450 words maximum\n\nOrganize by scene or moment.\n\nWrite the sound design notes now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["atmosphere", "mood", "tension", "environment"],
+    "goodFit": ["story", "narrative", "emotional"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["atmospheric", "emotional"]
+  },
+  "exampleOutput": "HOME OFFICE:\nAMBIENT: Low hum of computer fans, distant traffic, clock ticking\nSFX: Mouse clicks (sharp, deliberate), keyboard typing (frustrated rhythm)\nFOLEY: Chair creaks, papers rustling\nMOOD: Subtle tension building through increasing router beep frequency\n\nDOORWAY CONFRONTATION:\nAMBIENT: Suburban quiet, distant lawnmower, birds\nSFX: Doorbell (warm chime), door opening (smooth, well-maintained)\nFOLEY: Footsteps on concrete, clothing rustle\nTRANSITION: Cut ambient abruptly on basement door opening\n\nBASEMENT REVEAL:\nAMBIENT: Electronic hum, server fan whir, hard drive clicks\nMUSIC: Low drone, tension sustain"
+}

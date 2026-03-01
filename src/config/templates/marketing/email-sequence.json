@@ -1,0 +1,35 @@
+{
+  "id": "marketing-email-seq",
+  "displayName": "Email Sequence",
+  "category": "marketing",
+  "icon": "📧",
+  "description": "Multi-email drip campaign with storytelling and progressive CTAs",
+  "duration": "5-7 emails",
+  "wordCount": 900,
+  "platforms": ["email", "mailchimp", "convertkit"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["marketing", "email"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 2,
+      "pace": 6,
+      "twist": 5,
+      "realism": 9,
+      "catharsis": 7,
+      "moralClarity": 8
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are an email marketing specialist creating a story-driven drip sequence that builds trust and drives conversion.",
+    "user": "Create a 5-email sequence using this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Email 1: Welcome + Story Hook (Day 0)\n- Email 2: Problem Agitation (Day 2)\n- Email 3: Solution Introduction (Day 4)\n- Email 4: Social Proof + Benefits (Day 6)\n- Email 5: Final Push + Urgency (Day 8)\n- Each email: Subject line + body (150-200 words)\n- Progressive CTAs (soft → hard)\n- 900 words total\n\nWrite the sequence now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["journey", "transformation", "problem-solution"],
+    "goodFit": ["story", "narrative", "discovery"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["story-driven"]
+  },
+  "exampleOutput": "**EMAIL 1 (Day 0):**\nSubject: 27 devices. I own 8.\n\nHey [Name],\n\nI need to tell you about something that happened last week.\n\nI was working from home when my internet died. Again. Client call. Dropped. Again.\n\nI'd had enough. So I checked my router.\n\n27 devices connected. I own 8.\n\nDevice names like \"SIGINT-NODE-7.\" Not exactly \"Sarah's iPhone.\"\n\nTurns out someone was using my WiFi without permission. But here's the thing—I had NO IDEA until I looked.\n\nHow many devices are on YOUR network right now?\n\nTomorrow I'll show you how to find out.\n\n—[Name]\n\n**EMAIL 2 (Day 2):**\nSubject: This is costing you money (you just don't see it)\n\nHey [Name],\n\nYesterday I told you about the 27 devices.\n\nToday, let's talk about what that actually costs.\n\nSlow internet during client calls? That's lost contracts.\nBuffering during presentations? That's lost credibility.\nUnknown devices using your bandwidth? That's money walking out the door.\n\nAnd you can't fix what you can't see.\n\nThat's the real problem—invisibility.\n\nTomorrow I'll show you the solution I found.\n\n[More emails continue...]"
+}

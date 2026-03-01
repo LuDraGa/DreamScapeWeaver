@@ -1,0 +1,35 @@
+{
+  "id": "marketing-sales-page",
+  "displayName": "Sales Page Copy",
+  "category": "marketing",
+  "icon": "💰",
+  "description": "Conversion-focused landing page copy with social proof and CTAs",
+  "duration": "Landing page",
+  "wordCount": 1200,
+  "platforms": ["web", "landing-page", "shopify"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["marketing", "sales"],
+    "intensity": {
+      "stakes": 8,
+      "darkness": 2,
+      "pace": 7,
+      "twist": 5,
+      "realism": 8,
+      "catharsis": 8,
+      "moralClarity": 9
+    },
+    "avoidPhrases": ["secret", "hack", "weird trick", "you won't believe"]
+  },
+  "promptTemplate": {
+    "system": "You are a conversion copywriter creating persuasive sales page copy that drives action through storytelling and benefits.",
+    "user": "Create sales page copy inspired by this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Headline (grab attention)\n- Subheadline (amplify interest)\n- Story-based opening (relate to problem)\n- Problem agitation\n- Solution introduction\n- Features → Benefits\n- Social proof section\n- Objection handling\n- Clear CTAs (3-4 throughout)\n- Guarantee/Risk reversal\n- Final CTA\n- 1200 words maximum\n- Avoid clichés: {avoidPhrases}\n\nWrite the sales page now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["problem", "solution", "discovery", "transformation"],
+    "goodFit": ["conflict", "resolution", "benefit"],
+    "checkType": "any",
+    "dreamscapeTypes": ["problem-solution"]
+  },
+  "exampleOutput": "**HEADLINE:**\nWhat If Your Biggest Problem Is Hiding In Plain Sight?\n\n**SUBHEAD:**\nHow one frustrated homeowner discovered the truth—and what it taught us about seeing what's really there\n\n**STORY OPENING:**\nIt started with slow WiFi.\n\nSeems minor, right? Just another modern inconvenience.\n\nBut for Sam, it was costing real money. Dropped client calls. Lost contracts. Actual revenue walking out the door because of buffering.\n\nSound familiar?\n\nHere's what Sam didn't know: The problem wasn't the internet. The problem was 27 unauthorized devices draining the bandwidth.\n\nThe solution? It was literally next door. They just couldn't see it.\n\n**THE PROBLEM:**\nHow many problems in your business are you tolerating right now?\n\nSlow processes. Unclear data. Systems that \"work fine\" but quietly cost you thousands.\n\nYou've called support. You've upgraded. You've troubleshooted.\n\nBut what if you're looking in the wrong place?\n\n**THE SOLUTION:**\n[Product Name] is like having a CIA operative for your business operations—someone who sees what you can't, finds what's hiding, and shows you exactly where to look.\n\n✓ Real-time network monitoring\n✓ Unauthorized access alerts\n✓ Performance analytics\n✓ One-click remediation\n\n[CTA: See What You're Missing →]"
+}

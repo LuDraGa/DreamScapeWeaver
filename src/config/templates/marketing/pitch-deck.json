@@ -1,0 +1,35 @@
+{
+  "id": "marketing-pitch-deck",
+  "displayName": "Pitch Deck Narrative",
+  "category": "marketing",
+  "icon": "📊",
+  "description": "Investor or sales deck narrative with slide-by-slide copy and talking points",
+  "duration": "10-15 slides",
+  "wordCount": 1000,
+  "platforms": ["pitch", "sales", "investor"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["business", "pitch"],
+    "intensity": {
+      "stakes": 9,
+      "darkness": 2,
+      "pace": 7,
+      "twist": 5,
+      "realism": 9,
+      "catharsis": 8,
+      "moralClarity": 9
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a pitch deck specialist creating compelling narratives for investor or sales presentations.",
+    "user": "Create pitch deck copy using this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Slide-by-slide narrative (12-15 slides)\n- Opening hook/story\n- Problem statement (market pain)\n- Solution overview\n- How it works\n- Market opportunity\n- Traction/proof\n- Business model\n- Ask/CTA\n- Speaker notes for each slide\n- 1000 words maximum\n\nWrite the pitch deck now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["opportunity", "problem", "solution", "market"],
+    "goodFit": ["story", "transformation", "impact"],
+    "checkType": "any",
+    "dreamscapeTypes": ["business-focused"]
+  },
+  "exampleOutput": "**SLIDE 1: TITLE**\nNetworkGuard Pro\n*Seeing the invisible threats in your home*\n\nSPEAKER NOTES: Open with the story hook - \"27 devices. I owned 8.\"\n\n**SLIDE 2: THE STORY**\nVisual: Screenshot of router showing 27 devices\nCopy: \"This went viral last week. It's not unique.\"\n\nSPEAKER NOTES: Share the WiFi theft story. Build tension. This is happening everywhere.\n\n**SLIDE 3: THE PROBLEM**\nHeadline: \"72% of home WiFi networks have unauthorized users\"\nBullets:\n• Lost productivity ($2.1B annually)\n• Security vulnerabilities\n• Zero visibility for consumers\n\nSPEAKER NOTES: Cite source. Make it real with cost data.\n\n**SLIDE 4: WHY NOW**\n• Remote work explosion\n• IoT device proliferation\n• Growing security awareness\n• No consumer-friendly solutions\n\nSPEAKER NOTES: Market timing is perfect. Tailwinds everywhere.\n\n**SLIDE 5: OUR SOLUTION**\nHeadline: \"See every device. Block threats. One click.\"\nVisual: App screenshot\n\nSPEAKER NOTES: Demo the one-click block feature live if possible.\n\n**SLIDE 6: HOW IT WORKS**\n1. Install (2 minutes)\n2. Scan network (automatic)\n3. Take action (one click)\n\nSPEAKER NOTES: Emphasize simplicity. No technical knowledge needed.\n\n**SLIDE 7: MARKET OPPORTUNITY**\n• TAM: $4.2B (home network security)\n• SAM: $800M (WiFi monitoring)\n• SOM: $120M (year 3 target)\n\n[Continues through business model, traction, team, ask...]"
+}

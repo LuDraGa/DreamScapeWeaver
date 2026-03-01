@@ -13,7 +13,7 @@ export function ContentTypeSelector({ onSelect }: ContentTypeSelectorProps) {
       <h2 className="text-lg font-semibold mb-1 text-text-primary">Where do you want to share this?</h2>
       <p className="text-sm mb-5 text-text-muted">Choose the type of content you want to create</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl">
         {/* Short-Form Video */}
         <ThemedCard
           onClick={() => onSelect('short-form')}
@@ -61,6 +61,57 @@ export function ContentTypeSelector({ onSelect }: ContentTypeSelectorProps) {
             </p>
             <p className="text-xs text-text-secondary">
               200-2000 word posts
+            </p>
+          </div>
+        </ThemedCard>
+
+        {/* Video Production */}
+        <ThemedCard
+          onClick={() => onSelect('video-production')}
+          className="cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5"
+        >
+          <div className="text-center py-6">
+            <div className="text-5xl mb-4">🎬</div>
+            <h3 className="font-semibold text-lg mb-2 text-text-primary">Video Production</h3>
+            <p className="text-sm text-text-muted mb-3">
+              Scene breakdowns, shot lists, cinematography
+            </p>
+            <p className="text-xs text-text-secondary">
+              Production documents
+            </p>
+          </div>
+        </ThemedCard>
+
+        {/* Audio Production */}
+        <ThemedCard
+          onClick={() => onSelect('audio-production')}
+          className="cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5"
+        >
+          <div className="text-center py-6">
+            <div className="text-5xl mb-4">🎙️</div>
+            <h3 className="font-semibold text-lg mb-2 text-text-primary">Audio Production</h3>
+            <p className="text-sm text-text-muted mb-3">
+              Podcast outlines, scripts, show notes
+            </p>
+            <p className="text-xs text-text-secondary">
+              Audio content & production
+            </p>
+          </div>
+        </ThemedCard>
+
+        {/* Marketing & Commercial */}
+        <ThemedCard
+          onClick={() => onSelect('marketing')}
+          className="cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5"
+        >
+          <div className="text-center py-6">
+            <div className="text-5xl mb-4">💼</div>
+            <h3 className="font-semibold text-lg mb-2 text-text-primary">Marketing & Commercial</h3>
+            <p className="text-sm text-text-muted mb-3">
+              Sales pages, email sequences, pitch decks
+            </p>
+            <p className="text-xs text-text-secondary">
+              Marketing & sales copy
             </p>
           </div>
         </ThemedCard>

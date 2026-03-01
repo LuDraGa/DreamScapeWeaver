@@ -1,0 +1,35 @@
+{
+  "id": "marketing-brand-story",
+  "displayName": "Brand Story",
+  "category": "marketing",
+  "icon": "🏢",
+  "description": "Company origin narrative with mission, values, and vision",
+  "duration": "About page",
+  "wordCount": 600,
+  "platforms": ["website", "about-page", "investor-deck"],
+  "settings": {
+    "tone": "narrative",
+    "genres": ["brand", "storytelling"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 2,
+      "pace": 5,
+      "twist": 4,
+      "realism": 9,
+      "catharsis": 7,
+      "moralClarity": 9
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a brand strategist creating compelling origin stories that connect emotionally with audiences.",
+    "user": "Create a brand story using this narrative:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Origin story (why we started)\n- Problem we witnessed\n- Personal connection/motivation\n- Mission statement\n- Core values (3-4)\n- Vision for the future\n- Who we serve\n- What makes us different\n- Human, authentic tone\n- 600 words maximum\n\nWrite the brand story now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["origin", "founding", "inspiration", "mission"],
+    "goodFit": ["story", "motivation", "purpose"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["origin-story"]
+  },
+  "exampleOutput": "**Why We Built NetworkGuard**\n\nIt started with a frustrated email.\n\nA friend—let's call them Sam—sent me a message at 2am. \"27 devices on my WiFi. I own 8. What do I do?\"\n\nSam works from home. Lost a $15K contract because their internet kept cutting out during a client call. Turns out someone in their building was streaming Netflix on Sam's dime.\n\nThe worst part? Sam had no idea. For months.\n\nThat invisibility—that's what stuck with me.\n\n**The Problem Nobody Talks About**\n\nWe secure our phones. We update our computers. We use VPNs.\n\nBut who checks their WiFi? Who actually knows what's connected to their home network?\n\nIn 2024, the average home has 22 connected devices. Most people can name maybe 10.\n\nThat gap? That's where the vulnerability lives.\n\n**Our Mission**\n\nMake home network security visible, simple, and accessible to everyone—not just people with CIA backgrounds.\n\n**Our Values**\n\n**Transparency Over Fear**\nWe don't scare people into buying. We show them what's happening and let them decide.\n\n**Simplicity Over Features**\nOne-click actions. Two-minute setup. If it's not simple, we don't ship it.\n\n**Privacy Always**\nYour network data stays on your device. Period.\n\n**What's Next**\n\nWe're building the future where home network security is as automatic as locking your front door.\n\n**Who We Serve**\n\nRemote workers protecting their livelihood. Parents managing family safety. Anyone who deserves to know what's happening in their own home.\n\nWelcome to NetworkGuard."
+}

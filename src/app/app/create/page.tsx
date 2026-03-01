@@ -111,7 +111,7 @@ export default function CreatePage() {
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   // Template state (Step B) - Normal User Mode
-  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>('short-form')
+  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
 
   // Initialize dialState from selected preset
@@ -1043,124 +1043,116 @@ Next step: Select a preset and configure advanced settings.`
               Choose a template optimized for your target platform
             </p>
 
-            {/* Platform Tabs */}
-            <div className="flex gap-2 mb-6 p-1 rounded-xl bg-[rgba(15,23,42,0.5)]">
-              <button
-                onClick={() => {
-                  setSelectedCategory('short-form')
-                  setSelectedTemplate(null)
-                }}
-                className="flex-1 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200"
-                style={{
-                  background: selectedCategory === 'short-form' ? '#6366f1' : 'transparent',
-                  color: selectedCategory === 'short-form' ? '#fff' : '#94a3b8',
-                }}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-xl">📱</span>
-                  <span>Short Videos</span>
-                </div>
-                <div className="text-xs opacity-75 mt-1">TikTok, Reels, Shorts</div>
-              </button>
-
-              <button
-                onClick={() => {
-                  setSelectedCategory('reddit')
-                  setSelectedTemplate(null)
-                }}
-                className="flex-1 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200"
-                style={{
-                  background: selectedCategory === 'reddit' ? '#6366f1' : 'transparent',
-                  color: selectedCategory === 'reddit' ? '#fff' : '#94a3b8',
-                }}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-xl">🗨️</span>
-                  <span>Reddit Stories</span>
-                </div>
-                <div className="text-xs opacity-75 mt-1">Text storytelling</div>
-              </button>
+            {/* Category Tabs - Always Visible */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              {[
+                { id: 'short-form' as const, icon: '📱', label: 'Short Videos' },
+                { id: 'reddit' as const, icon: '🗨️', label: 'Reddit Stories' },
+                { id: 'long-form' as const, icon: '🎥', label: 'Long Videos' },
+                { id: 'video-production' as const, icon: '🎬', label: 'Video Production' },
+                { id: 'audio-production' as const, icon: '🎙️', label: 'Audio Production' },
+                { id: 'marketing' as const, icon: '💼', label: 'Marketing' },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(cat.id)
+                    setSelectedTemplate(null)
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all shrink-0"
+                  style={{
+                    background: selectedCategory === cat.id ? '#6366f1' : 'rgba(30,41,59,0.5)',
+                    color: selectedCategory === cat.id ? '#fff' : '#94a3b8',
+                    border: selectedCategory === cat.id ? '1px solid #818cf8' : '1px solid #334155',
+                  }}
+                >
+                  <span className="text-lg">{cat.icon}</span>
+                  <span>{cat.label}</span>
+                </button>
+              ))}
             </div>
 
-            {/* Template Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {getTemplatesByCategory(selectedCategory).map((template) => {
-                const compatibility = checkTemplateCompatibility(
-                  {
-                    id: uid(),
-                    title: chunks[0]?.text?.slice(0, 50) || 'Untitled',
-                    chunks,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                  },
-                  template
-                )
-                const isSelected = selectedTemplate?.id === template.id
+            {/* Template Grid - Shows when category selected */}
+            {selectedCategory && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 max-h-[60vh] overflow-y-auto pr-2">
+                {getTemplatesByCategory(selectedCategory).map((template) => {
+                  const compatibility = checkTemplateCompatibility(
+                    {
+                      id: uid(),
+                      title: chunks[0]?.text?.slice(0, 50) || 'Untitled',
+                      chunks,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    },
+                    template
+                  )
+                  const isSelected = selectedTemplate?.id === template.id
 
-                return (
-                  <ThemedCard
-                    key={template.id}
-                    onClick={() => setSelectedTemplate(template)}
-                    className={`cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
-                        : 'hover:border-primary/50 hover:bg-primary/5'
-                    }`}
-                  >
-                    {/* Template Card Content */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{template.icon}</span>
-                        <div>
-                          <h3 className={`font-semibold ${isSelected ? 'text-primary' : 'text-text-primary'} transition-colors`}>
-                            {template.displayName}
-                          </h3>
-                          <p className="text-xs text-text-muted">{template.duration}</p>
+                  return (
+                    <ThemedCard
+                      key={template.id}
+                      onClick={() => setSelectedTemplate(template)}
+                      className={`cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
+                          : 'hover:border-primary/50 hover:bg-primary/5'
+                      }`}
+                    >
+                      {/* Template Card Content */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl">{template.icon}</span>
+                          <div>
+                            <h3 className={`font-semibold ${isSelected ? 'text-primary' : 'text-text-primary'} transition-colors`}>
+                              {template.displayName}
+                            </h3>
+                            <p className="text-xs text-text-muted">{template.duration}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <p className="text-sm text-text-secondary mb-3 line-clamp-2">{template.description}</p>
+                      <p className="text-sm text-text-secondary mb-3 line-clamp-2">{template.description}</p>
 
-                    {/* Compatibility Badge */}
-                    <div
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                      style={{
-                        background:
-                          compatibility.level === 'perfect'
-                            ? 'rgba(34,197,94,0.1)'
+                      {/* Compatibility Badge */}
+                      <div
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                        style={{
+                          background:
+                            compatibility.level === 'perfect'
+                              ? 'rgba(34,197,94,0.1)'
+                              : compatibility.level === 'good'
+                                ? 'rgba(99,102,241,0.1)'
+                                : 'rgba(251,146,60,0.1)',
+                          color:
+                            compatibility.level === 'perfect'
+                              ? '#4ade80'
+                              : compatibility.level === 'good'
+                                ? '#a5b4fc'
+                                : '#fb923c',
+                          border:
+                            compatibility.level === 'perfect'
+                              ? '1px solid rgba(34,197,94,0.3)'
+                              : compatibility.level === 'good'
+                                ? '1px solid rgba(99,102,241,0.2)'
+                                : '1px solid rgba(251,146,60,0.3)',
+                        }}
+                      >
+                        <span>{compatibility.level === 'perfect' ? '✓' : compatibility.level === 'good' ? '→' : '⚠️'}</span>
+                        <span>
+                          {compatibility.level === 'perfect'
+                            ? 'Perfect match'
                             : compatibility.level === 'good'
-                              ? 'rgba(99,102,241,0.1)'
-                              : 'rgba(251,146,60,0.1)',
-                        color:
-                          compatibility.level === 'perfect'
-                            ? '#4ade80'
-                            : compatibility.level === 'good'
-                              ? '#a5b4fc'
-                              : '#fb923c',
-                        border:
-                          compatibility.level === 'perfect'
-                            ? '1px solid rgba(34,197,94,0.3)'
-                            : compatibility.level === 'good'
-                              ? '1px solid rgba(99,102,241,0.2)'
-                              : '1px solid rgba(251,146,60,0.3)',
-                      }}
-                    >
-                      <span>{compatibility.level === 'perfect' ? '✓' : compatibility.level === 'good' ? '→' : '⚠️'}</span>
-                      <span>
-                        {compatibility.level === 'perfect'
-                          ? 'Perfect match'
-                          : compatibility.level === 'good'
-                            ? 'Good fit'
-                            : 'May need tweaking'}
-                      </span>
-                    </div>
-                  </ThemedCard>
-                )
-              })}
-            </div>
+                              ? 'Good fit'
+                              : 'May need tweaking'}
+                        </span>
+                      </div>
+                    </ThemedCard>
+                  )
+                })}
+              </div>
+            )}
 
-            {/* Inline Template Preview (shows when template selected) */}
+            {/* Inline Template Preview - Expands when template selected */}
             {selectedTemplate && (
               <ThemedCard className="mb-6 border-primary/30 bg-primary/5">
                 <div className="flex items-start justify-between mb-4">
@@ -1225,6 +1217,34 @@ Next step: Select a preset and configure advanced settings.`
                         <li>Optimized for upvotes and engagement</li>
                       </>
                     )}
+                    {selectedTemplate.category === 'long-form' && (
+                      <>
+                        <li>Optimized for {selectedTemplate.platforms.join('/')}</li>
+                        <li>Deep-dive educational content format</li>
+                        <li>Structured for 8-20 minute videos</li>
+                      </>
+                    )}
+                    {selectedTemplate.category === 'video-production' && (
+                      <>
+                        <li>Production-ready document format</li>
+                        <li>Industry-standard structure</li>
+                        <li>Ready for video production workflow</li>
+                      </>
+                    )}
+                    {selectedTemplate.category === 'audio-production' && (
+                      <>
+                        <li>Audio content production format</li>
+                        <li>Podcast and voiceover ready</li>
+                        <li>Complete audio workflow support</li>
+                      </>
+                    )}
+                    {selectedTemplate.category === 'marketing' && (
+                      <>
+                        <li>Marketing and sales copy format</li>
+                        <li>Conversion-optimized structure</li>
+                        <li>Professional commercial content</li>
+                      </>
+                    )}
                   </ul>
                 </div>
 
@@ -1240,18 +1260,16 @@ Next step: Select a preset and configure advanced settings.`
               </ThemedCard>
             )}
 
-            {/* Navigation (Back button only - Next is in template preview) */}
-            {!selectedTemplate && (
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => setStep(0)}
-                  className="bg-transparent border-[#1e293b] text-text-secondary"
-                >
-                  Back
-                </Button>
-              </div>
-            )}
+            {/* Navigation */}
+            <div className="flex justify-between mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setStep(0)}
+                className="bg-transparent border-[#1e293b] text-text-secondary"
+              >
+                ← Back to Dreamscape
+              </Button>
+            </div>
           </div>
         )}
 

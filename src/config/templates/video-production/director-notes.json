@@ -1,0 +1,35 @@
+{
+  "id": "video-director-notes",
+  "displayName": "Director's Notes",
+  "category": "video-production",
+  "icon": "🎯",
+  "description": "Creative vision, performance direction, and scene intentions for the production team",
+  "duration": "Production doc",
+  "wordCount": 500,
+  "platforms": ["film", "youtube", "commercial"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["production", "creative"],
+    "intensity": {
+      "stakes": 6,
+      "darkness": 5,
+      "pace": 6,
+      "twist": 6,
+      "realism": 7,
+      "catharsis": 6,
+      "moralClarity": 7
+    },
+    "avoidPhrases": []
+  },
+  "promptTemplate": {
+    "system": "You are a film director providing creative vision and performance notes to guide the cast and crew.",
+    "user": "Create director's notes based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Overall creative vision and tone\n- Performance direction for key characters\n- Scene-specific intentions\n- What emotions we're chasing\n- What to avoid\n- References or inspirations\n- Notes for actors on subtext\n- 500 words maximum\n\nBe specific but inspiring. Focus on the 'why' behind choices.\n\nWrite the notes now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["character", "emotion", "performance", "motivation"],
+    "goodFit": ["story", "narrative", "conflict", "relationship"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["character-driven", "emotional"]
+  },
+  "exampleOutput": "VISION:\nThis is a suburban thriller masquerading as a neighborhood comedy. We want the audience to feel the protagonist's paranoia become justified. Think 'Rear Window' meets 'The Burbs.'\n\nPROTAGONIST:\nPlay the frustration real. This isn't about WiFi—it's about feeling powerless in your own home. The turn from anger to intrigue should happen in the doorway scene. Let curiosity win.\n\nGREG:\nDangerous calm. Not menacing—just unsettlingly competent. Like he's been waiting for this conversation. Cardigan and reading glasses are crucial—they're camouflage."
+}

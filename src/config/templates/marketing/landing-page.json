@@ -1,0 +1,35 @@
+{
+  "id": "marketing-landing",
+  "displayName": "Landing Page Copy",
+  "category": "marketing",
+  "icon": "🎯",
+  "description": "Focused conversion page with hero, benefits, and strong CTA",
+  "duration": "Landing page",
+  "wordCount": 600,
+  "platforms": ["web", "ads", "email-campaigns"],
+  "settings": {
+    "tone": "mixed",
+    "genres": ["marketing", "conversion"],
+    "intensity": {
+      "stakes": 7,
+      "darkness": 2,
+      "pace": 8,
+      "twist": 4,
+      "realism": 8,
+      "catharsis": 7,
+      "moralClarity": 9
+    },
+    "avoidPhrases": ["secret", "hack", "one weird trick"]
+  },
+  "promptTemplate": {
+    "system": "You are a landing page specialist creating focused, conversion-optimized copy for a single goal.",
+    "user": "Create landing page copy using this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Hero headline + subheadline\n- Problem statement (3 pain points)\n- Solution overview\n- 3 key benefits with icons/emojis\n- How it works (3 simple steps)\n- Social proof element\n- Strong CTA (repeated 2-3 times)\n- Risk reversal/guarantee\n- 600 words maximum\n- Single focused conversion goal\n\nWrite the landing page now:"
+  },
+  "compatibility": {
+    "perfectMatch": ["offer", "solution", "transformation", "result"],
+    "goodFit": ["problem", "benefit", "outcome"],
+    "checkType": "any",
+    "dreamscapeTypes": ["conversion-focused"]
+  },
+  "exampleOutput": "**HERO:**\nSee Every Device On Your Network\n*Before They Cost You Money*\n\n**THE PROBLEM:**\n❌ Slow internet killing your productivity\n❌ Unauthorized users draining bandwidth\n❌ No visibility into what's really happening\n\n**THE SOLUTION:**\nNetworkGuard Pro gives you instant clarity.\n\n**3 KEY BENEFITS:**\n👁️ **Complete Visibility** - See all connected devices in real-time\n🛡️ **Instant Protection** - Block threats with one click\n📊 **Performance Insights** - Know exactly where your bandwidth goes\n\n**HOW IT WORKS:**\n1. Install NetworkGuard (2 minutes)\n2. Scan your network (automatic)\n3. Take control (one-click actions)\n\n**PROOF:**\n\"Found 19 unknown devices in 30 seconds. Blocked them all. Internet is 3x faster.\" - Sarah M.\n\n[CTA: Start Free Trial →]\n\n**30-DAY MONEY-BACK GUARANTEE**\nIf you don't discover at least one unauthorized device, full refund. No questions asked.\n\n[CTA: Get NetworkGuard Pro Now →]"
+}
