@@ -149,6 +149,68 @@ export const mockAdapter = {
     const presetId = params.dialState.presetId
     const isShortFormTemplate = presetId.startsWith('short-')
     const isRedditTemplate = presetId.startsWith('reddit-')
+    const isLongFormTemplate = presetId.startsWith('long-')
+
+    // Long-form video templates: return mock YouTube scripts
+    if (isLongFormTemplate) {
+      const mockYouTubeScript = `[INTRO - 0:00]
+Ever wondered how your brain knows you're being simulated? Today we're diving deep into a fascinating discovery that challenges everything we thought we knew about consciousness and reality.
+
+[SECTION 1: THE DISCOVERY - 1:30]
+During a routine office building evacuation drill, an IT specialist accidentally accessed a hidden network. What they found would spark one of the most intriguing philosophical debates of our time.
+
+The specialist, let's call them Alex, was running network diagnostics when they stumbled upon an unusual subnet. At first, it looked like a forgotten development environment. But upon closer inspection, it revealed something extraordinary: a virtual reality interface showing real-time simulations of every employee in the building.
+
+[SECTION 2: HOW IT WORKS - 4:45]
+To understand what this means, we need to break down three key concepts:
+
+First, the simulation wasn't just tracking people—it was predicting their actions with uncanny accuracy. Every decision, every movement, modeled down to the millisecond.
+
+Second, the system used a combination of behavioral algorithms and neural mapping. Think of it like a digital twin, but instead of just copying appearance, it copies thought patterns.
+
+Third—and this is where it gets really interesting—the simulated versions seemed to exhibit emergent behaviors. They weren't just following scripts. They were making independent choices within the parameters of the simulation.
+
+[SECTION 3: THE IMPLICATIONS - 8:20]
+This raises profound questions about consciousness and free will. If a simulation can predict your actions perfectly, are you truly making free choices? Or are you following a predetermined pattern?
+
+Philosophers call this the "simulation argument," but Alex's discovery adds a new twist: what if consciousness itself is the thing that breaks the simulation? What if the very act of discovering you're being simulated changes the outcome?
+
+[CONCLUSION - 10:45]
+So here's what we've learned: simulations can be incredibly sophisticated, but consciousness—the awareness of being aware—might be the variable that makes perfect prediction impossible.
+
+The real question isn't whether we're living in a simulation. It's whether it even matters if we are.
+
+Key takeaways:
+- Simulations can model behavior with high accuracy
+- Consciousness introduces unpredictability
+- Self-awareness might be the ultimate firewall
+
+If you found this fascinating, you might enjoy our video on quantum consciousness and observer effects. Link in the description.`
+
+      return [
+        {
+          id: uid(),
+          projectId: '',
+          title: 'Variant A — Educational Focus',
+          text: mockYouTubeScript,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: uid(),
+          projectId: '',
+          title: 'Variant B — Story-Driven',
+          text: mockYouTubeScript.replace('[INTRO - 0:00]', '[INTRO - 0:00]\nI need to tell you about the day everything changed.'),
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: uid(),
+          projectId: '',
+          title: 'Variant C — Documentary Style',
+          text: mockYouTubeScript.replace('Ever wondered', 'On March 15th, 2023, an ordinary evacuation drill would reveal something extraordinary. The question we need to ask is'),
+          createdAt: new Date().toISOString(),
+        },
+      ]
+    }
 
     // Short-form video templates: return mock video scripts
     if (isShortFormTemplate) {

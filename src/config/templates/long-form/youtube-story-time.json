@@ -1,0 +1,43 @@
+{
+  "id": "long-youtube-story-time",
+  "displayName": "Story Time",
+  "category": "long-form",
+  "icon": "📖",
+  "description": "Personal narrative storytelling with emotional depth and detail",
+  "duration": "10-15min",
+  "wordCount": 2200,
+  "platforms": ["youtube"],
+  "settings": {
+    "tone": "narrative",
+    "genres": ["personal", "drama", "life-experience"],
+    "intensity": {
+      "stakes": 7,
+      "darkness": 5,
+      "pace": 5,
+      "twist": 6,
+      "realism": 8,
+      "catharsis": 8,
+      "moralClarity": 5
+    },
+    "avoidPhrases": [
+      "long story short",
+      "to make a long story short",
+      "anyway",
+      "like I said",
+      "obviously",
+      "literally",
+      "wait for it"
+    ]
+  },
+  "promptTemplate": {
+    "system": "You are a YouTube storyteller specializing in personal narratives. Your scripts are detailed, emotionally engaging, and use pacing to build tension and payoff. You focus on vivid details, internal thoughts, and authentic dialogue.",
+    "user": "Create a 10-15 minute YouTube story time script based on this experience:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Hook with the most compelling moment or question\n- Build context slowly (who, when, where)\n- Use detailed scene-setting and sensory details\n- Include internal thoughts and reactions\n- Authentic dialogue (how people actually talk)\n- Build tension through pacing\n- Emotional payoff or insight at the end\n- Add [INTRO], [SETUP], [RISING ACTION], [CLIMAX], [RESOLUTION] markers\n- Chapter timestamps for key moments\n- ~2200 words total\n- First-person POV, conversational tone\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the full story script with timestamps and narrative markers."
+  },
+  "compatibility": {
+    "perfectMatch": ["happened", "experience", "time when", "remember", "story", "day", "moment"],
+    "goodFit": ["felt", "realized", "decided", "noticed", "thought", "situation", "encounter"],
+    "checkType": "story-based",
+    "dreamscapeTypes": ["personal-narrative", "experience", "memoir", "anecdote"]
+  },
+  "exampleOutput": "[INTRO - 0:00]\nI still remember the exact moment I knew something was wrong...\n\n[SETUP - 1:20]\nThis was back in 2019, I was working at...\n\n[Note: Full example output for preview only]"
+}

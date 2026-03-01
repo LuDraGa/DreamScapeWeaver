@@ -113,7 +113,7 @@ export type Tone = 'narrative' | 'dialogue' | 'script' | 'mixed'
 export type EnhancementGoalId = 'vivid' | 'conflict' | 'believable' | 'stitch' | 'less-ai' | 'custom'
 
 // Templates (Normal User Mode)
-export type TemplateCategory = 'short-form' | 'reddit'
+export type TemplateCategory = 'short-form' | 'reddit' | 'long-form'
 export type CompatibilityLevel = 'perfect' | 'good' | 'maybe'
 export type CompatibilityCheckType = 'any' | 'story-based' | 'conflict-based' | 'opinion-based'
 

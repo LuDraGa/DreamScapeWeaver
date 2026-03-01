@@ -14,6 +14,9 @@ import nosleep from '@/config/templates/reddit/nosleep.json'
 import wpSciFi from '@/config/templates/reddit/writing-prompts-scifi.json'
 import wpFantasy from '@/config/templates/reddit/writing-prompts-fantasy.json'
 import wpHorror from '@/config/templates/reddit/writing-prompts-horror.json'
+import youtubeExplainer from '@/config/templates/long-form/youtube-explainer.json'
+import youtubeStoryTime from '@/config/templates/long-form/youtube-story-time.json'
+import youtubeDocumentary from '@/config/templates/long-form/youtube-documentary.json'
 
 // All templates
 const ALL_TEMPLATES: Template[] = [
@@ -32,6 +35,10 @@ const ALL_TEMPLATES: Template[] = [
   wpSciFi,
   wpFantasy,
   wpHorror,
+  // Long-form templates
+  youtubeExplainer,
+  youtubeStoryTime,
+  youtubeDocumentary,
 ] as Template[]
 
 /**
