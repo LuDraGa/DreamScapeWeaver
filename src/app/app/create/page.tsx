@@ -548,7 +548,7 @@ Next step: Select a preset and configure advanced settings.`
 
       // Determine platform/format based on template category
       const platform = template.category === 'short-form' ? 'tiktok' : 'reddit'
-      const outputFormat = template.category === 'short-form' ? 'short-form' : 'reddit-post'
+      const outputFormat = template.category === 'short-form' ? 'reel-script' : 'reddit-post'
 
       // Create dialState from template settings
       const templateDialState: DialState = {

@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Dreamscape, OutputVariant, AppSettings, DialState } from '@/lib/types'
+import type { Dreamscape, OutputVariant, AppSettings, DialState, StudioProject, Part } from '@/lib/types'
 import { getPersistenceAdapter } from '@/lib/persistence'
 import { PRESETS } from '@/lib/config'
+import { projectStorage, partStorage, activeProjectStorage } from '@/lib/storage'
 
 interface AppState {
   // Create flow state
@@ -17,6 +18,13 @@ interface AppState {
 
   // Settings
   settings: AppSettings
+
+  // Studio state
+  studioProjects: StudioProject[]
+  studioParts: Part[]
+  activeProjectId: string | null
+  unsavedParts: Part[] // Temporary parts (not persisted)
+  activePart: Part | null // Currently viewing part
 
   // Actions - Create flow
   setCurrentDreamscape: (dreamscape: Dreamscape | null) => void
@@ -33,6 +41,22 @@ interface AppState {
 
   // Actions - Settings
   updateSettings: (settings: Partial<AppSettings>) => void
+
+  // Actions - Studio (Projects & Saved Parts)
+  loadStudioData: () => void
+  createProject: (project: Omit<StudioProject, 'id' | 'createdAt' | 'updatedAt'>) => StudioProject
+  updateProject: (id: string, updates: Partial<Omit<StudioProject, 'id' | 'createdAt'>>) => void
+  deleteProject: (id: string) => void
+  setActiveProject: (id: string | null) => void
+  createPart: (part: Omit<Part, 'id' | 'createdAt' | 'updatedAt'>) => Part
+  updatePart: (id: string, updates: Partial<Omit<Part, 'id' | 'createdAt'>>) => void
+  deletePart: (id: string) => void
+
+  // Actions - Unsaved Parts (Session Only)
+  addUnsavedPart: (part: Part) => void
+  removeUnsavedPart: (id: string) => void
+  setActivePart: (part: Part | null) => void
+  clearUnsavedParts: () => void
 
   // Helpers
   clearCreateFlow: () => void
@@ -63,6 +87,11 @@ export const useAppStore = create<AppState>()(
         developerMode: false,
         powerUserMode: false,
       },
+      studioProjects: [],
+      studioParts: [],
+      activeProjectId: null,
+      unsavedParts: [],
+      activePart: null,
 
       // Create flow actions
       setCurrentDreamscape: (dreamscape) => {
@@ -186,6 +215,122 @@ export const useAppStore = create<AppState>()(
           console.error('Failed to persist settings:', error)
         })
       },
+
+      // Studio actions
+      loadStudioData: () => {
+        const projects = projectStorage.getAll()
+        const parts = partStorage.getAll()
+        const activeProjectId = activeProjectStorage.get()
+        set({
+          studioProjects: projects,
+          studioParts: parts,
+          activeProjectId,
+        })
+      },
+
+      createProject: (project) => {
+        const newProject = projectStorage.create(project)
+        const { studioProjects } = get()
+        set({ studioProjects: [newProject, ...studioProjects] })
+        return newProject
+      },
+
+      updateProject: (id, updates) => {
+        const updated = projectStorage.update(id, updates)
+        const { studioProjects } = get()
+        set({
+          studioProjects: studioProjects.map((p) => (p.id === id ? updated : p)),
+        })
+      },
+
+      deleteProject: (id) => {
+        projectStorage.delete(id)
+        const { studioProjects, studioParts, activeProjectId } = get()
+        const newActiveId = activeProjectId === id ? null : activeProjectId
+        set({
+          studioProjects: studioProjects.filter((p) => p.id !== id),
+          studioParts: studioParts.filter((p) => p.projectId !== id),
+          activeProjectId: newActiveId,
+        })
+        // Persist the cleared active project
+        if (activeProjectId === id) {
+          activeProjectStorage.set(null)
+        }
+      },
+
+      setActiveProject: (id) => {
+        set({ activeProjectId: id })
+        activeProjectStorage.set(id)
+      },
+
+      createPart: (part) => {
+        const newPart = partStorage.create(part)
+        const { studioParts, studioProjects } = get()
+
+        // Update parts list
+        set({ studioParts: [newPart, ...studioParts] })
+
+        // Update project's partIds in state
+        const project = studioProjects.find((p) => p.id === part.projectId)
+        if (project) {
+          set({
+            studioProjects: studioProjects.map((p) =>
+              p.id === part.projectId
+                ? { ...p, partIds: [...p.partIds, newPart.id] }
+                : p
+            ),
+          })
+        }
+
+        return newPart
+      },
+
+      updatePart: (id, updates) => {
+        const updated = partStorage.update(id, updates)
+        const { studioParts } = get()
+        set({
+          studioParts: studioParts.map((p) => (p.id === id ? updated : p)),
+        })
+      },
+
+      deletePart: (id) => {
+        const part = partStorage.getById(id)
+        partStorage.delete(id)
+        const { studioParts, studioProjects } = get()
+
+        // Update parts list
+        set({ studioParts: studioParts.filter((p) => p.id !== id) })
+
+        // Update project's partIds in state
+        if (part) {
+          set({
+            studioProjects: studioProjects.map((p) =>
+              p.id === part.projectId
+                ? { ...p, partIds: p.partIds.filter((pid) => pid !== id) }
+                : p
+            ),
+          })
+        }
+      },
+
+      // Unsaved parts actions (session only, not persisted)
+      addUnsavedPart: (part) => {
+        const { unsavedParts } = get()
+        set({ unsavedParts: [part, ...unsavedParts] })
+      },
+
+      removeUnsavedPart: (id) => {
+        const { unsavedParts, activePart } = get()
+        set({
+          unsavedParts: unsavedParts.filter((p) => p.id !== id),
+          // Clear activePart if deleting it
+          activePart: activePart?.id === id ? null : activePart,
+        })
+      },
+
+      setActivePart: (part) => set({ activePart: part }),
+
+      clearUnsavedParts: () => set({ unsavedParts: [], activePart: null }),
 
       // Helpers
       clearCreateFlow: () =>

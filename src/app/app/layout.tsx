@@ -4,10 +4,11 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { SparklesIcon, PenIcon, BookIcon, GearIcon } from '@/components/icons'
+import { SparklesIcon, PenIcon, BookIcon, GearIcon, LayersIcon } from '@/components/icons'
 
 const navItems = [
   { id: 'create', label: 'Create', icon: PenIcon, href: '/app/create' },
+  { id: 'studio', label: 'Studio', icon: LayersIcon, href: '/app/studio' },
   { id: 'library', label: 'Library', icon: BookIcon, href: '/app/library' },
   { id: 'settings', label: 'Settings', icon: GearIcon, href: '/app/settings' },
 ]

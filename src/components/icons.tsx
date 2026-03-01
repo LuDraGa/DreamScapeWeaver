@@ -16,6 +16,7 @@ import {
   Trash2,
   Check,
   Copy,
+  Layers,
 } from 'lucide-react'
 
 export {
@@ -37,4 +38,5 @@ export {
   Trash2 as TrashIcon,
   Check as CheckIcon,
   Copy as CopyIcon,
+  Layers as LayersIcon,
 }

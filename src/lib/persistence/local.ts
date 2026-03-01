@@ -98,6 +98,8 @@ export const localStorageAdapter = {
         defaultPreset: 'reddit-aitah',
         avoidPhrases: ["It's worth noting that", "I couldn't help but", 'Little did I know'],
         autoAvoidAI: true,
+        developerMode: false,
+        powerUserMode: false,
       }
     }
 
@@ -109,6 +111,8 @@ export const localStorageAdapter = {
             defaultPreset: 'reddit-aitah',
             avoidPhrases: ["It's worth noting that", "I couldn't help but", 'Little did I know'],
             autoAvoidAI: true,
+            developerMode: false,
+            powerUserMode: false,
           }
     } catch (error) {
       console.error('Failed to load settings from localStorage:', error)
@@ -116,6 +120,8 @@ export const localStorageAdapter = {
         defaultPreset: 'reddit-aitah',
         avoidPhrases: [],
         autoAvoidAI: true,
+        developerMode: false,
+        powerUserMode: false,
       }
     }
   },

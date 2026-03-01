@@ -1,4 +1,17 @@
 // Core entities
+
+// Studio Project (new non-linear system)
+export interface StudioProject {
+  id: string
+  title: string
+  description?: string
+  thumbnail?: string // URL or base64
+  createdAt: string
+  updatedAt: string
+  partIds: string[] // References to parts in this project
+}
+
+// Legacy Project (keep for backward compatibility with Create page)
 export interface Project {
   id: string
   title: string
@@ -198,4 +211,64 @@ export interface AuthState {
   user: User | null
   isGuest: boolean
   isLoading: boolean
+}
+
+// ============================================================
+// Studio System - Part-Based Content Generation
+// ============================================================
+
+// Part Types (all content types in the system)
+export type PartType =
+  // Text Foundations
+  | 'dreamscape'
+  | 'synopsis'
+  | 'beat-sheet'
+  // Short-Form Content
+  | 'tiktok-script'
+  | 'twitter-thread'
+  | 'linkedin-post'
+  // Long-Form Content
+  | 'youtube-script'
+  | 'reddit-post'
+  | 'blog-article'
+  // Video Production
+  | 'scene-breakdown'
+  | 'shot-list'
+  | 'cinematography-guide'
+
+// Transform Types (how parts relate to each other)
+export type TransformType =
+  | 'expand'     // Short → Long (TikTok → YouTube)
+  | 'condense'   // Long → Short (Blog → Twitter)
+  | 'remix'      // Same length, different format (Reddit → LinkedIn)
+  | 'extract'    // Pull concept out (YouTube → Dreamscape)
+  | 'format'     // Same content, different structure (Script → Scene)
+
+// Part (any piece of generated content)
+export interface Part {
+  id: string
+  projectId: string
+  type: PartType
+  title: string
+  content: string // The actual text/script
+  metadata: {
+    wordCount: number
+    platform?: string
+    duration?: string
+    tone?: string
+    genres?: string[]
+    sourcePartId?: string // What part this was generated from
+    transformType?: TransformType // How it was transformed from source
+  }
+  createdAt: string
+  updatedAt: string
+}
+
+// Transform definition (compatibility between part types)
+export interface Transform {
+  sourceType: PartType
+  targetType: PartType
+  transformType: TransformType
+  label: string // e.g., "Expand to YouTube script"
+  description: string
 }
