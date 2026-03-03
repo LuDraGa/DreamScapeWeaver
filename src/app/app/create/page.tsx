@@ -31,7 +31,7 @@ const FEEDBACK_CHIPS = [
   { id: 'pace-good', label: 'Pace good', positive: true },
   { id: 'pace-fast', label: 'Pace fast', positive: false },
 ]
-import { uid } from '@/lib/utils'
+import { uid, parseMultiPartOutput, type ParsedOutput } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
 import type { Dreamscape, DialState, IntensityValues, Template, TemplateCategory } from '@/lib/types'
@@ -141,6 +141,27 @@ export default function CreatePage() {
   const [feedback, setFeedback] = useState<Record<number, string[]>>({})
   const [notes, setNotes] = useState<Record<number, string>>({})
 
+  // Commenting system
+  interface TextComment {
+    id: string
+    variantIndex: number
+    startOffset: number
+    endOffset: number
+    selectedText: string
+    commentText: string
+    createdAt: string
+    resolved?: boolean
+  }
+  const [comments, setComments] = useState<TextComment[]>([])
+  const [selectedRange, setSelectedRange] = useState<{start: number, end: number, text: string} | null>(null)
+  const [showCommentPopover, setShowCommentPopover] = useState(false)
+  const [newCommentText, setNewCommentText] = useState('')
+  const [showCommentsSidebar, setShowCommentsSidebar] = useState(true)
+
+  // Multi-part guidance (simple)
+  const [splitGuidance, setSplitGuidance] = useState('')
+  const [continueGuidance, setContinueGuidance] = useState('')
+
   // UI state
   const [toast, setToast] = useState('')
 
@@ -151,6 +172,232 @@ export default function CreatePage() {
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 2000)
+  }
+
+  // ============================================================
+  // Commenting & Selective Regeneration Functions
+  // ============================================================
+
+  /**
+   * Handle text selection in content
+   */
+  const handleTextSelection = () => {
+    const selection = window.getSelection()
+    if (!selection || selection.isCollapsed) {
+      setSelectedRange(null)
+      setShowCommentPopover(false)
+      return
+    }
+
+    const text = selection.toString()
+    const range = selection.getRangeAt(0)
+    const contentElement = document.getElementById(`variant-content-${activeVariant}`)
+
+    if (!contentElement || !contentElement.contains(range.commonAncestorContainer)) {
+      return
+    }
+
+    // Calculate offsets relative to content start
+    const preRange = range.cloneRange()
+    preRange.selectNodeContents(contentElement)
+    preRange.setEnd(range.startContainer, range.startOffset)
+    const start = preRange.toString().length
+
+    setSelectedRange({
+      start,
+      end: start + text.length,
+      text,
+    })
+    setShowCommentPopover(true)
+  }
+
+  /**
+   * Add a comment to selected text
+   */
+  const handleAddComment = () => {
+    if (!selectedRange || !newCommentText.trim()) return
+
+    const comment: TextComment = {
+      id: uid(),
+      variantIndex: activeVariant,
+      startOffset: selectedRange.start,
+      endOffset: selectedRange.end,
+      selectedText: selectedRange.text,
+      commentText: newCommentText,
+      createdAt: new Date().toISOString(),
+      resolved: false,
+    }
+
+    setComments((prev) => [...prev, comment])
+    setNewCommentText('')
+    setShowCommentPopover(false)
+    setSelectedRange(null)
+    showToast('Comment added!')
+  }
+
+  /**
+   * Regenerate selected text portion
+   */
+  const handleRegenerateSelection = async () => {
+    if (!selectedRange) return
+
+    const { start, end, text } = selectedRange
+    const fullText = generatedOutputs[activeVariant].text
+
+    // Get relevant comments for this selection
+    const relevantComments = comments.filter(
+      (c) =>
+        c.variantIndex === activeVariant &&
+        c.startOffset >= start &&
+        c.endOffset <= end &&
+        !c.resolved
+    )
+
+    const guidance = relevantComments.map((c) => `- ${c.commentText}`).join('\n')
+
+    setGenerating(true)
+    try {
+      const beforeText = fullText.slice(0, start)
+      const afterText = fullText.slice(end)
+
+      const promptText = `CONTEXT BEFORE:
+${beforeText.slice(-500)}
+
+REGENERATE THIS SECTION:
+${text}
+
+CONTEXT AFTER:
+${afterText.slice(0, 500)}
+
+${guidance ? `USER GUIDANCE:\n${guidance}\n\nApply the guidance above when rewriting.` : ''}
+
+Rewrite only the selected section, maintaining flow with surrounding context.`
+
+      const dreamscape: Dreamscape = {
+        id: uid(),
+        title: 'Regenerate Section',
+        chunks: [{ id: uid(), title: '', text: promptText }],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      const outputs = await api.outputs.generate({ dreamscape, dialState })
+      const newSection = outputs[0].text
+
+      // Splice back
+      const updatedText = beforeText + newSection + afterText
+      const updatedOutputs = [...generatedOutputs]
+      updatedOutputs[activeVariant] = {
+        ...updatedOutputs[activeVariant],
+        text: updatedText,
+      }
+
+      setGeneratedOutputs(updatedOutputs)
+
+      // Mark comments as resolved
+      setComments((prev) =>
+        prev.map((c) =>
+          relevantComments.find((rc) => rc.id === c.id) ? { ...c, resolved: true } : c
+        )
+      )
+
+      setSelectedRange(null)
+      setShowCommentPopover(false)
+      showToast('Section regenerated!')
+    } catch (error) {
+      showToast('Failed to regenerate section')
+      console.error(error)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  /**
+   * Split story into parts
+   */
+  const handleSplitIntoParts = async () => {
+    setGenerating(true)
+    try {
+      const fullText = generatedOutputs[activeVariant].text
+
+      const promptText = `Split this story into 2-3 logical parts with natural break points:
+
+${fullText}
+
+${splitGuidance ? `USER GUIDANCE:\n${splitGuidance}` : ''}
+
+Return the story split into parts with [PART 1], [PART 2], [PART 3] markers.`
+
+      const dreamscape: Dreamscape = {
+        id: uid(),
+        title: 'Split Story',
+        chunks: [{ id: uid(), title: '', text: promptText }],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      const outputs = await api.outputs.generate({ dreamscape, dialState })
+
+      const updatedOutputs = [...generatedOutputs]
+      updatedOutputs[activeVariant] = {
+        ...updatedOutputs[activeVariant],
+        text: outputs[0].text,
+      }
+
+      setGeneratedOutputs(updatedOutputs)
+      setSplitGuidance('')
+      showToast('Story split into parts!')
+    } catch (error) {
+      showToast('Failed to split story')
+      console.error(error)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  /**
+   * Continue story (generate next part)
+   */
+  const handleContinueStory = async () => {
+    setGenerating(true)
+    try {
+      const fullText = generatedOutputs[activeVariant].text
+
+      const promptText = `Continue this story with a natural next part:
+
+EXISTING STORY:
+${fullText}
+
+${continueGuidance ? `USER GUIDANCE FOR NEXT PART:\n${continueGuidance}` : ''}
+
+Write the next part, continuing from where the story left off.`
+
+      const dreamscape: Dreamscape = {
+        id: uid(),
+        title: 'Continue Story',
+        chunks: [{ id: uid(), title: '', text: promptText }],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      const outputs = await api.outputs.generate({ dreamscape, dialState })
+
+      const updatedText = `${fullText}\n\n[PART 2]\n${outputs[0].text}`
+      const updatedOutputs = [...generatedOutputs]
+      updatedOutputs[activeVariant] = {
+        ...updatedOutputs[activeVariant],
+        text: updatedText,
+      }
+
+      setGeneratedOutputs(updatedOutputs)
+      setContinueGuidance('')
+      showToast('Next part generated!')
+    } catch (error) {
+      showToast('Failed to continue story')
+      console.error(error)
+    } finally {
+      setGenerating(false)
+    }
   }
 
   // ============================================================
@@ -517,6 +764,7 @@ Next step: Select a preset and configure advanced settings.`
       setRatings({})
       setFeedback({})
       setNotes({})
+      setComments([])
       showToast(`Generated ${outputs.length} variants!`)
       setStep(3) // Move to Rate & Save step
     } catch (error) {
@@ -574,6 +822,7 @@ Next step: Select a preset and configure advanced settings.`
       setRatings({})
       setFeedback({})
       setNotes({})
+      setComments([])
       showToast(`Generated ${outputs.length} variants!`)
       // Normal mode: step 2 = Rate & Save, Power mode: step 3 = Rate & Save
       setStep(settings.powerUserMode ? 3 : 2)
@@ -1622,18 +1871,72 @@ Next step: Select a preset and configure advanced settings.`
             <h2 className="text-lg font-semibold text-text-primary">Your Variants</h2>
             <p className="text-sm text-text-muted">Rate, refine, and save.</p>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setStep(2)
-              setGeneratedOutputs([])
-            }}
-            className="bg-transparent border-[#334155] text-text-secondary"
-          >
-            <RefreshCwIcon className="w-3.5 h-3.5 mr-2" />
-            Generate More
-          </Button>
+          <div className="flex gap-2">
+            {/* Developer Mode: Test Multi-Part Button */}
+            {settings.developerMode && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  // Inject a mock multi-part output for testing
+                  const mockMultiPart = {
+                    id: uid(),
+                    label: 'Test Multi-Part',
+                    text: `[INTRO - 0:00]
+I still remember that night on Atal Setu. The way the moonlight hit the water. The way everything changed in an instant.
+
+[SETUP - 1:30]
+It started with a simple cab ride. I was headed to Uran beach, just past the Atal Setu bridge. The driver quoted me 800 rupees. Fair enough, I thought. Long drive.
+
+But halfway there, he pulled over.
+
+"400 rupees more," he said.
+
+"What? We already agreed on a price."
+
+"Price changed. Pay or get out."
+
+I refused. He told me to leave. So I did.
+
+[TO BE CONTINUED IN PART 2]
+PART 2 SHOULD START WITH: Standing on the roadside, I booked another cab. That's when I noticed my first driver talking to someone...
+
+[PART 2 - RISING ACTION]
+The second cab arrived within minutes. But as he pulled up, I saw my original driver approach him. They talked. Looked at me. Something was wrong.
+
+The new driver pulled something from his trunk. A bottle. Acetone.
+
+Before I could run, everything went black.
+
+[TO BE CONTINUED IN PART 3]
+PART 3 SHOULD START WITH: I woke up on the beach, hands bound, the sound of waves mixing with their voices around a bonfire...`,
+                  }
+
+                  const newIndex = generatedOutputs.length
+                  setGeneratedOutputs([...generatedOutputs, mockMultiPart])
+                  setParsedOutputs([...parsedOutputs, parseMultiPartOutput(mockMultiPart.text)])
+                  setActivePart((prev) => ({ ...prev, [newIndex]: 1 }))
+                  setActiveVariant(newIndex) // Switch to the new variant
+                  showToast('🧪 Test multi-part output added!')
+                }}
+                className="bg-purple-600/20 border-purple-500/50 text-purple-300"
+              >
+                🧪 Test Multi-Part
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setStep(2)
+                setGeneratedOutputs([])
+              }}
+              className="bg-transparent border-[#334155] text-text-secondary"
+            >
+              <RefreshCwIcon className="w-3.5 h-3.5 mr-2" />
+              Generate More
+            </Button>
+          </div>
         </div>
 
         {/* Variant Tabs */}
@@ -1655,29 +1958,177 @@ Next step: Select a preset and configure advanced settings.`
 
         {/* Variant Content */}
         <ThemedCard className="mb-4 border-[#1e293b]">
+
+          {/* Content Header */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-text-muted">
-              {generatedOutputs[activeVariant]?.text?.split(/\s+/).length || 0} words
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-text-muted">
+                {generatedOutputs[activeVariant]?.text?.split(/\s+/).length || 0} words
+              </span>
+              {comments.filter((c) => c.variantIndex === activeVariant && !c.resolved).length > 0 && (
+                <span className="text-xs text-primary">
+                  {comments.filter((c) => c.variantIndex === activeVariant && !c.resolved).length} comments
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2">
-              <CopyButton text={generatedOutputs[activeVariant]?.text || ''} />
               <button
-                onClick={() => {
-                  // TODO: Implement regen variant
-                  showToast('Regenerate variant coming soon')
-                }}
-                disabled={generating}
-                className="flex items-center gap-1 text-xs font-medium text-text-muted hover:text-text-primary transition-all"
+                onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
+                className={`flex items-center gap-1 text-xs font-medium transition-all ${
+                  showCommentsSidebar ? 'text-primary' : 'text-text-muted hover:text-text-primary'
+                }`}
+                title="Toggle comments sidebar"
               >
-                <RefreshCwIcon className="w-3.5 h-3.5" />
-                Regen
+                <span className="text-sm">💬</span>
+                {showCommentsSidebar ? 'Hide' : 'Show'} Comments
               </button>
+              <CopyButton text={generatedOutputs[activeVariant]?.text || ''} />
             </div>
           </div>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto pr-2 text-text-primary">
-            {generatedOutputs[activeVariant]?.text}
+
+          {/* Content Display with Text Selection */}
+          <div className="flex gap-4">
+            {/* Main Content */}
+            <div className="flex-1">
+              <div
+                id={`variant-content-${activeVariant}`}
+                onMouseUp={handleTextSelection}
+                className="text-sm leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto pr-2 text-text-primary select-text cursor-text"
+              >
+                {generatedOutputs[activeVariant]?.text}
+              </div>
+
+              {/* Floating Comment/Regenerate Popover */}
+              {showCommentPopover && selectedRange && (
+                <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/30">
+                  <p className="text-xs font-medium text-primary mb-2">
+                    Selected: "{selectedRange.text.slice(0, 50)}{selectedRange.text.length > 50 ? '...' : ''}"
+                  </p>
+                  <textarea
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    placeholder="Add a comment or regeneration guidance..."
+                    className="w-full px-3 py-2 text-sm bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary resize-none mb-2"
+                    rows={2}
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handleAddComment}
+                      disabled={!newCommentText.trim()}
+                      className="text-xs px-3 py-1.5 bg-primary hover:bg-primary-light text-white disabled:opacity-50"
+                    >
+                      💬 Add Comment
+                    </Button>
+                    <Button
+                      onClick={handleRegenerateSelection}
+                      disabled={generating}
+                      className="text-xs px-3 py-1.5 bg-[rgba(30,41,59,0.5)] hover:bg-[rgba(30,41,59,0.7)] text-text-primary disabled:opacity-50"
+                    >
+                      <RefreshCwIcon className="w-3 h-3 inline mr-1" />
+                      Regenerate Selection
+                    </Button>
+                    <button
+                      onClick={() => {
+                        setShowCommentPopover(false)
+                        setSelectedRange(null)
+                        setNewCommentText('')
+                      }}
+                      className="text-xs text-text-muted hover:text-text-primary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Comments Sidebar */}
+            {showCommentsSidebar && (
+              <div className="w-64 border-l border-[#1e293b] pl-4">
+                <h4 className="text-xs font-medium text-text-secondary mb-3">Comments</h4>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {comments
+                    .filter((c) => c.variantIndex === activeVariant)
+                    .map((comment) => (
+                      <div
+                        key={comment.id}
+                        className={`p-2 rounded-lg text-xs border ${
+                          comment.resolved
+                            ? 'bg-[rgba(15,23,42,0.3)] border-[#334155] opacity-60'
+                            : 'bg-primary/5 border-primary/20'
+                        }`}
+                      >
+                        <p className="text-text-muted mb-1 text-[10px]">
+                          "{comment.selectedText.slice(0, 30)}..."
+                        </p>
+                        <p className="text-text-primary mb-2">{comment.commentText}</p>
+                        {!comment.resolved && (
+                          <button
+                            onClick={() => {
+                              setComments((prev) =>
+                                prev.map((c) => (c.id === comment.id ? { ...c, resolved: true } : c))
+                              )
+                            }}
+                            className="text-[10px] text-primary hover:text-primary-light"
+                          >
+                            Mark Resolved
+                          </button>
+                        )}
+                        {comment.resolved && (
+                          <span className="text-[10px] text-text-muted">✓ Resolved</span>
+                        )}
+                      </div>
+                    ))}
+                  {comments.filter((c) => c.variantIndex === activeVariant).length === 0 && (
+                    <p className="text-xs text-text-muted italic">No comments yet. Select text to add one.</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
+
         </ThemedCard>
+
+        {/* Always-Visible Split/Continue Cards */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* Split into Parts */}
+          <ThemedCard className="border-[#1e293b]">
+            <h4 className="text-sm font-medium text-text-primary mb-3">✂️ Split into Parts</h4>
+            <textarea
+              value={splitGuidance}
+              onChange={(e) => setSplitGuidance(e.target.value)}
+              placeholder="Optional: How should the story be split? (e.g., 'Break at major plot points', 'Split into 3 equal parts')"
+              className="w-full px-3 py-2 text-sm bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary resize-none mb-3"
+              rows={3}
+            />
+            <Button
+              onClick={handleSplitIntoParts}
+              disabled={generating}
+              className="w-full bg-[rgba(30,41,59,0.5)] hover:bg-[rgba(30,41,59,0.7)] text-text-primary disabled:opacity-50"
+            >
+              {generating ? 'Splitting...' : 'Split Story'}
+            </Button>
+          </ThemedCard>
+
+          {/* Continue Story (Generate Next Part) */}
+          <ThemedCard className="border-[#1e293b]">
+            <h4 className="text-sm font-medium text-text-primary mb-3">➡️ Continue Story</h4>
+            <textarea
+              value={continueGuidance}
+              onChange={(e) => setContinueGuidance(e.target.value)}
+              placeholder="Optional: What should happen next? (e.g., 'Focus on the aftermath', 'Introduce a new character')"
+              className="w-full px-3 py-2 text-sm bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary resize-none mb-3"
+              rows={3}
+            />
+            <Button
+              onClick={handleContinueStory}
+              disabled={generating}
+              className="w-full bg-[rgba(30,41,59,0.5)] hover:bg-[rgba(30,41,59,0.7)] text-text-primary disabled:opacity-50"
+            >
+              {generating ? 'Generating...' : 'Generate Next Part'}
+            </Button>
+          </ThemedCard>
+        </div>
 
         {/* Rating */}
         <ThemedCard className="mb-4 bg-[rgba(15,23,42,0.3)] border-[#1e293b]">
@@ -1764,13 +2215,32 @@ Next step: Select a preset and configure advanced settings.`
           <Button
             variant="outline"
             onClick={() => {
-              setChunks([{ id: uid(), title: '', text: generatedOutputs[activeVariant]?.text || '' }])
+              // Create new dreamscape from this output
+              const outputText = generatedOutputs[activeVariant]?.text || ''
+              const newDreamscape = {
+                id: uid(),
+                title: outputText.slice(0, 50) || 'Untitled',
+                chunks: [{ id: uid(), title: '', text: outputText }],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              }
+
+              // Set as current dreamscape and go to Step 1 (Platform & Style)
+              setCurrentDreamscape(newDreamscape)
+              setChunks(newDreamscape.chunks)
               setGeneratedOutputs([])
-              setStep(0)
+              setActiveVariant(0)
+              setRatings({})
+              setFeedback({})
+              setComments([])
+              setSelectedCategory(null)
+              setSelectedTemplate(null)
+              setStep(1)
+              showToast('Using output as new dreamscape! Select a template to continue.')
             }}
-            className="bg-[rgba(30,41,59,0.6)] border-[#334155] text-text-secondary"
+            className="bg-green-600 hover:bg-green-700 text-white border-green-700"
           >
-            Duplicate as new project
+            🔄 Use as Dreamscape
           </Button>
           <Button
             variant="outline"

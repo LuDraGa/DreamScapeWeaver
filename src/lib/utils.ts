@@ -62,3 +62,67 @@ export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
 }
+
+/**
+ * Parse multi-part output text
+ */
+export interface OutputPart {
+  partNumber: number
+  content: string
+  nextPartBrief?: string
+}
+
+export interface ParsedOutput {
+  parts: OutputPart[]
+  isMultiPart: boolean
+}
+
+export function parseMultiPartOutput(text: string): ParsedOutput {
+  // Check if output contains multi-part markers
+  const continuationRegex = /\[TO BE CONTINUED IN PART (\d+)\]\s*(?:PART \d+ SHOULD START WITH:\s*(.+?))?(?=\n\n|\n\[|$)/gis
+  const matches = Array.from(text.matchAll(continuationRegex))
+
+  if (matches.length === 0) {
+    // Single-part output
+    return {
+      parts: [{ partNumber: 1, content: text }],
+      isMultiPart: false,
+    }
+  }
+
+  // Multi-part output - split by continuation markers
+  const parts: OutputPart[] = []
+  let lastIndex = 0
+
+  matches.forEach((match, i) => {
+    const nextPartNumber = parseInt(match[1])
+    const nextPartBrief = match[2]?.trim()
+    const endIndex = match.index!
+
+    // Get content up to this marker
+    const content = text.slice(lastIndex, endIndex).trim()
+    parts.push({
+      partNumber: i + 1,
+      content,
+      nextPartBrief,
+    })
+
+    lastIndex = match.index! + match[0].length
+  })
+
+  // Add any remaining content as last part (if exists)
+  if (lastIndex < text.length) {
+    const remainingContent = text.slice(lastIndex).trim()
+    if (remainingContent) {
+      parts.push({
+        partNumber: parts.length + 1,
+        content: remainingContent,
+      })
+    }
+  }
+
+  return {
+    parts,
+    isMultiPart: true,
+  }
+}
