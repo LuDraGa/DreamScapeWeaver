@@ -26,12 +26,17 @@ has_substantial_content() {
         return 1
     fi
 
+    # Skip untouched templates; avoids archiving on every commit.
+    if grep -Eq "^## Task: \[New Task Name\]$|^## Task: \[Task Name\]$" "$file"; then
+        return 1
+    fi
+
     # Check for actual task content (not just templates)
-    if grep -q "✅ Completed\|🔄 In Progress\|### Completed Tasks" "$file"; then
+    if grep -Eq "✅ Completed|🔄 In Progress|### Completed Tasks" "$file"; then
         return 0
     fi
 
-    if grep -q "## Discussion Points\|## Execution Status\|### Proposed Approach" "$file"; then
+    if grep -Eq "## Discussion Points|## Execution Status|### Proposed Approach" "$file"; then
         return 0
     fi
 
@@ -40,6 +45,9 @@ has_substantial_content() {
 
 # Archive planning document if it has substantial content
 PLANNING_FILE="execution_docs/_active/planning.md"
+PLANNING_ARCHIVE=""
+EXECUTION_ARCHIVE=""
+
 if has_substantial_content "$PLANNING_FILE" 10; then
     # Create planning directory if it doesn't exist
     mkdir -p execution_docs/archive
@@ -170,21 +178,21 @@ EOF
     echo "✓ Archived execution document: $EXECUTION_ARCHIVE"
 fi
 
-if [ -f "$PLANNING_ARCHIVE" ] || [ -f "$EXECUTION_ARCHIVE" ]; then
+if [ -n "$PLANNING_ARCHIVE" ] || [ -n "$EXECUTION_ARCHIVE" ]; then
     echo "================================================================"
-    echo "📋 POST-COMMIT: Documentation archived successfully"
-    echo "📅 Commit: $COMMIT_HASH on $COMMIT_DATE"
+    echo "POST-COMMIT: Documentation archived"
+    echo "Commit: $COMMIT_HASH on $COMMIT_DATE"
     echo ""
-    echo "⚠️  Archived files are unstaged. Include them in your next commit:"
-    [ -f "$PLANNING_ARCHIVE" ] && echo "   - $PLANNING_ARCHIVE"
-    [ -f "$EXECUTION_ARCHIVE" ] && echo "   - $EXECUTION_ARCHIVE"
-    echo "   - $PLANNING_FILE (reset)"
-    echo "   - $EXECUTION_FILE (reset)"
+    echo "Archived files are unstaged; include them in your next commit:"
+    [ -n "$PLANNING_ARCHIVE" ] && echo "  - $PLANNING_ARCHIVE"
+    [ -n "$EXECUTION_ARCHIVE" ] && echo "  - $EXECUTION_ARCHIVE"
+    echo "  - $PLANNING_FILE (reset)"
+    echo "  - $EXECUTION_FILE (reset)"
     echo ""
-    echo "⚠️  IMPORTANT: Next Claude Code session should rename archived files"
-    echo "   Example: ${COMMIT_DATE}-${COMMIT_HASH}-planning-to-be-renamed.md"
-    echo "          → ${COMMIT_DATE}-${COMMIT_HASH}-add-backend-api.md"
+    echo "Next agent session should rename archived files from *-to-be-renamed.md"
+    echo "Example: ${COMMIT_DATE}-${COMMIT_HASH}-planning-to-be-renamed.md"
+    echo "      -> ${COMMIT_DATE}-${COMMIT_HASH}-descriptive-task-name.md"
     echo "================================================================"
 else
-    echo "ℹ️  No substantial content in active docs to archive"
+    echo "No substantial content in active docs to archive"
 fi
