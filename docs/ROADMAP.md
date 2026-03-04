@@ -1,11 +1,12 @@
 # StoryWeaver Roadmap
 
-## Current: Phase 2 — Auth (In Progress)
-- Supabase auth (Google OAuth + email/password)
-- User roles: `normal`, `admin`, `dev`
-- Route protection middleware
+## ✅ Done: Phase 2a — Auth
+- Supabase auth: Google OAuth + email/password
+- User roles: `normal`, `admin`, `dev` (stored in `storyweaver.profiles`)
+- Route protection via middleware (`ENABLE_AUTH` runtime env var)
+- Mock login locally, real auth on Vercel
 
-## Next: Phase 2 — Persistence (After auth is fully operational)
+## Next: Phase 2b — Persistence (Now that auth is operational)
 
 **Approach:**
 1. Design the full RDBMS schema first — use Figma MCP to create an ERD

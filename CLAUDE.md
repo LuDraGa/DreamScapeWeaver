@@ -236,8 +236,34 @@ See **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)** for complete system.
 |-------|------|--------|
 | ✅ Phase 1 | Next.js app + real OpenAI API (`gpt-4o`) | Done |
 | ✅ Phase 1 | localStorage persistence + adapter pattern | Done |
-| 🚧 Phase 2 | Supabase auth + cloud persistence | Stub only |
-| 🚧 Phase 2 | Billing / usage metering | Not started |
+| ✅ Phase 2a | Supabase auth (Google OAuth + email/password) | Done |
+| 🚧 Phase 2b | Supabase DB persistence (design ERD first) | Not started |
+| 🚧 Phase 3 | Billing / usage metering | Not started |
+
+## Auth & Environment
+
+### Local dev (mock login)
+```
+NEXT_PUBLIC_ENABLE_AUTH=false   # shows mock role picker on /auth/login
+ENABLE_AUTH=false               # middleware passes through, no session required
+```
+
+### Production (Vercel)
+```
+NEXT_PUBLIC_ENABLE_AUTH=true    # shows real Google + email/password login UI
+ENABLE_AUTH=true                # middleware enforces /app/* protection at runtime
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+**Key distinction**: `NEXT_PUBLIC_*` vars are baked at build time (client UI). `ENABLE_AUTH` has no prefix so middleware reads it fresh at runtime — this is why auth enforcement actually works on Vercel.
+
+### Supabase setup
+- Project: shared with another app, isolated via `storyweaver` schema
+- `profiles` table: `id`, `email`, `role` (`normal`/`admin`/`dev`), `created_at`
+- Profile created on first login via `/auth/callback`
+- Bootstrap admin: `UPDATE storyweaver.profiles SET role = 'admin' WHERE email = 'your@email.com';`
 
 See **[docs/ARCHITECTURE.md § Migration Path](docs/ARCHITECTURE.md#migration-path-to-real-backend)** for detailed steps.
 

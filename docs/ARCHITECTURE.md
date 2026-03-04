@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-**StoryWeaver** is a Next.js 15 application with real OpenAI API integration (`gpt-4o`). Auth and Supabase persistence are stubbed for Phase 2. Data currently stored in localStorage.
+**StoryWeaver** is a Next.js 15 application with real OpenAI API integration (`gpt-4o`) and Supabase auth (Google OAuth + email/password). Persistence is still localStorage — Supabase DB persistence is Phase 3.
 
 **Stack**: Next.js 15 + React 19 + TypeScript + Tailwind CSS + Zustand + Radix UI + OpenAI SDK + Zod
 
@@ -297,18 +297,29 @@ async function generateOutputs({ dreamscape, dialState }) {
 ## Phase Status & Next Steps
 
 ### ✅ Phase 1: Complete
-- Next.js app with real OpenAI API (`gpt-4o`)
+- Next.js app + real OpenAI API (`gpt-4o`)
 - Adapter pattern with mock toggle
 - localStorage persistence
 - Template library (~50 templates)
 - Studio page
 
-### 🚧 Phase 2: Next
+### ✅ Phase 2a: Auth — Complete
+- Supabase auth: Google OAuth + email/password
+- `storyweaver` schema isolation (shared Supabase project)
+- `profiles` table with `user_role` enum (`normal`, `admin`, `dev`)
+- Profile auto-created on first login via callback route
+- Mock login locally (role picker, `NEXT_PUBLIC_ENABLE_AUTH=false`)
+- Real auth on Vercel (`NEXT_PUBLIC_ENABLE_AUTH=true` + `ENABLE_AUTH=true`)
+- Middleware enforces `/app/*` protection at runtime via `ENABLE_AUTH` (non-public env var)
+
+### 🚧 Phase 2b: Persistence — Next
+- Design RDBMS schema in Figma (ERD) before touching code
 - Implement `src/lib/persistence/supabase.ts` (all methods currently throw)
-- Implement `src/lib/auth/context.tsx` (currently always returns guest)
-- Add Stripe billing + usage metering
-- Set env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- Feature flag: `NEXT_PUBLIC_ENABLE_AUTH=true`
+- Tables: `dreamscapes`, `output_variants`, `performance_snapshots`, `projects`, `parts`, `settings`
+
+### 🚧 Phase 3: Billing
+- Stripe + usage metering per user
+- Free tier / Pro tier
 
 ## Performance Tracking System
 
