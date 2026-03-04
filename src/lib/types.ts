@@ -200,10 +200,11 @@ export interface GenerateOutputsParams {
   dialState: DialState
 }
 
-// Auth types (stub for Phase 1)
+// Auth types
 export interface User {
   id: string
   email: string
+  role: import('@/lib/auth/roles').UserRole
   createdAt: string
 }
 
@@ -211,6 +212,7 @@ export interface AuthState {
   user: User | null
   isGuest: boolean
   isLoading: boolean
+  role: import('@/lib/auth/roles').UserRole | null
 }
 
 // ============================================================

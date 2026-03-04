@@ -2,44 +2,52 @@
 
 ## Project Structure
 
-**StoryWeaver** is a single-file React application (`GenAI Story Generator.jsx`, ~1100 lines) with mock API layer. No backend integration yet.
+**StoryWeaver** is a Next.js 15 application with real OpenAI API integration (`gpt-4o`). Auth and Supabase persistence are stubbed for Phase 2. Data currently stored in localStorage.
+
+**Stack**: Next.js 15 + React 19 + TypeScript + Tailwind CSS + Zustand + Radix UI + OpenAI SDK + Zod
 
 ### File Breakdown
 
 ```
-GenAI Story Generator.jsx (~1100 lines)
-├── CONFIG DATA (lines 7-79)
-│   ├── PRESETS - Platform/genre presets (Reddit AITAH, Petty Revenge, etc.)
-│   ├── PLATFORMS - Platform definitions with metrics
-│   ├── DIALS - Intensity controls (stakes, darkness, pace, twist, etc.)
-│   ├── GENRES, OUTPUT_FORMATS, TONES
-│   └── ENHANCEMENT_GOALS, FEEDBACK_CHIPS
-│
-├── MOCK API LAYER (lines 85-192)
-│   ├── MOCK_DREAMSCAPE_SEEDS - Sample story seeds
-│   ├── MOCK_STORIES - Sample outputs (balanced/intense/believable variants)
-│   ├── generateDreamscapes() - Seed generation
-│   ├── enhanceDreamscape() - Enhancement workflows
-│   └── generateOutputs() - Multi-variant story generation
-│
-├── LOCAL STORAGE (lines 197-202)
-│   ├── loadFromStorage() - Restore state
-│   └── saveToStorage() - Persist state
-│
-├── APP CONTEXT (lines 207-232)
-│   └── AppProvider - Global state (savedDreamscapes, savedOutputs, settings)
-│
-├── UI COMPONENTS (lines 238-297)
-│   ├── Icons (I.*) - SVG icon components
-│   ├── CopyBtn, Toast, Skeleton, Slider, Collapse
-│
-├── PAGES (lines 325-1027)
-│   ├── CreatePage - Main workflow (seed → enhance → generate → refine)
-│   ├── LibraryPage - Saved dreamscapes/outputs + performance tracking
-│   └── SettingsPage - Default preset, avoid phrases, auto-avoid-AI
-│
-└── MAIN APP (lines 1029-1101)
-    └── StoryGeneratorApp - Navigation, sidebar, page routing
+src/
+├── app/
+│   ├── api/                          # Server-side API routes (LLM calls happen here)
+│   │   ├── dreamscapes/generate/     # POST - generate story seeds via OpenAI
+│   │   ├── dreamscapes/enhance/      # POST - enhance/stitch seeds via OpenAI
+│   │   ├── outputs/generate/         # POST - generate 3 story variants via OpenAI
+│   │   └── parts/transform/          # POST - transform studio parts
+│   └── app/
+│       ├── create/page.tsx           # CreatePage (4-step seed→output flow)
+│       ├── library/page.tsx          # LibraryPage (saved items + performance)
+│       ├── settings/page.tsx         # SettingsPage
+│       └── studio/page.tsx           # StudioPage (project/part management)
+├── components/
+│   ├── create/                       # Template gallery components
+│   ├── design-system/                # Shared UI (CopyButton, Slider, Toast, etc.)
+│   ├── studio/                       # Studio-specific components
+│   └── ui/                           # Radix-based primitives (Button, Card, etc.)
+├── config/
+│   ├── presets.json / dials.json / platforms.json / ...
+│   └── templates/                    # ~50 templates across 6 categories
+│       ├── reddit/                   # aitah, tifu, nosleep, petty-revenge, writing-prompts
+│       ├── short-form/               # TikTok/Reels story types
+│       ├── long-form/                # YouTube formats
+│       ├── marketing/                # Brand, email, landing page, etc.
+│       ├── audio-production/         # Podcast, voiceover, etc.
+│       └── video-production/         # Shot lists, storyboards, etc.
+├── lib/
+│   ├── adapters/
+│   │   ├── openai.ts                 # ✅ REAL - gpt-4o with Zod structured outputs
+│   │   └── mock.ts                   # Toggle via NEXT_PUBLIC_USE_MOCK_ADAPTER=true
+│   ├── persistence/
+│   │   ├── local.ts                  # ✅ ACTIVE - localStorage
+│   │   └── supabase.ts               # 🚧 STUB - all methods throw, Phase 2
+│   ├── auth/context.tsx              # 🚧 STUB - always returns guest user, Phase 2
+│   ├── prompt-builders.ts            # Prompt construction logic
+│   ├── types.ts                      # All TypeScript types
+│   └── env.ts                        # Env vars (OPENAI_API_KEY, Supabase keys)
+├── store/app-store.ts                # Zustand global state
+└── hooks/usePromptInspector.ts       # Dev tool for inspecting prompts
 ```
 
 ## Key Concepts
@@ -222,7 +230,11 @@ function SomePage() {
 </button>
 ```
 
-## Mock API Layer
+## API Layer
+
+The adapter pattern in `src/lib/adapters/` allows switching between real OpenAI and mock. Toggle with `NEXT_PUBLIC_USE_MOCK_ADAPTER=true`.
+
+All LLM calls use `gpt-4o-2024-08-06` with Zod structured outputs for type-safe, guaranteed JSON responses.
 
 ### generateDreamscapes()
 
@@ -282,82 +294,21 @@ async function generateOutputs({ dreamscape, dialState }) {
 }
 ```
 
-## Migration Path to Real Backend
+## Phase Status & Next Steps
 
-### Phase 1: API Integration
+### ✅ Phase 1: Complete
+- Next.js app with real OpenAI API (`gpt-4o`)
+- Adapter pattern with mock toggle
+- localStorage persistence
+- Template library (~50 templates)
+- Studio page
 
-Replace mock functions with real API calls:
-
-```javascript
-async function generateOutputs({ dreamscape, dialState }) {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      seed: dreamscape.chunks.map(c => c.text).join('\n\n'),
-      platform: dialState.platform,
-      format: dialState.outputFormat,
-      wordCount: dialState.wordCount,
-      tone: dialState.tone,
-      intensity: dialState.intensity,
-      avoidPhrases: dialState.avoidPhrases,
-    })
-  })
-
-  const { variants } = await response.json()
-  return variants
-}
-```
-
-### Phase 2: Database + Auth
-
-Replace localStorage with database:
-
-```javascript
-// Replace AppProvider localStorage with Supabase
-const { data: savedDreamscapes } = await supabase
-  .from('dreamscapes')
-  .select('*')
-  .eq('user_id', user.id)
-  .order('created_at', { ascending: false })
-
-const saveDreamscape = async (dreamscape) => {
-  const { error } = await supabase
-    .from('dreamscapes')
-    .upsert({ ...dreamscape, user_id: user.id })
-
-  if (error) throw error
-}
-```
-
-### Phase 3: Modularization
-
-Split into proper file structure:
-
-```
-src/
-├── config/
-│   ├── presets.ts
-│   ├── platforms.ts
-│   └── dials.ts
-├── api/
-│   ├── dreamscapes.ts
-│   ├── enhance.ts
-│   └── generate.ts
-├── context/
-│   └── AppContext.tsx
-├── components/
-│   ├── ui/
-│   │   ├── Button.tsx
-│   │   ├── Card.tsx
-│   │   └── Slider.tsx
-│   └── ...
-├── pages/
-│   ├── CreatePage.tsx
-│   ├── LibraryPage.tsx
-│   └── SettingsPage.tsx
-└── App.tsx
-```
+### 🚧 Phase 2: Next
+- Implement `src/lib/persistence/supabase.ts` (all methods currently throw)
+- Implement `src/lib/auth/context.tsx` (currently always returns guest)
+- Add Stripe billing + usage metering
+- Set env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- Feature flag: `NEXT_PUBLIC_ENABLE_AUTH=true`
 
 ## Performance Tracking System
 

@@ -111,7 +111,7 @@ function generateTransforms(): Transform[] {
       const targetCategory = targetMeta.category
       const allowedTransformTypes = rules[targetCategory]
 
-      if (!allowedTransformTypes || allowedTransformTypes.length === 0) continue
+      if (!allowedTransformTypes || (allowedTransformTypes as readonly string[]).length === 0) continue
 
       // Determine best transform type based on word counts
       const transformType = determineTransformType(

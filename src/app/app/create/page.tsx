@@ -1863,7 +1863,7 @@ Write the next part, continuing from where the story left off.`
               {showCommentPopover && selectedRange && (
                 <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/30">
                   <p className="text-xs font-medium text-primary mb-2">
-                    Selected: "{selectedRange.text.slice(0, 50)}{selectedRange.text.length > 50 ? '...' : ''}"
+                    Selected: &quot;{selectedRange.text.slice(0, 50)}{selectedRange.text.length > 50 ? '...' : ''}&quot;
                   </p>
                   <textarea
                     value={newCommentText}
@@ -1920,7 +1920,7 @@ Write the next part, continuing from where the story left off.`
                         }`}
                       >
                         <p className="text-text-muted mb-1 text-[10px]">
-                          "{comment.selectedText.slice(0, 30)}..."
+                          &quot;{comment.selectedText.slice(0, 30)}...&quot;
                         </p>
                         <p className="text-text-primary mb-2">{comment.commentText}</p>
                         {!comment.resolved && (

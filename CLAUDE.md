@@ -13,21 +13,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**StoryWeaver** - React-based story generation tool for creating platform-optimized narrative content (Reddit, Reels, TikTok, etc.).
+**StoryWeaver** - Next.js story generation tool for creating platform-optimized narrative content (Reddit, Reels, TikTok, YouTube, Marketing, etc.).
 
-**Current State**: Single-file React prototype (`GenAI Story Generator.jsx`, ~1100 lines) with mock API layer. No backend integration yet.
+**Current State**: Full Next.js 15 app with real OpenAI API integration (`gpt-4o`). Auth and Supabase persistence are stubbed (Phase 2). Data stored in localStorage for now.
 
-**Stack**: React 19 + Vanilla JavaScript (JSX) + Inline Tailwind CSS
+**Stack**: Next.js 15 + React 19 + TypeScript + Tailwind CSS + Zustand + Radix UI + OpenAI SDK + Zod
 
 ## Development Commands
 
 ```bash
-# This is a single-file prototype - no build step yet
-# See docs/DEVELOPMENT.md for setup options
-
-# When you add package.json dependencies:
-npm install               # Install dependencies
-npm run prepare           # Setup husky (done automatically)
+pnpm dev      # Start dev server
+pnpm build    # Build for production
+pnpm lint     # Lint
 ```
 
 ## Critical Rules
@@ -35,20 +32,16 @@ npm run prepare           # Setup husky (done automatically)
 ### ✅ DO
 
 - Read **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** first to understand file structure and key concepts
-- Use **grep** for code search (single file, ~1100 lines)
-  ```bash
-  grep -n "function CreatePage" "GenAI Story Generator.jsx"
-  grep -n "useState" "GenAI Story Generator.jsx"
-  ```
+- Use **Glob/Grep** for code search across `src/`
 - Update `execution_docs/_active/execution.md` in real-time when working
 - Follow the design system in **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)**
+- Use TypeScript — the codebase is fully typed
 
 ### ❌ NEVER
 
 - Skip execution doc updates
 - Code without planning in `execution_docs/_active/planning.md`
-- Use semicolons (entire file uses ASI)
-- Break the single-file structure unless explicitly migrating to production
+- Use semicolons (codebase uses ASI)
 
 ## Session Management
 
@@ -112,7 +105,45 @@ execution_docs/_active/execution.md
 ## File Structure
 
 ```
-GenAI Story Generator.jsx    # Entire application (~1100 lines)
+src/
+├── app/
+│   ├── api/                          # Next.js API routes (server-side LLM calls)
+│   │   ├── dreamscapes/generate/     # POST - generate story seeds
+│   │   ├── dreamscapes/enhance/      # POST - enhance/stitch seeds
+│   │   ├── outputs/generate/         # POST - generate 3 story variants
+│   │   └── parts/transform/          # POST - transform studio parts
+│   └── app/
+│       ├── create/page.tsx           # CreatePage (4-step seed→output flow)
+│       ├── library/page.tsx          # LibraryPage (saved items + performance)
+│       ├── settings/page.tsx         # SettingsPage
+│       └── studio/page.tsx           # StudioPage (project/part management)
+├── components/
+│   ├── create/                       # Template gallery components
+│   ├── design-system/                # Shared UI (CopyButton, Slider, Toast, etc.)
+│   ├── studio/                       # Studio-specific components
+│   └── ui/                           # Radix-based primitives (Button, Card, etc.)
+├── config/
+│   ├── presets.json / dials.json / platforms.json / ...
+│   └── templates/                    # ~50 templates across 6 categories
+│       ├── reddit/                   # aitah, tifu, nosleep, petty-revenge, writing-prompts
+│       ├── short-form/               # TikTok/Reels story types
+│       ├── long-form/                # YouTube formats
+│       ├── marketing/                # Brand, email, landing page, etc.
+│       ├── audio-production/         # Podcast, voiceover, etc.
+│       └── video-production/         # Shot lists, storyboards, etc.
+├── lib/
+│   ├── adapters/
+│   │   ├── openai.ts                 # ✅ REAL - gpt-4o with Zod structured outputs
+│   │   └── mock.ts                   # Toggle via NEXT_PUBLIC_USE_MOCK_ADAPTER=true
+│   ├── persistence/
+│   │   ├── local.ts                  # ✅ ACTIVE - localStorage
+│   │   └── supabase.ts               # 🚧 STUB - Phase 2
+│   ├── auth/context.tsx              # 🚧 STUB - always guest, Phase 2
+│   ├── prompt-builders.ts            # Prompt construction logic
+│   ├── types.ts                      # All TypeScript types
+│   └── env.ts                        # Env vars (OPENAI_API_KEY, Supabase keys)
+├── store/app-store.ts                # Zustand global state
+└── hooks/usePromptInspector.ts       # Dev tool for inspecting prompts
 
 docs/
 ├── ARCHITECTURE.md          # File structure, concepts, data model
@@ -128,8 +159,6 @@ execution_docs/
 
 .husky/
 └── post-commit              # Auto-archives docs after commit
-
-package.json                 # Minimal (just husky)
 ```
 
 ## Key Concepts (Quick Reference)
@@ -149,72 +178,47 @@ See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for detailed explanations.
 ## Common Tasks
 
 ### Adding a Preset
-```javascript
-// Add to PRESETS array (line 7)
-{ id: "new-preset", name: "...", intensity: { ... } }
+```typescript
+// Edit src/config/presets.json
+{ "id": "new-preset", "name": "...", "intensity": { ... } }
 ```
 
 ### Adding an Enhancement Goal
-```javascript
-// Add to ENHANCEMENT_GOALS (line 59)
-{ id: "humor", label: "Add humor", icon: "😂" }
+```typescript
+// 1. Edit src/config/enhancement-goals.json
+{ "id": "humor", "label": "Add humor", "icon": "😂" }
 
-// Update enhanceDreamscape() (line 170)
-const suffixes = { humor: "\n\nAnd then..." }
+// 2. Add goal prompt in src/lib/adapters/openai.ts → enhanceDreamscape()
+const goalPrompts = { humor: `System prompt for humor enhancement...` }
+```
+
+### Adding a Template
+```bash
+# Add JSON file to appropriate category:
+src/config/templates/{category}/{template-name}.json
 ```
 
 ### Adding a Dial
-```javascript
-// 1. Add to DIALS (line 42)
-// 2. Add to all preset intensity objects
-// 3. Add slider in CreatePage advanced section
+```typescript
+// 1. Edit src/config/dials.json
+// 2. Update IntensityValues type in src/lib/types.ts
+// 3. Update buildIntensityPrompt() in src/lib/adapters/openai.ts
+// 4. Add to all preset intensity objects in presets.json
 ```
 
 See **[docs/DEVELOPMENT.md § Common Development Tasks](docs/DEVELOPMENT.md#common-development-tasks)** for detailed examples.
 
-## Code Search
-
-Since this is a single file, use simple grep:
-
-```bash
-# Find component
-grep -n "function CreatePage" "GenAI Story Generator.jsx"
-
-# Find all state
-grep -n "useState" "GenAI Story Generator.jsx"
-
-# Find localStorage
-grep -n "localStorage" "GenAI Story Generator.jsx"
-
-# Find presets
-grep -n "PRESETS\|intensity:" "GenAI Story Generator.jsx"
-```
-
-### Line Number Reference
-
-```
-7-79:    CONFIG DATA (presets, platforms, dials, etc.)
-85-192:  MOCK API LAYER (generate functions)
-197-202: LOCAL STORAGE (load/save)
-207-232: APP CONTEXT (global state)
-238-297: UI COMPONENTS (icons, buttons, etc.)
-325-814: CreatePage (main workflow)
-815-972: LibraryPage (saved items)
-973-1027: SettingsPage (preferences)
-1029-1101: StoryGeneratorApp (navigation, sidebar)
-```
-
 ## Data Model
 
-### localStorage Keys
+### localStorage Keys (Phase 1 — active)
 
 ```typescript
 sg_dreamscapes: Array<Dreamscape>
-sg_outputs: Array<Output>
-sg_settings: Settings
+sg_outputs: Array<OutputVariant>
+sg_settings: AppSettings
 ```
 
-See **[docs/ARCHITECTURE.md § Data Model](docs/ARCHITECTURE.md#data-model)** for full type definitions.
+Types defined in `src/lib/types.ts`. See **[docs/ARCHITECTURE.md § Data Model](docs/ARCHITECTURE.md#data-model)** for full type definitions.
 
 ## Design System
 
@@ -226,33 +230,24 @@ See **[docs/ARCHITECTURE.md § Data Model](docs/ARCHITECTURE.md#data-model)** fo
 
 See **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)** for complete system.
 
-## Migration to Production
+## Phase Status
 
-Current: Single-file prototype with mock API
-
-Future phases:
-1. **API Integration** - Replace mock functions with real LLM calls
-2. **Database + Auth** - Replace localStorage with Supabase/Firebase
-3. **Modularization** - Split into proper file structure
+| Phase | What | Status |
+|-------|------|--------|
+| ✅ Phase 1 | Next.js app + real OpenAI API (`gpt-4o`) | Done |
+| ✅ Phase 1 | localStorage persistence + adapter pattern | Done |
+| 🚧 Phase 2 | Supabase auth + cloud persistence | Stub only |
+| 🚧 Phase 2 | Billing / usage metering | Not started |
 
 See **[docs/ARCHITECTURE.md § Migration Path](docs/ARCHITECTURE.md#migration-path-to-real-backend)** for detailed steps.
-
-## Important Notes
-
-- **Single-file application** - No build step, no modules, no imports
-- **Mock API only** - All generation is simulated with delays
-- **localStorage only** - No database, no auth, no multi-user
-- **Prototype focus** - Optimized for rapid UX iteration, not production
-
-This is intentional. Keep it simple until backend integration is needed.
 
 ## Remember
 
 1. **Read docs first** - ARCHITECTURE.md has all the details
 2. **Update execution docs** - Track progress in real-time
 3. **Plan before coding** - Use execution_docs/_active/planning.md
-4. **No semicolons** - Entire file uses ASI
-5. **Keep it simple** - This is a prototype, don't over-engineer
+4. **No semicolons** - Codebase uses ASI
+5. **TypeScript** - All new code must be typed
 6. **Rename archived docs** - At start of each session
 
 ## Additional Resources
