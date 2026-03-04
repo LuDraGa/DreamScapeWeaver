@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { usePromptInspector } from '@/hooks/usePromptInspector'
 import { useAppStore } from '@/store/app-store'
 import { ThemedCard } from '@/components/design-system/themed-card'
 import { Button } from '@/components/ui/button'
@@ -31,7 +32,7 @@ const FEEDBACK_CHIPS = [
   { id: 'pace-good', label: 'Pace good', positive: true },
   { id: 'pace-fast', label: 'Pace fast', positive: false },
 ]
-import { uid, parseMultiPartOutput, type ParsedOutput } from '@/lib/utils'
+import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
 import type { Dreamscape, DialState, IntensityValues, Template, TemplateCategory } from '@/lib/types'
@@ -166,8 +167,31 @@ export default function CreatePage() {
   const [toast, setToast] = useState('')
 
   // Prompt Inspector state (Developer Mode)
-  const [inspectorPromptData, setInspectorPromptData] = useState<PromptData | null>(null)
   const [inspectorOpen, setInspectorOpen] = useState(false)
+  const {
+    promptData: inspectorPromptData,
+    setPromptData: setInspectorPromptData,
+    inspectorFocus,
+    setInspectorFocus,
+  } = usePromptInspector({
+    enabled: settings.developerMode,
+    step,
+    powerUserMode: settings.powerUserMode,
+    dialState,
+    chunks,
+    enhanceGoal,
+    customEnhanceGoal,
+    showEnhanceDrawer,
+    showGenPanel,
+    genVibe,
+    genCount,
+    genIntensity,
+    selectedTemplate,
+    generatedOutputs,
+    activeVariant,
+    splitGuidance,
+    continueGuidance,
+  })
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -399,172 +423,6 @@ Write the next part, continuing from where the story left off.`
       setGenerating(false)
     }
   }
-
-  // ============================================================
-  // Prompt Inspector: Live Prompt Updates
-  // ============================================================
-
-  useEffect(() => {
-    if (!settings.developerMode) return
-
-    const currentPreset = PRESETS.find((p) => p.id === dialState.presetId) || PRESETS[0]
-    const genres = dialState.genres || []
-
-    // Enhancement prompts (highest priority - when enhance drawer is open)
-    if (showEnhanceDrawer && enhanceGoal && chunks.length > 0) {
-      setInspectorPromptData(
-        buildEnhancementPrompt({
-          chunks,
-          goalPreset: enhanceGoal,
-          customGoal: customEnhanceGoal,
-          intensity: dialState.intensity,
-          avoidPhrases: dialState.avoidPhrases,
-        })
-      )
-    }
-    // Step 0: Dreamscape - Show generation prompt when Gen panel is open
-    else if (step === 0 && showGenPanel) {
-      console.log('📊 Prompt Inspector updating with genIntensity:', genIntensity)
-      setInspectorPromptData(
-        buildDreamscapePrompt({
-          count: genCount,
-          vibe: genVibe,
-          intensity: genIntensity,
-        })
-      )
-    }
-    // Step 0: Dreamscape - Show chunk preview (default)
-    else if (step === 0 && chunks.length > 0) {
-      const systemPrompt = `You are viewing the Dreamscape step.`
-      const userPrompt = `Current dreamscape chunks:
-
-${chunks.map((c, i) => `Chunk ${i + 1}:
-${c.title ? `Title: ${c.title}` : '(No title)'}
-${c.text ? `Text: ${c.text}` : '(No text yet)'}`).join('\n\n')}
-
-Total chunks: ${chunks.length}
-
-Next step: Select a preset and configure advanced settings.`
-
-      setInspectorPromptData({
-        step: 'Dreamscape (Step 0)',
-        messages: [
-          { role: 'system', content: systemPrompt, variables: {} },
-          {
-            role: 'user',
-            content: userPrompt,
-            variables: { chunkCount: chunks.length, chunks: chunks.map((c) => ({ title: c.title, text: c.text })) },
-          },
-        ],
-        fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
-      })
-    }
-    // Step 1: Platform & Style
-    else if (step === 1) {
-      // Normal User Mode: Show selected template prompts
-      if (!settings.powerUserMode && selectedTemplate && chunks.length > 0) {
-        // Build temporary dreamscape from chunks for preview
-        const tempDreamscape = {
-          id: 'preview',
-          title: chunks[0].text.slice(0, 50) || 'Untitled',
-          chunks,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-        const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, tempDreamscape)
-        setInspectorPromptData({
-          step: 'Template (Step 1)',
-          messages: [
-            { role: 'system', content: systemPrompt, variables: {} },
-            { role: 'user', content: userPrompt, variables: {} },
-          ],
-          fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
-        })
-      }
-      // Power User Mode: Show preset configuration
-      else if (settings.powerUserMode) {
-        setInspectorPromptData(
-          buildPresetPrompt({
-            preset: currentPreset,
-            platform: dialState.platform,
-            format: dialState.outputFormat,
-            intensity: dialState.intensity,
-            genres,
-            tone: dialState.tone,
-            wordCount: dialState.wordCount,
-          })
-        )
-      }
-      // No template selected yet in normal mode
-      else {
-        setInspectorPromptData({
-          step: 'Platform & Style (Step 1)',
-          messages: [
-            {
-              role: 'system',
-              content: 'No template selected yet. Choose a template above to see the prompt that will be used.',
-              variables: {},
-            },
-          ],
-          fullPrompt: 'No template selected yet.',
-        })
-      }
-    }
-    // Step 2: Generate (power user) OR Rate & Save (normal user with outputs)
-    else if (step === 2 && chunks.length > 0) {
-      // Power user mode: show generate preview
-      if (settings.powerUserMode) {
-        const dreamscape = { id: uid(), chunks }
-        setInspectorPromptData(
-          buildOutputPrompt({
-            dreamscape,
-            intensity: dialState.intensity,
-            platform: dialState.platform,
-            format: dialState.outputFormat,
-            wordCount: dialState.wordCount,
-            tone: dialState.tone,
-            genres,
-            avoidPhrases: dialState.avoidPhrases,
-          })
-        )
-      }
-      // Normal user mode: show template prompts if available
-      else if (selectedTemplate) {
-        const tempDreamscape = {
-          id: 'preview',
-          title: chunks[0].text.slice(0, 50) || 'Untitled',
-          chunks,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-        const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, tempDreamscape)
-        setInspectorPromptData({
-          step: 'Output Generation (Step 2)',
-          messages: [
-            { role: 'system', content: systemPrompt, variables: {} },
-            { role: 'user', content: userPrompt, variables: {} },
-          ],
-          fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
-        })
-      }
-    }
-    // Step 3: Rate & Save (power user mode only)
-    else if (step === 3 && settings.powerUserMode && chunks.length > 0) {
-      const dreamscape = { id: uid(), chunks }
-      setInspectorPromptData(
-        buildOutputPrompt({
-          dreamscape,
-          intensity: dialState.intensity,
-          platform: dialState.platform,
-          format: dialState.outputFormat,
-          wordCount: dialState.wordCount,
-          tone: dialState.tone,
-          genres,
-          avoidPhrases: dialState.avoidPhrases,
-        })
-      )
-    }
-  }, [step, dialState, enhanceGoal, customEnhanceGoal, chunks, settings.developerMode, showGenPanel, showEnhanceDrawer, genVibe, genCount, genIntensity, selectedTemplate, currentDreamscape, settings.powerUserMode])
 
   // ============================================================
   // Step A: Dreamscape handlers
@@ -828,6 +686,63 @@ Next step: Select a preset and configure advanced settings.`
       setStep(settings.powerUserMode ? 3 : 2)
     } catch (error) {
       showToast('Failed to generate story')
+      console.error(error)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  /**
+   * Generate More — appends new variants without clearing existing ones.
+   * Uses the same template + settings + dreamscape as the original generation.
+   */
+  const handleGenerateMore = async () => {
+    let dreamscape = currentDreamscape
+    if (!dreamscape && chunks.length === 0) return
+    if (!dreamscape) {
+      dreamscape = {
+        id: uid(),
+        title: chunks[0].text.slice(0, 50) || 'Untitled',
+        chunks,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    }
+
+    setGenerating(true)
+    try {
+      let outputs: any[]
+      if (selectedTemplate && !settings.powerUserMode) {
+        const platform = selectedTemplate.category === 'short-form' ? 'tiktok' : 'reddit'
+        const outputFormat = selectedTemplate.category === 'short-form' ? 'reel-script' : 'reddit-post'
+        const templateDialState: DialState = {
+          presetId: selectedTemplate.id,
+          platform,
+          outputFormat,
+          wordCount: selectedTemplate.wordCount,
+          tone: selectedTemplate.settings.tone,
+          intensity: selectedTemplate.settings.intensity,
+          genres: selectedTemplate.settings.genres,
+          avoidPhrases: selectedTemplate.settings.avoidPhrases,
+          cohesionStrictness: 5,
+        }
+        outputs = await api.outputs.generate({ dreamscape, dialState: templateDialState })
+      } else {
+        outputs = await api.outputs.generate({ dreamscape, dialState })
+      }
+
+      // Re-label new variants alphabetically from the current offset (D, E, F…)
+      const offset = generatedOutputs.length
+      const relabeled = outputs.map((o: any, i: number) => ({
+        ...o,
+        title: `Variant ${String.fromCharCode(65 + offset + i)}`,
+      }))
+
+      setGeneratedOutputs((prev) => [...prev, ...relabeled])
+      setActiveVariant(offset) // Jump to first new variant
+      showToast(`${outputs.length} more variants generated!`)
+    } catch (error) {
+      showToast('Failed to generate more')
       console.error(error)
     } finally {
       setGenerating(false)
@@ -1872,69 +1787,15 @@ Next step: Select a preset and configure advanced settings.`
             <p className="text-sm text-text-muted">Rate, refine, and save.</p>
           </div>
           <div className="flex gap-2">
-            {/* Developer Mode: Test Multi-Part Button */}
-            {settings.developerMode && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  // Inject a mock multi-part output for testing
-                  const mockMultiPart = {
-                    id: uid(),
-                    label: 'Test Multi-Part',
-                    text: `[INTRO - 0:00]
-I still remember that night on Atal Setu. The way the moonlight hit the water. The way everything changed in an instant.
-
-[SETUP - 1:30]
-It started with a simple cab ride. I was headed to Uran beach, just past the Atal Setu bridge. The driver quoted me 800 rupees. Fair enough, I thought. Long drive.
-
-But halfway there, he pulled over.
-
-"400 rupees more," he said.
-
-"What? We already agreed on a price."
-
-"Price changed. Pay or get out."
-
-I refused. He told me to leave. So I did.
-
-[TO BE CONTINUED IN PART 2]
-PART 2 SHOULD START WITH: Standing on the roadside, I booked another cab. That's when I noticed my first driver talking to someone...
-
-[PART 2 - RISING ACTION]
-The second cab arrived within minutes. But as he pulled up, I saw my original driver approach him. They talked. Looked at me. Something was wrong.
-
-The new driver pulled something from his trunk. A bottle. Acetone.
-
-Before I could run, everything went black.
-
-[TO BE CONTINUED IN PART 3]
-PART 3 SHOULD START WITH: I woke up on the beach, hands bound, the sound of waves mixing with their voices around a bonfire...`,
-                  }
-
-                  const newIndex = generatedOutputs.length
-                  setGeneratedOutputs([...generatedOutputs, mockMultiPart])
-                  setParsedOutputs([...parsedOutputs, parseMultiPartOutput(mockMultiPart.text)])
-                  setActivePart((prev) => ({ ...prev, [newIndex]: 1 }))
-                  setActiveVariant(newIndex) // Switch to the new variant
-                  showToast('🧪 Test multi-part output added!')
-                }}
-                className="bg-purple-600/20 border-purple-500/50 text-purple-300"
-              >
-                🧪 Test Multi-Part
-              </Button>
-            )}
             <Button
               size="sm"
               variant="outline"
-              onClick={() => {
-                setStep(2)
-                setGeneratedOutputs([])
-              }}
-              className="bg-transparent border-[#334155] text-text-secondary"
+              onClick={handleGenerateMore}
+              disabled={generating}
+              className="bg-transparent border-[#334155] text-text-secondary disabled:opacity-50"
             >
               <RefreshCwIcon className="w-3.5 h-3.5 mr-2" />
-              Generate More
+              {generating ? 'Generating...' : 'Generate More'}
             </Button>
           </div>
         </div>
@@ -1944,14 +1805,14 @@ PART 3 SHOULD START WITH: I woke up on the beach, hands bound, the sound of wave
           {generatedOutputs.map((output, idx) => (
             <button
               key={idx}
-              onClick={() => setActiveVariant(idx)}
+              onClick={() => { setActiveVariant(idx); setInspectorFocus('default') }}
               className="flex-1 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
               style={{
                 background: activeVariant === idx ? '#6366f1' : 'transparent',
                 color: activeVariant === idx ? '#fff' : '#94a3b8',
               }}
             >
-              {output.label || `Variant ${String.fromCharCode(65 + idx)}`}
+              {output.title || `Variant ${String.fromCharCode(65 + idx)}`}
             </button>
           ))}
         </div>
@@ -2092,17 +1953,20 @@ PART 3 SHOULD START WITH: I woke up on the beach, hands bound, the sound of wave
         {/* Always-Visible Split/Continue Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           {/* Split into Parts */}
-          <ThemedCard className="border-[#1e293b]">
+          <ThemedCard
+            className={`border transition-colors ${inspectorFocus === 'split' && settings.developerMode ? 'border-indigo-500/50' : 'border-[#1e293b]'}`}
+          >
             <h4 className="text-sm font-medium text-text-primary mb-3">✂️ Split into Parts</h4>
             <textarea
               value={splitGuidance}
-              onChange={(e) => setSplitGuidance(e.target.value)}
+              onChange={(e) => { setSplitGuidance(e.target.value); setInspectorFocus('split') }}
+              onFocus={() => setInspectorFocus('split')}
               placeholder="Optional: How should the story be split? (e.g., 'Break at major plot points', 'Split into 3 equal parts')"
               className="w-full px-3 py-2 text-sm bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary resize-none mb-3"
               rows={3}
             />
             <Button
-              onClick={handleSplitIntoParts}
+              onClick={() => { setInspectorFocus('split'); handleSplitIntoParts() }}
               disabled={generating}
               className="w-full bg-[rgba(30,41,59,0.5)] hover:bg-[rgba(30,41,59,0.7)] text-text-primary disabled:opacity-50"
             >
@@ -2111,17 +1975,20 @@ PART 3 SHOULD START WITH: I woke up on the beach, hands bound, the sound of wave
           </ThemedCard>
 
           {/* Continue Story (Generate Next Part) */}
-          <ThemedCard className="border-[#1e293b]">
+          <ThemedCard
+            className={`border transition-colors ${inspectorFocus === 'continue' && settings.developerMode ? 'border-indigo-500/50' : 'border-[#1e293b]'}`}
+          >
             <h4 className="text-sm font-medium text-text-primary mb-3">➡️ Continue Story</h4>
             <textarea
               value={continueGuidance}
-              onChange={(e) => setContinueGuidance(e.target.value)}
+              onChange={(e) => { setContinueGuidance(e.target.value); setInspectorFocus('continue') }}
+              onFocus={() => setInspectorFocus('continue')}
               placeholder="Optional: What should happen next? (e.g., 'Focus on the aftermath', 'Introduce a new character')"
               className="w-full px-3 py-2 text-sm bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary resize-none mb-3"
               rows={3}
             />
             <Button
-              onClick={handleContinueStory}
+              onClick={() => { setInspectorFocus('continue'); handleContinueStory() }}
               disabled={generating}
               className="w-full bg-[rgba(30,41,59,0.5)] hover:bg-[rgba(30,41,59,0.7)] text-text-primary disabled:opacity-50"
             >
