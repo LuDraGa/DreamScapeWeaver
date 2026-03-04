@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-const ENABLE_AUTH = process.env.NEXT_PUBLIC_ENABLE_AUTH === 'true'
+// Use ENABLE_AUTH (no NEXT_PUBLIC prefix) so middleware reads it at runtime, not build time
+const ENABLE_AUTH = process.env.ENABLE_AUTH === 'true'
 
 export async function middleware(request: NextRequest) {
   // Mock mode: no session enforcement locally

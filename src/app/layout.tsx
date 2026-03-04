@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
+import { DM_Sans } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/context";
 import { ClientMigration } from "@/components/client-migration";
 import "./globals.css";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "StoryWeaver - AI Story Generation Platform",
@@ -14,13 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={dmSans.className}>
       <body>
         <ClientMigration />
         <AuthProvider>{children}</AuthProvider>
