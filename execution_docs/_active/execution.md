@@ -1,50 +1,58 @@
 # StoryWeaver - Active Execution
 
-## Task: [Task Name]
+## Task: Phase 2b RDBMS Schema — SQL Migration
 
-**Session**: [Date]
-**Context**: [Brief description of what is being implemented]
+**Session**: 2026-03-05
+**Context**: Build full Phase 2b SQL migration with stubs+docstrings first, then full implementation.
+Planning doc: execution_docs/_active/planning.md
 
 ## Execution Status
 
 ### ✅ Completed Tasks
-
-*None yet - starting implementation*
+- Schema design (planning.md)
+- Migration: supabase/migrations/001_phase2b_schema.sql (fully implemented)
+  - Enums: dreamscape_origin, change_source
+  - profiles ALTER (created_by, updated_by, is_archived)
+  - 10 tables with full docstrings + COMMENT ON:
+    templates, user_settings, dreamscapes, output_variants, dreamscape_origins,
+    dreamscape_chunks, dreamscape_chunk_versions, output_variant_versions, performance_snapshots
+  - output_variants.template_id: UUID FK → templates
+  - Triggers: set_updated_at() on all mutable tables (inc. templates)
+  - Indexes: 17 indexes including template analytics + partial indexes
+  - RLS: policies on all tables
+- Seed script: scripts/seed-templates.ts (reads 46 JSON files, upserts to DB)
+- supabase/config.toml (fill in project_id before use)
+- package.json: supabase CLI + tsx devDeps + db:push / db:seed / db:migrate scripts
 
 ### 🔄 In Progress
-
-*None currently*
+- Awaiting user: link Supabase project + run push
 
 ### ⏳ Pending Tasks
-
-*List tasks to be completed*
+- [ ] Fill project_id in supabase/config.toml (Supabase dashboard → Settings → General → Reference ID)
+- [ ] pnpm supabase login
+- [ ] pnpm supabase login && pnpm supabase link --project-ref YOUR_REF
+- [ ] pnpm db:push (apply migration)
+- [ ] pnpm db:seed (seed 46 templates)
+- [ ] TypeScript types: update Dreamscape, OutputVariant, add ChunkVersion, OutputVersion types
+- [ ] FigJam ERD update (manual — Figma MCP cannot write ERDs)
 
 ## Changes Made
 
-### Files Modified
--
-
 ### Files Created
--
+- supabase/migrations/001_phase2b_schema.sql
 
-### Files Deleted
--
+### Files Modified
+- execution_docs/_active/planning.md (updated status)
 
 ## Implementation Notes
 
 ### Key Technical Details
-*Document important implementation decisions and technical details*
+- Version tables (chunk_versions, variant_versions) are immutable — no updated_at trigger
+- dreamscape_origins breaks circular FK (no cycle in schema)
+- RLS on version tables: no user_id column — access via parent's user_id or API-route-only
+- profiles ALTER is separate from CREATE (Phase 2a already created that table)
 
-### Challenges & Solutions
-*Note any challenges encountered and how they were resolved*
-
-## Testing Notes
-*Manual testing performed, test results, etc.*
-
-## Developer Actions Required
-- [ ] Test feature manually
-- [ ] Run any necessary commands
-
----
-
-*This document tracks active implementation progress*
+### Developer Actions Required
+- [ ] Run migration in Supabase SQL Editor
+- [ ] Verify all tables created in storyweaver schema
+- [ ] Bootstrap admin role manually after migration

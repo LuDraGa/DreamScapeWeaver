@@ -443,6 +443,33 @@ jobs:
       - run: npm run lint
 ```
 
+## Database Commands
+
+```bash
+# Push schema migration to remote Supabase
+supabase db push
+
+# Seed all system templates (46 templates from src/config/templates/**)
+pnpm db:seed
+
+# Full setup: push migration + seed (run once on fresh environment)
+pnpm db:migrate
+
+# Check migration history (local vs remote)
+supabase migration list
+
+# Dry-run: preview what would be pushed without applying
+supabase db push --dry-run
+```
+
+**Shared Supabase project note**: This project shares a Supabase instance with another app.
+All tables are isolated under the `storyweaver` schema. The other app's migrations are tracked
+as stub files in `supabase/migrations/` (named `*_remote.sql`) and marked applied via
+`supabase migration repair`. Never delete those stub files.
+
+**Re-seeding templates**: `pnpm db:seed` is idempotent — safe to re-run after adding new
+template JSON files. Uses `ON CONFLICT (slug) DO UPDATE` so existing rows are updated in place.
+
 ## Additional Resources
 
 - **Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)

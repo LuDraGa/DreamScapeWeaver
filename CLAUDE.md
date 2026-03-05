@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **[docs/WORKFLOWS.md](docs/WORKFLOWS.md)**: CreatePage 4-step flow, LibraryPage, SettingsPage, data flow diagrams
 - **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)**: Colors, typography, spacing, component patterns, animations
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**: Running the app, code style, common tasks, testing, migration to production
+- **[docs/FUTURE_GROWTH.md](docs/FUTURE_GROWTH.md)**: Deferred architecture — Projects feature DB upgrade, analytics feedback loop, generation_events table, billing, audit trail. Read before adding new features to avoid re-designing what's already been thought through.
 - **[execution_docs/_active/](execution_docs/_active/)**: Active planning and execution tracking
 
 ## Project Overview
@@ -237,7 +238,8 @@ See **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)** for complete system.
 | ✅ Phase 1 | Next.js app + real OpenAI API (`gpt-4o`) | Done |
 | ✅ Phase 1 | localStorage persistence + adapter pattern | Done |
 | ✅ Phase 2a | Supabase auth (Google OAuth + email/password) | Done |
-| 🚧 Phase 2b | Supabase DB persistence (design ERD first) | Not started |
+| ✅ Phase 2b | RDBMS schema design + migration + seeding | Done (persistence wiring pending) |
+| 🚧 Phase 2b | Wire supabase.ts persistence adapter to DB tables | Not started |
 | 🚧 Phase 3 | Billing / usage metering | Not started |
 
 ## Auth & Environment

@@ -127,7 +127,38 @@ Used for A/B testing different approaches.
 
 ## Data Model
 
-### localStorage Keys
+### Supabase Schema (Phase 2b — live on remote)
+
+All tables live under the `storyweaver` schema (isolated from other apps on the same Supabase project).
+Migration: `supabase/migrations/20260305000000_phase2b_schema.sql`
+
+```
+templates                   — system + user-custom generation blueprints (seeded from config JSON)
+profiles                    — one per auth.users row (Phase 2a); extended with audit fields
+user_settings               — 1:1 with profiles, lazy-created on first save
+dreamscapes                 — story seed containers
+dreamscape_origins          — lineage for derived dreamscapes (breaks circular FK)
+dreamscape_chunks           — ordered text segments within a dreamscape
+dreamscape_chunk_versions   — immutable version history per chunk
+output_variants             — generated story variants (3 per generation run)
+output_variant_versions     — immutable version history per output
+performance_snapshots       — user-entered real-world metrics per output per platform
+```
+
+**Base fields on every table**: `created_at`, `updated_at` (trigger-maintained), `created_by`, `updated_by`, `is_archived`
+
+**Version tables** (`_versions`) are append-only and immutable — no `updated_at` or `is_archived`.
+
+**Circular FK resolved**: `dreamscape_origins` table holds the lineage pointer (`source_output_id → output_variants`) instead of `dreamscapes.source_output_id`, eliminating the cycle.
+
+**Key design decisions**:
+- `output_variants.platform` + `format` promoted out of `dial_state` JSONB for fast filtering
+- `output_variants.template_id UUID FK → templates` — proper DB-level reference
+- `output_variants.feedback TEXT` (not array) — free-form, UI enforces 1000 char
+- `is_archived` soft-delete on all main tables
+- `current_version SMALLINT` on chunks + output_variants for optimistic concurrency
+
+### localStorage Keys (Phase 1 — still active, will be replaced in persistence wiring)
 
 ```typescript
 // sg_dreamscapes
@@ -312,10 +343,15 @@ async function generateOutputs({ dreamscape, dialState }) {
 - Real auth on Vercel (`NEXT_PUBLIC_ENABLE_AUTH=true` + `ENABLE_AUTH=true`)
 - Middleware enforces `/app/*` protection at runtime via `ENABLE_AUTH` (non-public env var)
 
-### 🚧 Phase 2b: Persistence — Next
-- Design RDBMS schema in Figma (ERD) before touching code
-- Implement `src/lib/persistence/supabase.ts` (all methods currently throw)
-- Tables: `dreamscapes`, `output_variants`, `performance_snapshots`, `projects`, `parts`, `settings`
+### ✅ Phase 2b: RDBMS Schema — Done (persistence wiring still pending)
+- Full schema designed, migrated, and pushed to Supabase (`storyweaver` schema)
+- Migration: `supabase/migrations/20260305000000_phase2b_schema.sql`
+- Tables live on remote: `templates`, `user_settings`, `dreamscapes`, `dreamscape_origins`,
+  `dreamscape_chunks`, `dreamscape_chunk_versions`, `output_variants`, `output_variant_versions`,
+  `performance_snapshots`
+- 46 system templates seeded via `scripts/seed-templates.ts`
+- RLS, indexes, triggers all in place
+- **Remaining**: wire `src/lib/persistence/supabase.ts` to these tables (currently stubs that throw)
 
 ### 🚧 Phase 3: Billing
 - Stripe + usage metering per user

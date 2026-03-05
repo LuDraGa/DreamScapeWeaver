@@ -1,0 +1,58 @@
+# supabase/config.toml
+# Supabase CLI project configuration for StoryWeaver.
+#
+# HOW TO FIND YOUR PROJECT REF:
+#   Supabase dashboard → your project → Settings → General → Reference ID
+#
+# HOW TO LINK:
+#   pnpm supabase login
+#   pnpm supabase link --project-ref YOUR_PROJECT_REF
+#
+# SHARED PROJECT NOTE:
+#   This Supabase project is shared with another app. All StoryWeaver tables
+#   are isolated under the `storyweaver` schema. The migration only touches
+#   that schema — no other schemas are modified.
+#   `supabase db push` only applies migrations tracked in supabase/migrations/,
+#   so it is safe to run on a shared project.
+
+project_id = "olquywzupxszttgiptco"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["storyweaver", "public"]
+extra_search_path = ["storyweaver", "public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 5432
+shadow_port = 5433
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://YOUR_VERCEL_URL.vercel.app"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+# [auth.external.google]
+# Configure via Supabase dashboard → Authentication → Providers → Google
+# client_id = "env(GOOGLE_CLIENT_ID)"
+# secret = "env(GOOGLE_CLIENT_SECRET)"
