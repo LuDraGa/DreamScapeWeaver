@@ -6,6 +6,11 @@ import { PRESETS } from '@/lib/config'
 import { projectStorage, partStorage, activeProjectStorage } from '@/lib/storage'
 
 interface AppState {
+  // UI state
+  loginModalOpen: boolean
+  openLoginModal: () => void
+  closeLoginModal: () => void
+
   // Create flow state
   currentDreamscape: Dreamscape | null
   currentDialState: DialState | null
@@ -74,6 +79,10 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       // Initial state
+      loginModalOpen: false,
+      openLoginModal: () => set({ loginModalOpen: true }),
+      closeLoginModal: () => set({ loginModalOpen: false }),
+
       currentDreamscape: null,
       currentDialState: null,
       generatedVariants: [],

@@ -3,11 +3,16 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import type { AuthState, User } from '@/lib/types'
 import type { UserRole } from '@/lib/auth/roles'
-import { getMockUser } from '@/lib/auth/mock'
+import { getMockUser, clearMockUser } from '@/lib/auth/mock'
 
 const ENABLE_AUTH = process.env.NEXT_PUBLIC_ENABLE_AUTH === 'true'
 
-const AuthContext = createContext<AuthState | null>(null)
+interface AuthContextValue extends AuthState {
+  logout: () => Promise<void>
+  refreshAuth: () => void
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -17,16 +22,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     role: null,
   })
 
+  function readMockAuth() {
+    const mockUser = getMockUser()
+    setState({
+      user: mockUser,
+      isGuest: !mockUser,
+      isLoading: false,
+      role: mockUser?.role ?? null,
+    })
+  }
+
   useEffect(() => {
     if (!ENABLE_AUTH) {
-      // Mock mode — read from localStorage
-      const mockUser = getMockUser()
-      setState({
-        user: mockUser,
-        isGuest: !mockUser,
-        isLoading: false,
-        role: mockUser?.role ?? null,
-      })
+      readMockAuth()
       return
     }
 
@@ -40,7 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
 
-        // Fetch role from profiles table
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
@@ -57,12 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setState({ user, isGuest: false, isLoading: false, role })
       }
 
-      // Initial session
       supabase.auth.getSession().then(({ data: { session } }) => {
         resolveUser(session?.user ?? null)
       })
 
-      // Listen for auth changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         resolveUser(session?.user ?? null)
       })
@@ -71,10 +76,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>
+  async function logout() {
+    if (!ENABLE_AUTH) {
+      clearMockUser()
+      setState({ user: null, isGuest: true, isLoading: false, role: null })
+      return
+    }
+
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    // onAuthStateChange will update state automatically
+  }
+
+  function refreshAuth() {
+    if (!ENABLE_AUTH) {
+      readMockAuth()
+    }
+    // Real auth refreshes via onAuthStateChange — no manual call needed
+  }
+
+  return (
+    <AuthContext.Provider value={{ ...state, logout, refreshAuth }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
-export function useAuth(): AuthState {
+export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext)
   if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
