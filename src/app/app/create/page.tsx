@@ -72,8 +72,8 @@ function randomizeIntensity(): IntensityValues {
 export default function CreatePage() {
   const { currentDreamscape, setCurrentDreamscape, saveDreamscape, settings } = useAppStore()
 
-  // Step management
-  const [step, setStep] = useState(0)
+  // Step management — start at step 1 if a dreamscape was pre-loaded from Library
+  const [step, setStep] = useState(() => currentDreamscape ? 1 : 0)
 
   // Normal user mode has 3 steps (skip Generate review), power user has 4
   const steps = settings.powerUserMode

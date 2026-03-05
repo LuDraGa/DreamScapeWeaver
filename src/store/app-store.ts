@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Dreamscape, OutputVariant, AppSettings, DialState, StudioProject, Part } from '@/lib/types'
+import type { Dreamscape, OutputVariant, AppSettings, DialState } from '@/lib/types'
 import { getPersistenceAdapter } from '@/lib/persistence'
 import { PRESETS } from '@/lib/config'
-import { projectStorage, partStorage, activeProjectStorage } from '@/lib/storage'
+import { uid } from '@/lib/utils'
 
 interface AppState {
   // UI state
@@ -24,13 +24,6 @@ interface AppState {
   // Settings
   settings: AppSettings
 
-  // Studio state
-  studioProjects: StudioProject[]
-  studioParts: Part[]
-  activeProjectId: string | null
-  unsavedParts: Part[] // Temporary parts (not persisted)
-  activePart: Part | null // Currently viewing part
-
   // Actions - Create flow
   setCurrentDreamscape: (dreamscape: Dreamscape | null) => void
   setCurrentDialState: (dialState: DialState) => void
@@ -42,26 +35,13 @@ interface AppState {
   saveOutput: (output: OutputVariant) => void
   deleteDreamscape: (id: string) => void
   deleteOutput: (id: string) => void
+  rateOutput: (id: string, rating: number) => void
+  updateOutput: (id: string, updates: Partial<OutputVariant>) => void
+  promoteToSeed: (outputId: string) => Dreamscape | null
   loadLibraryData: () => Promise<void>
 
   // Actions - Settings
   updateSettings: (settings: Partial<AppSettings>) => void
-
-  // Actions - Studio (Projects & Saved Parts)
-  loadStudioData: () => void
-  createProject: (project: Omit<StudioProject, 'id' | 'createdAt' | 'updatedAt'>) => StudioProject
-  updateProject: (id: string, updates: Partial<Omit<StudioProject, 'id' | 'createdAt'>>) => void
-  deleteProject: (id: string) => void
-  setActiveProject: (id: string | null) => void
-  createPart: (part: Omit<Part, 'id' | 'createdAt' | 'updatedAt'>) => Part
-  updatePart: (id: string, updates: Partial<Omit<Part, 'id' | 'createdAt'>>) => void
-  deletePart: (id: string) => void
-
-  // Actions - Unsaved Parts (Session Only)
-  addUnsavedPart: (part: Part) => void
-  removeUnsavedPart: (id: string) => void
-  setActivePart: (part: Part | null) => void
-  clearUnsavedParts: () => void
 
   // Helpers
   clearCreateFlow: () => void
@@ -69,11 +49,6 @@ interface AppState {
 
 /**
  * Main app store using Zustand
- *
- * Features:
- * - Persists to localStorage (guest mode)
- * - Ready for Supabase sync (Phase 2)
- * - Manages create flow, library, and settings
  */
 export const useAppStore = create<AppState>()(
   persist(
@@ -96,18 +71,12 @@ export const useAppStore = create<AppState>()(
         developerMode: false,
         powerUserMode: false,
       },
-      studioProjects: [],
-      studioParts: [],
-      activeProjectId: null,
-      unsavedParts: [],
-      activePart: null,
 
       // Create flow actions
       setCurrentDreamscape: (dreamscape) => {
         const preset = PRESETS.find((p) => p.id === get().settings.defaultPreset) || PRESETS[0]
         set({
           currentDreamscape: dreamscape,
-          // Initialize dialState when dreamscape is set
           currentDialState: dreamscape
             ? get().currentDialState || {
                 presetId: preset.id,
@@ -128,7 +97,7 @@ export const useAppStore = create<AppState>()(
       setGeneratedVariants: (variants) =>
         set({
           generatedVariants: variants,
-          activeVariantIndex: 0, // Reset to first variant
+          activeVariantIndex: 0,
         }),
 
       setActiveVariantIndex: (index) => set({ activeVariantIndex: index }),
@@ -140,8 +109,7 @@ export const useAppStore = create<AppState>()(
         const updated = [dreamscape, ...filtered]
         set({ savedDreamscapes: updated })
 
-        // Also persist to storage adapter (Phase 2 will use Supabase)
-        const isGuest = true // TODO: Get from auth context
+        const isGuest = true
         const adapter = getPersistenceAdapter(isGuest)
         adapter.saveDreamscape(dreamscape).catch((error) => {
           console.error('Failed to persist dreamscape:', error)
@@ -154,8 +122,7 @@ export const useAppStore = create<AppState>()(
         const updated = [output, ...filtered]
         set({ savedOutputs: updated })
 
-        // Persist to storage adapter
-        const isGuest = true // TODO: Get from auth context
+        const isGuest = true
         const adapter = getPersistenceAdapter(isGuest)
         adapter.saveOutput(output).catch((error) => {
           console.error('Failed to persist output:', error)
@@ -164,11 +131,9 @@ export const useAppStore = create<AppState>()(
 
       deleteDreamscape: (id) => {
         const { savedDreamscapes } = get()
-        const filtered = savedDreamscapes.filter((d) => d.id !== id)
-        set({ savedDreamscapes: filtered })
+        set({ savedDreamscapes: savedDreamscapes.filter((d) => d.id !== id) })
 
-        // Delete from storage adapter
-        const isGuest = true // TODO: Get from auth context
+        const isGuest = true
         const adapter = getPersistenceAdapter(isGuest)
         adapter.deleteDreamscape(id).catch((error) => {
           console.error('Failed to delete dreamscape:', error)
@@ -177,21 +142,75 @@ export const useAppStore = create<AppState>()(
 
       deleteOutput: (id) => {
         const { savedOutputs } = get()
-        const filtered = savedOutputs.filter((o) => o.id !== id)
-        set({ savedOutputs: filtered })
+        set({ savedOutputs: savedOutputs.filter((o) => o.id !== id) })
 
-        // Delete from storage adapter
-        const isGuest = true // TODO: Get from auth context
+        const isGuest = true
         const adapter = getPersistenceAdapter(isGuest)
         adapter.deleteOutput(id).catch((error) => {
           console.error('Failed to delete output:', error)
         })
       },
 
+      rateOutput: (id, rating) => {
+        const { savedOutputs } = get()
+        const updated = savedOutputs.map((o) => (o.id === id ? { ...o, rating } : o))
+        set({ savedOutputs: updated })
+
+        const found = updated.find((o) => o.id === id)
+        if (found) {
+          const isGuest = true
+          const adapter = getPersistenceAdapter(isGuest)
+          adapter.saveOutput(found).catch((error) => {
+            console.error('Failed to persist rating:', error)
+          })
+        }
+      },
+
+      updateOutput: (id, updates) => {
+        const { savedOutputs } = get()
+        const updated = savedOutputs.map((o) => (o.id === id ? { ...o, ...updates } : o))
+        set({ savedOutputs: updated })
+
+        const found = updated.find((o) => o.id === id)
+        if (found) {
+          const isGuest = true
+          const adapter = getPersistenceAdapter(isGuest)
+          adapter.saveOutput(found).catch((error) => {
+            console.error('Failed to persist output update:', error)
+          })
+        }
+      },
+
+      promoteToSeed: (outputId) => {
+        const { savedOutputs, savedDreamscapes } = get()
+        const output = savedOutputs.find((o) => o.id === outputId)
+        if (!output) return null
+
+        const now = new Date().toISOString()
+        const newDreamscape: Dreamscape = {
+          id: uid(),
+          title: `From: ${output.title}`,
+          chunks: [{ id: uid(), title: 'Promoted seed', text: output.text }],
+          origin: 'derived',
+          sourceOutputId: outputId,
+          createdAt: now,
+          updatedAt: now,
+        }
+
+        const updated = [newDreamscape, ...savedDreamscapes]
+        set({ savedDreamscapes: updated })
+
+        const isGuest = true
+        const adapter = getPersistenceAdapter(isGuest)
+        adapter.saveDreamscape(newDreamscape).catch((error) => {
+          console.error('Failed to persist promoted dreamscape:', error)
+        })
+
+        return newDreamscape
+      },
+
       loadLibraryData: async () => {
-        // Load data from persistence adapter
-        // Useful for initial load or refresh
-        const isGuest = true // TODO: Get from auth context
+        const isGuest = true
         const adapter = getPersistenceAdapter(isGuest)
 
         try {
@@ -201,11 +220,7 @@ export const useAppStore = create<AppState>()(
             adapter.getSettings(),
           ])
 
-          set({
-            savedDreamscapes: dreamscapes,
-            savedOutputs: outputs,
-            settings,
-          })
+          set({ savedDreamscapes: dreamscapes, savedOutputs: outputs, settings })
         } catch (error) {
           console.error('Failed to load library data:', error)
         }
@@ -217,129 +232,12 @@ export const useAppStore = create<AppState>()(
         const updated = { ...settings, ...newSettings }
         set({ settings: updated })
 
-        // Persist to storage adapter
-        const isGuest = true // TODO: Get from auth context
+        const isGuest = true
         const adapter = getPersistenceAdapter(isGuest)
         adapter.saveSettings(updated).catch((error) => {
           console.error('Failed to persist settings:', error)
         })
       },
-
-      // Studio actions
-      loadStudioData: () => {
-        const projects = projectStorage.getAll()
-        const parts = partStorage.getAll()
-        const activeProjectId = activeProjectStorage.get()
-        set({
-          studioProjects: projects,
-          studioParts: parts,
-          activeProjectId,
-        })
-      },
-
-      createProject: (project) => {
-        const newProject = projectStorage.create(project)
-        const { studioProjects } = get()
-        set({ studioProjects: [newProject, ...studioProjects] })
-        return newProject
-      },
-
-      updateProject: (id, updates) => {
-        const updated = projectStorage.update(id, updates)
-        const { studioProjects } = get()
-        set({
-          studioProjects: studioProjects.map((p) => (p.id === id ? updated : p)),
-        })
-      },
-
-      deleteProject: (id) => {
-        projectStorage.delete(id)
-        const { studioProjects, studioParts, activeProjectId } = get()
-        const newActiveId = activeProjectId === id ? null : activeProjectId
-        set({
-          studioProjects: studioProjects.filter((p) => p.id !== id),
-          studioParts: studioParts.filter((p) => p.projectId !== id),
-          activeProjectId: newActiveId,
-        })
-        // Persist the cleared active project
-        if (activeProjectId === id) {
-          activeProjectStorage.set(null)
-        }
-      },
-
-      setActiveProject: (id) => {
-        set({ activeProjectId: id })
-        activeProjectStorage.set(id)
-      },
-
-      createPart: (part) => {
-        const newPart = partStorage.create(part)
-        const { studioParts, studioProjects } = get()
-
-        // Update parts list
-        set({ studioParts: [newPart, ...studioParts] })
-
-        // Update project's partIds in state
-        const project = studioProjects.find((p) => p.id === part.projectId)
-        if (project) {
-          set({
-            studioProjects: studioProjects.map((p) =>
-              p.id === part.projectId
-                ? { ...p, partIds: [...p.partIds, newPart.id] }
-                : p
-            ),
-          })
-        }
-
-        return newPart
-      },
-
-      updatePart: (id, updates) => {
-        const updated = partStorage.update(id, updates)
-        const { studioParts } = get()
-        set({
-          studioParts: studioParts.map((p) => (p.id === id ? updated : p)),
-        })
-      },
-
-      deletePart: (id) => {
-        const part = partStorage.getById(id)
-        partStorage.delete(id)
-        const { studioParts, studioProjects } = get()
-
-        // Update parts list
-        set({ studioParts: studioParts.filter((p) => p.id !== id) })
-
-        // Update project's partIds in state
-        if (part) {
-          set({
-            studioProjects: studioProjects.map((p) =>
-              p.id === part.projectId
-                ? { ...p, partIds: p.partIds.filter((pid) => pid !== id) }
-                : p
-            ),
-          })
-        }
-      },
-
-      // Unsaved parts actions (session only, not persisted)
-      addUnsavedPart: (part) => {
-        const { unsavedParts } = get()
-        set({ unsavedParts: [part, ...unsavedParts] })
-      },
-
-      removeUnsavedPart: (id) => {
-        const { unsavedParts, activePart } = get()
-        set({
-          unsavedParts: unsavedParts.filter((p) => p.id !== id),
-          // Clear activePart if deleting it
-          activePart: activePart?.id === id ? null : activePart,
-        })
-      },
-
-      setActivePart: (part) => set({ activePart: part }),
-
-      clearUnsavedParts: () => set({ unsavedParts: [], activePart: null }),
 
       // Helpers
       clearCreateFlow: () =>
@@ -351,8 +249,7 @@ export const useAppStore = create<AppState>()(
         }),
     }),
     {
-      name: 'sg:store', // localStorage key
-      // Only persist library and settings, not create flow state
+      name: 'sg:store',
       partialize: (state) => ({
         savedDreamscapes: state.savedDreamscapes,
         savedOutputs: state.savedOutputs,

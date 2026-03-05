@@ -1,54 +1,51 @@
 # StoryWeaver - Active Execution
 
-## Task: Auth UX — Login Modal + Guest-Only Create + Sidebar Auth Button
+## Task: Library Rewrite + Studio Deletion
 
 **Session**: 2026-03-05
-**Context**: Replace redirect-based login with modal, grey-out nav for guests, add sidebar auth section (Sign in button / logged-in user row)
+**Context**: Remove studio page entirely. Rewrite library page with Seeds tab (browse/continue from dreamscapes) and Content tab (browse outputs by platform/preset/rating). Add promoteToSeed, rateOutput, updateOutput to store. Wire up "Continue from Library" to create page step 1.
 
 ## Execution Status
 
 ### ✅ Completed Tasks
-- Add `loginModalOpen` + `openLoginModal` + `closeLoginModal` to app-store
-- Add `logout` + `refreshAuth` to AuthContext (new `AuthContextValue` interface)
-- Create `src/components/auth/LoginModal.tsx` (Radix Dialog, mock + real auth modes)
-- Update `src/app/app/layout.tsx` — sidebar auth section + greyed nav items (opacity-35, click→modal)
-- Update `middleware.ts` — `/app/create` open to guests, protected routes redirect to `/app/create`
-- Simplify `/auth/login/page.tsx` to instant redirect shell
-- Build passes ✅
 
-### 🔄 In Progress
-*None*
+- Planning approved by user
+
+### ✅ Completed Tasks (all)
+
+- Deleted studio page, 10 studio components, storage.ts, lib/parts.ts, lib/transforms.ts, api/parts/
+- Removed studio from nav, store, types
+- Added origin/sourceOutputId to Dreamscape type
+- Added rateOutput, updateOutput, promoteToSeed to store
+- Rewrote library/page.tsx (Seeds + Content tabs with filters, rating, promote-to-seed)
+- Updated create/page.tsx (init step=1 if dreamscape pre-loaded)
+- Build: clean
 
 ### ⏳ Pending Tasks
-*None — implementation complete, needs manual testing*
+
+*None*
 
 ## Changes Made
 
-### Files Modified
-- `src/store/app-store.ts` — added loginModalOpen, openLoginModal, closeLoginModal
-- `src/lib/auth/context.tsx` — added AuthContextValue, logout(), refreshAuth()
-- `src/app/app/layout.tsx` — sidebar auth section + locked nav items
-- `middleware.ts` — guest-friendly route config
-- `src/app/auth/login/page.tsx` — simplified to redirect shell
+### Files Deleted
+- src/app/app/studio/page.tsx
+- src/components/studio/ (10 files)
+- src/lib/storage.ts
 
-### Files Created
-- `src/components/auth/LoginModal.tsx`
+### Files Modified
+- src/lib/types.ts
+- src/store/app-store.ts
+- src/app/app/layout.tsx
+- src/app/app/library/page.tsx (full rewrite)
+- src/app/app/create/page.tsx
 
 ## Implementation Notes
 
 ### Key Technical Details
-- Modal state in Zustand (not persisted — excluded by `partialize`)
-- Auth context exposes `logout()` (clears mock or signs out Supabase) and `refreshAuth()` (re-reads localStorage for mock mode)
-- Greyed nav: `opacity-35`, renders as `<button>` not `<Link>`, calls `openLoginModal` on click
-- Sign in button: full-width indigo gradient with glow (`boxShadow: 0 0 16px rgba(99,102,241,0.35)`)
-- Logged in row: avatar initial circle + truncated email + logout icon button
-- Middleware: only `PROTECTED_APP_PATHS = [studio, library, settings]` gated; create is open
-
-## Developer Actions Required
-- [ ] `pnpm dev` and test guest flow: Create works, clicking Studio/Library/Settings opens modal
-- [ ] Test mock login: role picker appears in modal, selecting a role closes modal and updates sidebar
-- [ ] Test mock logout: sidebar returns to Sign in button, nav items grey out
-- [ ] Verify collapsed sidebar: Sign in shows icon-only, logged-in shows avatar-only
+- OutputVariant.dialState.platform + presetId used for Content tab filtering (no new fields needed)
+- "Continue from Library" = setCurrentDreamscape() + router.push('/app/create') + step initialized to 1 if currentDreamscape set
+- promoteToSeed creates new Dreamscape with origin='derived', sourceOutputId set, saves to library
+- CLAUDE.md: no URL params, no semicolons, TypeScript only
 
 ---
 
