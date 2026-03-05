@@ -401,6 +401,77 @@ const settings = {
 
 ---
 
+## Library: Two-Tab Model (Seeds vs Content)
+
+**Decision**: The Library is split into two distinct tabs with separate browsing intents.
+
+- **Seeds tab** — browse Dreamscapes (inputs). Primary action: "Continue →" which pre-loads the dreamscape into store and jumps to Create Step 1 (Platform & Style), skipping Step 0.
+- **Content tab** — browse OutputVariants (generated content). Primary actions: rate, copy, delete, promote to seed.
+
+**Rationale**: The user's mental model when returning to the library is either "what do I want to generate from?" (Seeds) or "what have I already made?" (Content). Mixing them creates noise.
+
+**Anti-pattern**: ❌ Don't show outputs and dreamscapes in a flat unified feed — they have different primary actions and different filter axes.
+
+---
+
+## Content Lineage: DAG, Not Hierarchy
+
+**Decision**: The creative graph is a DAG (directed acyclic graph). Any OutputVariant can be promoted to a new Dreamscape seed (`origin: 'derived'`, `sourceOutputId` set), which can then generate further outputs. One output can branch to multiple derived dreamscapes.
+
+**Data model**:
+```typescript
+interface Dreamscape {
+  origin?: 'manual' | 'generated' | 'derived'
+  sourceOutputId?: string  // set when origin = 'derived'
+}
+```
+
+**UX approach**: Don't render the full DAG visually — it's unnavigable at scale. Instead:
+- Show lineage as a breadcrumb on each card (`← from "..."`)
+- Show output count per seed
+- The full graph is traversable by following breadcrumbs, not drawn
+
+---
+
+## Hook-First Card Pattern
+
+**Decision**: In Library cards (both Seeds and Content), the **first sentence of the content** ("the hook") is the primary visual identifier, shown prominently. The title is secondary/muted below it.
+
+**Rationale**: Users remember content by what it says, not by auto-generated or generic titles. The hook is the most distinctive and memorable signal. Titles are unreliable (AI may generate "Balanced Variant" etc.).
+
+**Implementation**: Extract first sentence up to `.!?\n`, truncate at 160 chars.
+
+**Also**: Titles are inline-editable on double-click (Enter/Escape/blur to commit) for both seeds and content.
+
+---
+
+## Content Filters: Multi-Select with NOT
+
+**Decision**: Content tab filters use multi-select chips with three states per chip.
+
+**Chip cycle**: neutral (grey) → **selected/include** (indigo, OR'd) → **excluded/NOT** (red ✕, AND'd) → neutral
+
+**Logic**:
+- Multiple selected chips within a category = OR (show if matches any)
+- Across categories (platform AND preset) = AND
+- Excluded chips = hard NOT regardless
+
+**Full list always shown**: All platforms and all presets are always rendered. Zero-count chips are disabled (greyed), not hidden — so users can see what's possible, not just what they've generated.
+
+**Anti-pattern**: ❌ Don't hide zero-count filter options — it makes the filter system feel broken when you don't have data yet.
+
+---
+
+## Studio Page: Removed
+
+**Decision**: The Studio page (part-based non-linear content system) has been removed entirely.
+
+**Rationale**: The Create page → Library loop is the right UX for now. Studio was a premature abstraction before the core loop was solid. The "project" concept may return later as a scoped container for Library items.
+
+**Files removed**: `src/app/app/studio/`, `src/components/studio/` (10 files), `src/lib/storage.ts`, `src/lib/parts.ts`, `src/lib/transforms.ts`, `src/app/api/parts/transform/`.
+
+---
+
 ## Summary: Key Principles
 
 1. **Feature flags**: Always in Settings, never URL params
@@ -408,8 +479,10 @@ const settings = {
 3. **UI**: Follow design system patterns
 4. **Debug tools**: Bottom drawer pattern
 5. **Workflow**: Preset-first, not blank slate
-6. **State**: Context + localStorage (migrate to Zustand later)
+6. **State**: Zustand + localStorage (Zustand already in use)
 7. **Intensity dials**: Under review, may add language complexity control
+8. **Library**: Two-tab (Seeds / Content), hook-first cards, multi-select NOT filters
+9. **Lineage**: DAG model, breadcrumb navigation (no graph visualization)
 
 ---
 
