@@ -26,7 +26,7 @@ export interface DreamscapeChunk {
 
 // Generation config
 export interface DialState {
-  presetId: string
+  presetId?: string
   platform: Platform
   outputFormat: OutputFormat
   wordCount: number

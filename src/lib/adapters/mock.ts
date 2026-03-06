@@ -146,7 +146,7 @@ export const mockAdapter = {
     await sleep(2500 + Math.random() * 1000)
 
     // Check if this is a template-based generation (template IDs start with category prefix)
-    const presetId = params.dialState.presetId
+    const presetId = params.dialState.presetId ?? ''
     const isShortFormTemplate = presetId.startsWith('short-')
     const isRedditTemplate = presetId.startsWith('reddit-')
     const isLongFormTemplate = presetId.startsWith('long-')
