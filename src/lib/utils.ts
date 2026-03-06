@@ -9,10 +9,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Generate a unique ID
+ * Generate a UUID-compatible unique ID (required by Supabase uuid columns)
  */
 export function uid(): string {
-  return Math.random().toString(36).slice(2, 10)
+  return crypto.randomUUID()
 }
 
 /**
