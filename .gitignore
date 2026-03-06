@@ -36,3 +36,6 @@ Thumbs.db
 # Misc
 *.log
 *.tsbuildinfo
+
+# Supabase
+supabase/.temp/
