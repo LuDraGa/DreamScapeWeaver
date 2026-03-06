@@ -51,6 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
 
+        // Upsert profile — creates row on first login, no-ops on subsequent logins.
+        // Required so FK constraints on dreamscapes/output_variants are satisfied.
+        await supabase
+          .from('profiles')
+          .upsert(
+            { id: supabaseUser.id, email: supabaseUser.email ?? '' },
+            { onConflict: 'id', ignoreDuplicates: true }
+          )
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
