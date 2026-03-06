@@ -35,7 +35,7 @@ const FEEDBACK_CHIPS = [
 import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
-import type { Dreamscape, DialState, IntensityValues, Template, TemplateCategory } from '@/lib/types'
+import type { Dreamscape, OutputVariant, DialState, IntensityValues, Template, TemplateCategory, Platform, OutputFormat } from '@/lib/types'
 import { LabeledSlider } from '@/components/design-system/labeled-slider'
 import { CopyButton } from '@/components/design-system/copy-button'
 import { PromptInspector } from '@/components/dev-tools/prompt-inspector'
@@ -50,6 +50,21 @@ import { getTemplatesByCategory, buildPromptFromTemplate, checkTemplateCompatibi
 import { ContentTypeSelector } from '@/components/create/content-type-selector'
 import { TemplateGallery } from '@/components/create/template-gallery'
 import { TemplatePreview } from '@/components/create/template-preview'
+
+/**
+ * Maps template category → the closest Platform/OutputFormat values in the DialState type.
+ * Used so template-generated outputs are stored with a meaningful platform tag.
+ * Note: templates have their own prompts, so this doesn't affect generation — only
+ * storage/display (library badge, DB platform column, platform filter).
+ */
+const TEMPLATE_CATEGORY_DIAL: Record<TemplateCategory, { platform: Platform; outputFormat: OutputFormat }> = {
+  'reddit':           { platform: 'reddit', outputFormat: 'reddit-post' },
+  'short-form':       { platform: 'tiktok', outputFormat: 'reel-script' },
+  'long-form':        { platform: 'blog',   outputFormat: 'series' },
+  'video-production': { platform: 'blog',   outputFormat: 'series' },
+  'audio-production': { platform: 'blog',   outputFormat: 'series' },
+  'marketing':        { platform: 'blog',   outputFormat: 'short-story' },
+}
 
 /**
  * Helper: Randomize intensity values (1-10) for dreamscape generation
@@ -70,7 +85,7 @@ function randomizeIntensity(): IntensityValues {
  * Create Page - 4-step story generation workflow
  */
 export default function CreatePage() {
-  const { currentDreamscape, setCurrentDreamscape, saveDreamscape, settings } = useAppStore()
+  const { currentDreamscape, setCurrentDreamscape, saveDreamscape, saveOutput, settings } = useAppStore()
 
   // Step management — start at step 1 if a dreamscape was pre-loaded from Library
   const [step, setStep] = useState(() => currentDreamscape ? 1 : 0)
@@ -119,7 +134,7 @@ export default function CreatePage() {
   const getInitialDialState = (): DialState => {
     const preset = PRESETS.find((p) => p.id === selectedPreset) || PRESETS[0]
     return {
-      presetId: preset.id,
+      // presetId intentionally omitted — only stamped when user explicitly picks a preset
       platform: preset.platform,
       outputFormat: preset.outputFormat,
       wordCount: preset.wordCount,
@@ -516,6 +531,29 @@ Write the next part, continuing from where the story left off.`
     showToast('Saved to library!')
   }
 
+  // Build an OutputVariant from current state for a given variant index.
+  // Uses base.dialState (embedded by the API at generation time) so the saved record
+  // reflects the actual template/preset/intensity used — not the current UI dial state,
+  // which may differ (e.g. template flow never updates component dialState).
+  // Pass overrides for rating/feedback since React state may not have flushed yet.
+  const buildOutputVariant = (
+    variantIndex: number,
+    overrides: { rating?: number; feedback?: string[]; notes?: string } = {}
+  ): OutputVariant => {
+    const base = generatedOutputs[variantIndex]
+    return {
+      id: base.id,
+      dreamscapeId: currentDreamscape?.id,
+      title: base.title || 'Untitled',
+      text: base.text,
+      dialState: base.dialState ?? dialState, // prefer generation-time dialState; fall back to UI state
+      rating: overrides.rating ?? ratings[variantIndex],
+      feedback: overrides.feedback ?? feedback[variantIndex],
+      notes: overrides.notes ?? notes[variantIndex],
+      createdAt: base.createdAt || new Date().toISOString(),
+    }
+  }
+
   const handleEnhance = async () => {
     if (!enhanceGoal) return
     if (enhanceGoal === 'custom' && !customEnhanceGoal.trim()) {
@@ -623,6 +661,7 @@ Write the next part, continuing from where the story left off.`
       setFeedback({})
       setNotes({})
       setComments([])
+      saveDreamscape(dreamscape)
       showToast(`Generated ${outputs.length} variants!`)
       setStep(3) // Move to Rate & Save step
     } catch (error) {
@@ -652,9 +691,8 @@ Write the next part, continuing from where the story left off.`
       // Build prompts from template
       const { systemPrompt, userPrompt } = buildPromptFromTemplate(template, dreamscape)
 
-      // Determine platform/format based on template category
-      const platform = template.category === 'short-form' ? 'tiktok' : 'reddit'
-      const outputFormat = template.category === 'short-form' ? 'reel-script' : 'reddit-post'
+      // Map template category → platform/format for storage and display
+      const { platform, outputFormat } = TEMPLATE_CATEGORY_DIAL[template.category] ?? { platform: 'blog', outputFormat: 'series' }
 
       // Create dialState from template settings
       const templateDialState: DialState = {
@@ -676,11 +714,13 @@ Write the next part, continuing from where the story left off.`
       })
 
       setGeneratedOutputs(outputs)
+      setDialState(templateDialState) // sync UI dials to what was actually generated
       setActiveVariant(0)
       setRatings({})
       setFeedback({})
       setNotes({})
       setComments([])
+      saveDreamscape(dreamscape)
       showToast(`Generated ${outputs.length} variants!`)
       // Normal mode: step 2 = Rate & Save, Power mode: step 3 = Rate & Save
       setStep(settings.powerUserMode ? 3 : 2)
@@ -713,8 +753,7 @@ Write the next part, continuing from where the story left off.`
     try {
       let outputs: any[]
       if (selectedTemplate && !settings.powerUserMode) {
-        const platform = selectedTemplate.category === 'short-form' ? 'tiktok' : 'reddit'
-        const outputFormat = selectedTemplate.category === 'short-form' ? 'reel-script' : 'reddit-post'
+        const { platform, outputFormat } = TEMPLATE_CATEGORY_DIAL[selectedTemplate.category] ?? { platform: 'blog', outputFormat: 'series' }
         const templateDialState: DialState = {
           presetId: selectedTemplate.id,
           platform,
@@ -2005,7 +2044,11 @@ Write the next part, continuing from where the story left off.`
               {Array.from({ length: 10 }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => setRatings((prev) => ({ ...prev, [activeVariant]: i + 1 }))}
+                  onClick={() => {
+                    const newRating = i + 1
+                    setRatings((prev) => ({ ...prev, [activeVariant]: newRating }))
+                    saveOutput(buildOutputVariant(activeVariant, { rating: newRating }))
+                  }}
                   className="p-0.5 transition-all"
                 >
                   <Star
@@ -2028,17 +2071,14 @@ Write the next part, continuing from where the story left off.`
               return (
                 <button
                   key={chip.id}
-                  onClick={() =>
-                    setFeedback((prev) => {
-                      const current = prev[activeVariant] || []
-                      return {
-                        ...prev,
-                        [activeVariant]: isActive
-                          ? current.filter((x) => x !== chip.id)
-                          : [...current, chip.id],
-                      }
-                    })
-                  }
+                  onClick={() => {
+                    const current = feedback[activeVariant] || []
+                    const newFeedback = isActive
+                      ? current.filter((x) => x !== chip.id)
+                      : [...current, chip.id]
+                    setFeedback((prev) => ({ ...prev, [activeVariant]: newFeedback }))
+                    saveOutput(buildOutputVariant(activeVariant, { feedback: newFeedback }))
+                  }}
                   className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
                   style={{
                     background: isActive
@@ -2071,7 +2111,7 @@ Write the next part, continuing from where the story left off.`
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             onClick={() => {
-              // TODO: Implement save to library with rating
+              saveOutput(buildOutputVariant(activeVariant))
               showToast('Saved to library!')
             }}
             className="bg-primary hover:bg-primary-light text-white"

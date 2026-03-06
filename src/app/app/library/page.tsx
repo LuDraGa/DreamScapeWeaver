@@ -10,7 +10,8 @@ import { CopyButton } from '@/components/design-system/copy-button'
 import { TrashIcon, Star } from '@/components/icons'
 import { formatDate } from '@/lib/utils'
 import { PRESETS } from '@/lib/config'
-import type { Dreamscape, OutputVariant } from '@/lib/types'
+import { getTemplateById } from '@/lib/templates'
+import type { Dreamscape, OutputVariant, TemplateCategory } from '@/lib/types'
 
 // ── utils ─────────────────────────────────────────────────────────────────────
 
@@ -94,7 +95,30 @@ const PLATFORM_COLORS: Record<string, { bg: string; color: string }> = {
   blog:   { bg: 'rgba(234,179,8,0.12)', color: '#fde047' },
 }
 
+// Per template category — used when an output was generated from a template
+const CATEGORY_COLORS: Record<TemplateCategory, { bg: string; color: string }> = {
+  reddit:            { bg: 'rgba(255,69,0,0.12)',    color: '#ff9a6c' },
+  'short-form':      { bg: 'rgba(20,184,166,0.12)',  color: '#5eead4' },
+  'long-form':       { bg: 'rgba(234,179,8,0.12)',   color: '#fde047' },
+  'video-production':{ bg: 'rgba(168,85,247,0.12)',  color: '#d8b4fe' },
+  'audio-production':{ bg: 'rgba(236,72,153,0.12)',  color: '#f9a8d4' },
+  marketing:         { bg: 'rgba(99,102,241,0.12)',  color: '#a5b4fc' },
+}
+
 function PlatformBadge({ platform, presetId }: { platform?: string; presetId?: string }) {
+  // 1. Try template lookup first — presetId holds template.id for template-generated outputs
+  const template = presetId ? getTemplateById(presetId) : undefined
+  if (template) {
+    const c = CATEGORY_COLORS[template.category] ?? { bg: 'rgba(100,116,139,0.12)', color: '#94a3b8' }
+    return (
+      <span className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
+        style={{ background: c.bg, color: c.color }}>
+        {template.icon} {template.displayName}
+      </span>
+    )
+  }
+
+  // 2. Fall back to preset lookup (power-user mode preset selection)
   const preset = PRESETS.find((p) => p.id === presetId)
   const label = preset ? `${preset.emoji} ${preset.name}` : platform ?? 'Unknown'
   const c = PLATFORM_COLORS[platform ?? ''] ?? { bg: 'rgba(100,116,139,0.12)', color: '#94a3b8' }
@@ -116,13 +140,13 @@ function StarRating({ rating, outputId, onRate }: {
   const [hover, setHover] = useState(0)
   return (
     <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
+      {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
         <button key={n}
           onClick={() => onRate(outputId, n)}
           onMouseEnter={() => setHover(n)}
           onMouseLeave={() => setHover(0)}
         >
-          <Star className="w-3.5 h-3.5 transition-colors" style={{
+          <Star className="w-3 h-3 transition-colors" style={{
             color: n <= (hover || rating || 0) ? '#fbbf24' : '#334155',
             fill:  n <= (hover || rating || 0) ? '#fbbf24' : 'none',
           }} />
@@ -379,7 +403,7 @@ const ALL_PLATFORMS = [
 function ContentTab() {
   const { savedOutputs, savedDreamscapes, deleteOutput, rateOutput, updateOutput, promoteToSeed } = useAppStore()
   const [search, setSearch] = useState('')
-  const [highRatingOnly, setHighRatingOnly] = useState(false)
+  const [minRating, setMinRating] = useState<8 | 9 | null>(null)
   const platformFilter = useMultiFilter()
   const presetFilter   = useMultiFilter()
 
@@ -405,20 +429,20 @@ function ContentTab() {
     return counts
   }, [savedOutputs])
 
-  const hasActiveFilters = platformFilter.hasActive || presetFilter.hasActive || highRatingOnly
+  const hasActiveFilters = platformFilter.hasActive || presetFilter.hasActive || minRating !== null
 
   const filtered = useMemo(() => {
     return savedOutputs.filter((o) => {
       if (!platformFilter.matches(o.dialState?.platform)) return false
       if (!presetFilter.matches(o.dialState?.presetId))   return false
-      if (highRatingOnly && (o.rating ?? 0) < 4)          return false
+      if (minRating !== null && (o.rating ?? 0) < minRating) return false
       if (search) {
         const q = search.toLowerCase()
         return o.title?.toLowerCase().includes(q) || o.text?.toLowerCase().includes(q)
       }
       return true
     })
-  }, [savedOutputs, platformFilter.chips, presetFilter.chips, highRatingOnly, search])
+  }, [savedOutputs, platformFilter.chips, presetFilter.chips, minRating, search])
 
   const sourceDreamscapeFor = (dreamscapeId?: string) =>
     dreamscapeId ? savedDreamscapes.find((d) => d.id === dreamscapeId) : null
@@ -430,7 +454,7 @@ function ContentTab() {
   const resetAll = () => {
     platformFilter.reset()
     presetFilter.reset()
-    setHighRatingOnly(false)
+    setMinRating(null)
   }
 
   return (
@@ -465,18 +489,21 @@ function ContentTab() {
       </div>
 
       {/* Rating filter */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setHighRatingOnly(!highRatingOnly)}
-          className="px-3 py-1 rounded-full text-xs font-medium transition-all"
-          style={{
-            background: highRatingOnly ? '#fbbf24' : 'rgba(15,23,42,0.6)',
-            color: highRatingOnly ? '#000' : '#64748b',
-            border: `1px solid ${highRatingOnly ? '#fbbf24' : '#1e293b'}`,
-          }}
-        >
-          ★★★★+ only
-        </button>
+      <div className="flex items-center gap-2 flex-wrap">
+        {([8, 9] as const).map((threshold) => (
+          <button
+            key={threshold}
+            onClick={() => setMinRating(minRating === threshold ? null : threshold)}
+            className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+            style={{
+              background: minRating === threshold ? '#fbbf24' : 'rgba(15,23,42,0.6)',
+              color: minRating === threshold ? '#000' : '#64748b',
+              border: `1px solid ${minRating === threshold ? '#fbbf24' : '#1e293b'}`,
+            }}
+          >
+            {threshold}★+
+          </button>
+        ))}
         {hasActiveFilters && (
           <button onClick={resetAll} className="text-xs text-text-muted hover:text-text-primary underline">
             Clear all

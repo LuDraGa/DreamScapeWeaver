@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import type { AuthState, User } from '@/lib/types'
 import type { UserRole } from '@/lib/auth/roles'
 import { getMockUser, clearMockUser } from '@/lib/auth/mock'
+import { useAppStore } from '@/store/app-store'
 
 const ENABLE_AUTH = process.env.NEXT_PUBLIC_ENABLE_AUTH === 'true'
 
@@ -22,14 +23,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     role: null,
   })
 
+  const setUserAuthState = useAppStore((s) => s.setUserAuthState)
+
   function readMockAuth() {
     const mockUser = getMockUser()
-    setState({
-      user: mockUser,
-      isGuest: !mockUser,
-      isLoading: false,
-      role: mockUser?.role ?? null,
-    })
+    const isGuest = !mockUser
+    setState({ user: mockUser, isGuest, isLoading: false, role: mockUser?.role ?? null })
+    // Mock users have no real Supabase session — always use localStorage for persistence.
+    // Auth state (isGuest above) handles UI; store's isGuest routes persistence.
+    setUserAuthState(true)
   }
 
   useEffect(() => {
@@ -45,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const resolveUser = async (supabaseUser: { id: string; email?: string; created_at: string } | null) => {
         if (!supabaseUser) {
           setState({ user: null, isGuest: true, isLoading: false, role: null })
+          setUserAuthState(true)
           return
         }
 
@@ -62,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: supabaseUser.created_at,
         }
         setState({ user, isGuest: false, isLoading: false, role })
+        setUserAuthState(false)
       }
 
       supabase.auth.getSession().then(({ data: { session } }) => {

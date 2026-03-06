@@ -6,6 +6,10 @@ import { PRESETS } from '@/lib/config'
 import { uid } from '@/lib/utils'
 
 interface AppState {
+  // Auth routing — set by AuthProvider when session resolves
+  isGuest: boolean
+  setUserAuthState: (isGuest: boolean) => void
+
   // UI state
   loginModalOpen: boolean
   openLoginModal: () => void
@@ -54,6 +58,9 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       // Initial state
+      isGuest: true, // optimistic — AuthProvider sets the real value on session resolve
+      setUserAuthState: (isGuest) => set({ isGuest }),
+
       loginModalOpen: false,
       openLoginModal: () => set({ loginModalOpen: true }),
       closeLoginModal: () => set({ loginModalOpen: false }),
@@ -109,8 +116,7 @@ export const useAppStore = create<AppState>()(
         const updated = [dreamscape, ...filtered]
         set({ savedDreamscapes: updated })
 
-        const isGuest = true
-        const adapter = getPersistenceAdapter(isGuest)
+        const adapter = getPersistenceAdapter(get().isGuest)
         adapter.saveDreamscape(dreamscape).catch((error) => {
           console.error('Failed to persist dreamscape:', error)
         })
@@ -122,8 +128,7 @@ export const useAppStore = create<AppState>()(
         const updated = [output, ...filtered]
         set({ savedOutputs: updated })
 
-        const isGuest = true
-        const adapter = getPersistenceAdapter(isGuest)
+        const adapter = getPersistenceAdapter(get().isGuest)
         adapter.saveOutput(output).catch((error) => {
           console.error('Failed to persist output:', error)
         })
@@ -133,8 +138,7 @@ export const useAppStore = create<AppState>()(
         const { savedDreamscapes } = get()
         set({ savedDreamscapes: savedDreamscapes.filter((d) => d.id !== id) })
 
-        const isGuest = true
-        const adapter = getPersistenceAdapter(isGuest)
+        const adapter = getPersistenceAdapter(get().isGuest)
         adapter.deleteDreamscape(id).catch((error) => {
           console.error('Failed to delete dreamscape:', error)
         })
@@ -144,8 +148,7 @@ export const useAppStore = create<AppState>()(
         const { savedOutputs } = get()
         set({ savedOutputs: savedOutputs.filter((o) => o.id !== id) })
 
-        const isGuest = true
-        const adapter = getPersistenceAdapter(isGuest)
+        const adapter = getPersistenceAdapter(get().isGuest)
         adapter.deleteOutput(id).catch((error) => {
           console.error('Failed to delete output:', error)
         })
@@ -158,9 +161,7 @@ export const useAppStore = create<AppState>()(
 
         const found = updated.find((o) => o.id === id)
         if (found) {
-          const isGuest = true
-          const adapter = getPersistenceAdapter(isGuest)
-          adapter.saveOutput(found).catch((error) => {
+          getPersistenceAdapter(get().isGuest).saveOutput(found).catch((error) => {
             console.error('Failed to persist rating:', error)
           })
         }
@@ -173,9 +174,7 @@ export const useAppStore = create<AppState>()(
 
         const found = updated.find((o) => o.id === id)
         if (found) {
-          const isGuest = true
-          const adapter = getPersistenceAdapter(isGuest)
-          adapter.saveOutput(found).catch((error) => {
+          getPersistenceAdapter(get().isGuest).saveOutput(found).catch((error) => {
             console.error('Failed to persist output update:', error)
           })
         }
@@ -200,8 +199,7 @@ export const useAppStore = create<AppState>()(
         const updated = [newDreamscape, ...savedDreamscapes]
         set({ savedDreamscapes: updated })
 
-        const isGuest = true
-        const adapter = getPersistenceAdapter(isGuest)
+        const adapter = getPersistenceAdapter(get().isGuest)
         adapter.saveDreamscape(newDreamscape).catch((error) => {
           console.error('Failed to persist promoted dreamscape:', error)
         })
@@ -210,8 +208,7 @@ export const useAppStore = create<AppState>()(
       },
 
       loadLibraryData: async () => {
-        const isGuest = true
-        const adapter = getPersistenceAdapter(isGuest)
+        const adapter = getPersistenceAdapter(get().isGuest)
 
         try {
           const [dreamscapes, outputs, settings] = await Promise.all([
@@ -232,8 +229,7 @@ export const useAppStore = create<AppState>()(
         const updated = { ...settings, ...newSettings }
         set({ settings: updated })
 
-        const isGuest = true
-        const adapter = getPersistenceAdapter(isGuest)
+        const adapter = getPersistenceAdapter(get().isGuest)
         adapter.saveSettings(updated).catch((error) => {
           console.error('Failed to persist settings:', error)
         })

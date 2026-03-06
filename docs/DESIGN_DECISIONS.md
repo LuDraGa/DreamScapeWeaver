@@ -472,6 +472,27 @@ interface Dreamscape {
 
 ---
 
+## dial_state: Immutable Historical Snapshots
+
+**Decision**: Never migrate or overwrite `dial_state` on existing `output_variants` rows. Old outputs keep their stored dial values forever.
+
+**Rationale**: An output's `dial_state` is a snapshot of the exact config used to generate it — it's historical record, not live config. Mutating it would corrupt the provenance of the content.
+
+**Handling schema evolution**: When `DialState` gains new fields, old rows will be missing those keys. Handle this at read time in the UI with defaults:
+
+```typescript
+// Always merge with current defaults — never update the DB row
+const dialState = { ...DEFAULT_DIAL_STATE, ...output.dialState }
+```
+
+New outputs get the full current shape. Old outputs silently fill gaps with defaults. No migration queries needed, no data corruption risk.
+
+**`dial_state_version` column**: Exists as a read-time audit tool. Lets you query which rows have an older shape (`WHERE dial_state_version = 1`) for debugging or analytics. It is NOT a trigger for backfilling data.
+
+**Anti-pattern**: ❌ Don't run `UPDATE output_variants SET dial_state = dial_state || '{"newField": 5}'` — old outputs should reflect the exact config that produced them.
+
+---
+
 ## Summary: Key Principles
 
 1. **Feature flags**: Always in Settings, never URL params
