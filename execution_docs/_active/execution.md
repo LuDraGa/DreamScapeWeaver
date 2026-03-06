@@ -1,46 +1,52 @@
 # StoryWeaver - Active Execution
 
-## Task: Phase 2b — Supabase persistence wiring
+## Task: Logged-in user backend-first data flow
 
 **Session**: 2026-03-06
-**Context**: Wire supabase.ts adapter to live DB tables. Auth threading in store + implement
-all 8 core adapter methods. Library-specific features (perf snapshots, version history) deferred.
+**Context**: For logged-in users — library and settings pages fetch directly from Supabase (no Zustand), create flow ephemeral state stays in Zustand but resets cleanly on each new flow entry.
 
 ## Execution Status
 
 ### ✅ Completed Tasks
-- Read all relevant files: supabase.ts stub, local.ts, app-store.ts, types.ts, auth/context.tsx
-- src/lib/persistence/supabase.ts — full implementation (all 8 adapter methods)
-- src/store/app-store.ts — added isGuest state, setUserAuthState, replaced hardcoded true
-- src/lib/auth/context.tsx — calls setUserAuthState on auth change
-- TypeScript compilation clean (pnpm tsc --noEmit passes)
-- Fix: dial_state cast uses `as unknown as DialState` (Record<string,unknown> doesn't overlap directly)
+- Analysis of current broken state (loadLibraryData never called, persist middleware fights Supabase)
+
+### 🔄 In Progress
+- None
 
 ### ⏳ Pending Tasks
-- [ ] Manual test: login → save dreamscape → reload → verify from Supabase
-- [ ] Git commit the persistence wiring changes
+- None
 
 ## Changes Made
 
 ### Files Modified
-- src/lib/persistence/supabase.ts
-- src/store/app-store.ts
-- src/lib/auth/context.tsx
+- `src/store/app-store.ts` — removed savedDreamscapes/savedOutputs state, slimmed to create-flow + settings only, fixed setCurrentDreamscape to always reset ephemeral state, saveDreamscape/saveOutput are now thin async adapter calls
+- `src/lib/auth/context.tsx` — added loadSettings() call on logged-in auth resolve
+- `src/app/app/library/page.tsx` — full rewrite: fetches directly from adapter, local state for all data, mutations call adapter directly
+- `src/app/app/settings/page.tsx` — fetches directly from adapter, local state, syncs to store on save for create flow
+
+### Files Created
+-
+
+### Files Deleted
+-
 
 ## Implementation Notes
 
-### Key Technical Details
-- Chunk sync: DELETE all + INSERT (avoids UNIQUE (dreamscape_id, position) conflict on reorder)
-- user_id must be in every upsert payload (RLS WITH CHECK enforces auth.uid() = user_id)
-- feedback: string[] serialised as JSON.stringify → TEXT in DB, deserialised on read
-- platform/format extracted from dialState on output save (NOT NULL columns)
-- Version rows (chunk_versions, output_versions) NOT written yet — deferred with library work
-- Performance snapshots NOT joined on getOutputs() — deferred with library work
-- Settings: maybeSingle() + DEFAULT_SETTINGS fallback for lazy creation
-- isGuest starts true in store, set to false when auth resolves in AuthProvider
-- dial_state cast: `row.dial_state as unknown as DialState` (Record<string,unknown> → unknown → DialState)
+### Architecture
+- Logged-in users: Library/Settings = direct Supabase fetch, no Zustand for data
+- Logged-in users: Create flow = Zustand ephemeral state (currentDreamscape, dialState, generatedOutputs)
+- saveDreamscape/saveOutput = thin adapter calls only, no in-memory array updates
+- settings stays in Zustand (needed by create flow), hydrated from Supabase on auth resolve
+- Guest users: unchanged (localStorage + Zustand persist)
 
-### Deferred
-- Performance snapshot JOIN on getOutputs
-- dreamscape_chunk_versions / output_variant_versions write on save
-- promoteToSeed DB wiring (still works, saves derived dreamscape via saveDreamscape)
+### Ephemeral reset
+- setCurrentDreamscape always resets generatedVariants=[], activeVariantIndex=0, currentDialState=null (fresh from default preset)
+- Prevents stale state bleeding from one flow into another
+
+### persist partialize
+- Drop savedDreamscapes, savedOutputs from persist
+- Keep settings + create-flow state for guests (currentDreamscape etc can be kept for navigation)
+
+---
+
+*This document tracks active implementation progress*

@@ -66,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setState({ user, isGuest: false, isLoading: false, role })
         setUserAuthState(false)
+        // Hydrate settings from Supabase so create flow has up-to-date user preferences
+        useAppStore.getState().loadSettings()
       }
 
       supabase.auth.getSession().then(({ data: { session } }) => {

@@ -1,6 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/lib/auth/context'
 import { useAppStore } from '@/store/app-store'
+import { getPersistenceAdapter } from '@/lib/persistence'
 import { ThemedCard } from '@/components/design-system/themed-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,29 +11,55 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PRESETS } from '@/lib/config'
 import { XIcon } from '@/components/icons'
 import { clearAllAppData } from '@/lib/persistence/local'
+import type { AppSettings } from '@/lib/types'
 
-/**
- * Settings Page - Configure app preferences
- *
- * TODO: Break into feature components:
- * - PresetSelector
- * - AvoidPhrasesInput
- * - AutoAvoidToggle
- */
+const DEFAULT_SETTINGS: AppSettings = {
+  defaultPreset: 'reddit-aitah',
+  avoidPhrases: ["It's worth noting that", "I couldn't help but", 'Little did I know'],
+  autoAvoidAI: true,
+  developerMode: false,
+  powerUserMode: false,
+}
+
 export default function SettingsPage() {
-  const { settings, updateSettings } = useAppStore()
+  const { isGuest } = useAuth()
+  const { updateSettings: syncToStore } = useAppStore()
+
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const [loading, setLoading] = useState(true)
+
+  const adapter = getPersistenceAdapter(isGuest)
+
+  useEffect(() => {
+    adapter.getSettings()
+      .then((s) => setSettings(s))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [isGuest])
+
+  const persist = (updated: AppSettings) => {
+    setSettings(updated)
+    // Keep Zustand in sync so create flow picks up new settings immediately
+    syncToStore(updated)
+    adapter.saveSettings(updated).catch(console.error)
+  }
 
   const addAvoidPhrase = (phrase: string) => {
     if (!phrase.trim()) return
-    updateSettings({
-      avoidPhrases: [...settings.avoidPhrases, phrase],
-    })
+    persist({ ...settings, avoidPhrases: [...settings.avoidPhrases, phrase] })
   }
 
   const removeAvoidPhrase = (index: number) => {
-    updateSettings({
-      avoidPhrases: settings.avoidPhrases.filter((_, i) => i !== index),
-    })
+    persist({ ...settings, avoidPhrases: settings.avoidPhrases.filter((_, i) => i !== index) })
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-xl font-semibold mb-1 text-text-primary">Settings</h1>
+        <p className="text-sm text-text-muted">Loading…</p>
+      </div>
+    )
   }
 
   return (
@@ -43,7 +72,7 @@ export default function SettingsPage() {
         <h2 className="text-lg font-medium mb-4 text-text-primary">Default Preset</h2>
         <Select
           value={settings.defaultPreset}
-          onValueChange={(value) => updateSettings({ defaultPreset: value })}
+          onValueChange={(value) => persist({ ...settings, defaultPreset: value })}
         >
           <SelectTrigger className="w-full bg-[rgba(15,23,42,0.5)] border-[#1e293b] text-text-primary">
             <SelectValue />
@@ -65,7 +94,6 @@ export default function SettingsPage() {
           AI will avoid using these phrases in generated content
         </p>
 
-        {/* Phrase chips */}
         <div className="flex flex-wrap gap-2 mb-4">
           {settings.avoidPhrases.map((phrase, index) => (
             <div
@@ -83,7 +111,6 @@ export default function SettingsPage() {
           ))}
         </div>
 
-        {/* Add phrase input */}
         <Input
           placeholder="Add phrase to avoid... (press Enter)"
           onKeyDown={(e) => {
@@ -108,7 +135,7 @@ export default function SettingsPage() {
           <Button
             variant={settings.autoAvoidAI ? 'default' : 'outline'}
             size="sm"
-            onClick={() => updateSettings({ autoAvoidAI: !settings.autoAvoidAI })}
+            onClick={() => persist({ ...settings, autoAvoidAI: !settings.autoAvoidAI })}
             className={
               settings.autoAvoidAI
                 ? 'bg-primary hover:bg-primary-light text-white'
@@ -132,7 +159,7 @@ export default function SettingsPage() {
           <Button
             variant={settings.powerUserMode ? 'default' : 'outline'}
             size="sm"
-            onClick={() => updateSettings({ powerUserMode: !settings.powerUserMode })}
+            onClick={() => persist({ ...settings, powerUserMode: !settings.powerUserMode })}
             className={
               settings.powerUserMode
                 ? 'bg-primary hover:bg-primary-light text-white'
@@ -156,7 +183,7 @@ export default function SettingsPage() {
           <Button
             variant={settings.developerMode ? 'default' : 'outline'}
             size="sm"
-            onClick={() => updateSettings({ developerMode: !settings.developerMode })}
+            onClick={() => persist({ ...settings, developerMode: !settings.developerMode })}
             className={
               settings.developerMode
                 ? 'bg-primary hover:bg-primary-light text-white'

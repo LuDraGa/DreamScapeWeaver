@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/store/app-store'
+import { useAuth } from '@/lib/auth/context'
+import { getPersistenceAdapter } from '@/lib/persistence'
 import { ThemedCard } from '@/components/design-system/themed-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +13,7 @@ import { TrashIcon, Star } from '@/components/icons'
 import { formatDate } from '@/lib/utils'
 import { PRESETS } from '@/lib/config'
 import { getTemplateById } from '@/lib/templates'
+import { uid } from '@/lib/utils'
 import type { Dreamscape, OutputVariant, TemplateCategory } from '@/lib/types'
 
 // ── utils ─────────────────────────────────────────────────────────────────────
@@ -95,7 +98,6 @@ const PLATFORM_COLORS: Record<string, { bg: string; color: string }> = {
   blog:   { bg: 'rgba(234,179,8,0.12)', color: '#fde047' },
 }
 
-// Per template category — used when an output was generated from a template
 const CATEGORY_COLORS: Record<TemplateCategory, { bg: string; color: string }> = {
   reddit:            { bg: 'rgba(255,69,0,0.12)',    color: '#ff9a6c' },
   'short-form':      { bg: 'rgba(20,184,166,0.12)',  color: '#5eead4' },
@@ -106,7 +108,6 @@ const CATEGORY_COLORS: Record<TemplateCategory, { bg: string; color: string }> =
 }
 
 function PlatformBadge({ platform, presetId }: { platform?: string; presetId?: string }) {
-  // 1. Try template lookup first — presetId holds template.id for template-generated outputs
   const template = presetId ? getTemplateById(presetId) : undefined
   if (template) {
     const c = CATEGORY_COLORS[template.category] ?? { bg: 'rgba(100,116,139,0.12)', color: '#94a3b8' }
@@ -118,7 +119,6 @@ function PlatformBadge({ platform, presetId }: { platform?: string; presetId?: s
     )
   }
 
-  // 2. Fall back to preset lookup (power-user mode preset selection)
   const preset = PRESETS.find((p) => p.id === presetId)
   const label = preset ? `${preset.emoji} ${preset.name}` : platform ?? 'Unknown'
   const c = PLATFORM_COLORS[platform ?? ''] ?? { bg: 'rgba(100,116,139,0.12)', color: '#94a3b8' }
@@ -157,7 +157,6 @@ function StarRating({ rating, outputId, onRate }: {
 }
 
 // ── multi-select filter ───────────────────────────────────────────────────────
-// State per chip: undefined = neutral, true = selected (OR), false = excluded (NOT)
 
 type ChipState = Record<string, boolean | undefined>
 
@@ -167,9 +166,9 @@ function useMultiFilter() {
   const toggle = (id: string) => {
     setChips((prev) => {
       const cur = prev[id]
-      if (cur === undefined) return { ...prev, [id]: true }   // → selected
-      if (cur === true)      return { ...prev, [id]: false }  // → excluded
-      return { ...prev, [id]: undefined }                      // → neutral
+      if (cur === undefined) return { ...prev, [id]: true }
+      if (cur === true)      return { ...prev, [id]: false }
+      return { ...prev, [id]: undefined }
     })
   }
 
@@ -178,7 +177,7 @@ function useMultiFilter() {
   const hasActive = selected.length > 0 || excluded.length > 0
 
   const matches = (value: string | undefined) => {
-    if (!value) return selected.length === 0  // no value: show only if nothing selected
+    if (!value) return selected.length === 0
     if (excluded.includes(value)) return false
     if (selected.length > 0 && !selected.includes(value)) return false
     return true
@@ -240,9 +239,21 @@ function MultiFilterChips({
 
 // ── Seeds tab ─────────────────────────────────────────────────────────────────
 
-function SeedsTab() {
+function SeedsTab({
+  dreamscapes,
+  outputs,
+  onDelete,
+  onRename,
+  onPromote,
+}: {
+  dreamscapes: Dreamscape[]
+  outputs: OutputVariant[]
+  onDelete: (id: string) => void
+  onRename: (dreamscape: Dreamscape, title: string) => void
+  onPromote: (outputId: string) => void
+}) {
   const router = useRouter()
-  const { savedDreamscapes, savedOutputs, deleteDreamscape, saveDreamscape, setCurrentDreamscape } = useAppStore()
+  const { setCurrentDreamscape } = useAppStore()
   const [search, setSearch] = useState('')
   const originFilter = useMultiFilter()
 
@@ -253,13 +264,13 @@ function SeedsTab() {
   ]
 
   const originCounts = useMemo(() => ({
-    manual:    savedDreamscapes.filter((d) => (d.origin ?? 'manual') === 'manual').length,
-    generated: savedDreamscapes.filter((d) => d.origin === 'generated').length,
-    derived:   savedDreamscapes.filter((d) => d.origin === 'derived').length,
-  }), [savedDreamscapes])
+    manual:    dreamscapes.filter((d) => (d.origin ?? 'manual') === 'manual').length,
+    generated: dreamscapes.filter((d) => d.origin === 'generated').length,
+    derived:   dreamscapes.filter((d) => d.origin === 'derived').length,
+  }), [dreamscapes])
 
   const filtered = useMemo(() => {
-    return savedDreamscapes.filter((d) => {
+    return dreamscapes.filter((d) => {
       if (!originFilter.matches(d.origin ?? 'manual')) return false
       if (search) {
         const q = search.toLowerCase()
@@ -267,20 +278,17 @@ function SeedsTab() {
       }
       return true
     })
-  }, [savedDreamscapes, originFilter.chips, search])
+  }, [dreamscapes, originFilter.chips, search])
 
-  const outputCountFor = (id: string) => savedOutputs.filter((o) => o.dreamscapeId === id).length
+  const outputCountFor = (id: string) => outputs.filter((o) => o.dreamscapeId === id).length
 
   const sourceOutputFor = (sourceOutputId?: string) =>
-    sourceOutputId ? savedOutputs.find((o) => o.id === sourceOutputId) : null
+    sourceOutputId ? outputs.find((o) => o.id === sourceOutputId) : null
 
   const handleContinue = (dreamscape: Dreamscape) => {
+    // setCurrentDreamscape always resets all ephemeral flow state — clean slate
     setCurrentDreamscape(dreamscape)
     router.push('/app/create')
-  }
-
-  const handleRename = (dreamscape: Dreamscape, title: string) => {
-    saveDreamscape({ ...dreamscape, title, updatedAt: new Date().toISOString() })
   }
 
   return (
@@ -325,18 +333,15 @@ function SeedsTab() {
               <ThemedCard key={dreamscape.id} className="border-[#1e293b]">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-
-                    {/* Hook — primary identifier */}
                     <p className="text-sm text-text-primary font-medium mb-1.5 leading-snug">
                       &ldquo;{hook}&rdquo;
                     </p>
 
-                    {/* Title — secondary, editable */}
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <InlineTitle
                         title={dreamscape.title}
                         className="text-xs text-text-muted"
-                        onRename={(t) => handleRename(dreamscape, t)}
+                        onRename={(t) => onRename(dreamscape, t)}
                       />
                       <OriginBadge origin={dreamscape.origin} />
                     </div>
@@ -375,7 +380,7 @@ function SeedsTab() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={() => deleteDreamscape(dreamscape.id)}
+                      onClick={() => onDelete(dreamscape.id)}
                       className="text-text-muted hover:text-red-400 h-7 w-7"
                     >
                       <TrashIcon className="w-3.5 h-3.5" />
@@ -400,23 +405,34 @@ const ALL_PLATFORMS = [
   { id: 'blog',   label: 'Blog' },
 ]
 
-function ContentTab() {
-  const { savedOutputs, savedDreamscapes, deleteOutput, rateOutput, updateOutput, promoteToSeed } = useAppStore()
+function ContentTab({
+  outputs,
+  dreamscapes,
+  onDelete,
+  onRate,
+  onRename,
+  onPromoteToSeed,
+}: {
+  outputs: OutputVariant[]
+  dreamscapes: Dreamscape[]
+  onDelete: (id: string) => void
+  onRate: (id: string, rating: number) => void
+  onRename: (id: string, title: string) => void
+  onPromoteToSeed: (outputId: string) => void
+}) {
   const [search, setSearch] = useState('')
   const [minRating, setMinRating] = useState<8 | 9 | null>(null)
   const platformFilter = useMultiFilter()
   const presetFilter   = useMultiFilter()
 
-  // Count per platform
   const platformCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     ALL_PLATFORMS.forEach(({ id }) => {
-      counts[id] = savedOutputs.filter((o) => o.dialState?.platform === id).length
+      counts[id] = outputs.filter((o) => o.dialState?.platform === id).length
     })
     return counts
-  }, [savedOutputs])
+  }, [outputs])
 
-  // All presets with counts (show all, grey out zero)
   const presetOptions = useMemo(() =>
     PRESETS.map((p) => ({ id: p.id, label: `${p.emoji} ${p.name}` }))
   , [])
@@ -424,15 +440,15 @@ function ContentTab() {
   const presetCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     PRESETS.forEach((p) => {
-      counts[p.id] = savedOutputs.filter((o) => o.dialState?.presetId === p.id).length
+      counts[p.id] = outputs.filter((o) => o.dialState?.presetId === p.id).length
     })
     return counts
-  }, [savedOutputs])
+  }, [outputs])
 
   const hasActiveFilters = platformFilter.hasActive || presetFilter.hasActive || minRating !== null
 
   const filtered = useMemo(() => {
-    return savedOutputs.filter((o) => {
+    return outputs.filter((o) => {
       if (!platformFilter.matches(o.dialState?.platform)) return false
       if (!presetFilter.matches(o.dialState?.presetId))   return false
       if (minRating !== null && (o.rating ?? 0) < minRating) return false
@@ -442,14 +458,10 @@ function ContentTab() {
       }
       return true
     })
-  }, [savedOutputs, platformFilter.chips, presetFilter.chips, minRating, search])
+  }, [outputs, platformFilter.chips, presetFilter.chips, minRating, search])
 
   const sourceDreamscapeFor = (dreamscapeId?: string) =>
-    dreamscapeId ? savedDreamscapes.find((d) => d.id === dreamscapeId) : null
-
-  const handleRename = (output: OutputVariant, title: string) => {
-    updateOutput(output.id, { title })
-  }
+    dreamscapeId ? dreamscapes.find((d) => d.id === dreamscapeId) : null
 
   const resetAll = () => {
     platformFilter.reset()
@@ -466,7 +478,6 @@ function ContentTab() {
         className="bg-[rgba(15,23,42,0.5)] border-[#1e293b] text-text-primary placeholder:text-text-muted"
       />
 
-      {/* Platform filter */}
       <div className="space-y-1.5">
         <p className="text-xs text-text-muted">Platform</p>
         <MultiFilterChips
@@ -477,7 +488,6 @@ function ContentTab() {
         />
       </div>
 
-      {/* Format / preset filter */}
       <div className="space-y-1.5">
         <p className="text-xs text-text-muted">Format</p>
         <MultiFilterChips
@@ -488,7 +498,6 @@ function ContentTab() {
         />
       </div>
 
-      {/* Rating filter */}
       <div className="flex items-center gap-2 flex-wrap">
         {([8, 9] as const).map((threshold) => (
           <button
@@ -526,25 +535,21 @@ function ContentTab() {
             return (
               <ThemedCard key={output.id} className="border-[#1e293b]">
                 <div className="flex-1 min-w-0">
-
-                  {/* Meta row */}
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <PlatformBadge platform={output.dialState?.platform} presetId={output.dialState?.presetId} />
-                    <StarRating rating={output.rating} outputId={output.id} onRate={rateOutput} />
+                    <StarRating rating={output.rating} outputId={output.id} onRate={onRate} />
                     <span className="text-xs text-text-muted ml-auto">{formatDate(output.createdAt)}</span>
                   </div>
 
-                  {/* Hook — primary identifier */}
                   <p className="text-sm text-text-primary font-medium mb-1.5 leading-snug">
                     &ldquo;{hook}&rdquo;
                   </p>
 
-                  {/* Title — secondary, editable */}
                   <div className="flex items-center gap-2 mb-1.5">
                     <InlineTitle
                       title={output.title}
                       className="text-xs text-text-muted"
-                      onRename={(t) => handleRename(output, t)}
+                      onRename={(t) => onRename(output.id, t)}
                     />
                   </div>
 
@@ -555,13 +560,12 @@ function ContentTab() {
                     </p>
                   )}
 
-                  {/* Actions */}
                   <div className="flex items-center gap-1 pt-1 border-t border-[#1e293b]">
                     <CopyButton text={output.text} />
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => promoteToSeed(output.id)}
+                      onClick={() => onPromoteToSeed(output.id)}
                       className="text-xs text-text-muted hover:text-[#d8b4fe] h-7 px-2"
                       title="Promote to seed for further generation"
                     >
@@ -571,7 +575,7 @@ function ContentTab() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={() => deleteOutput(output.id)}
+                      onClick={() => onDelete(output.id)}
                       className="text-text-muted hover:text-red-400 h-7 w-7"
                     >
                       <TrashIcon className="w-3.5 h-3.5" />
@@ -592,8 +596,83 @@ function ContentTab() {
 type LibraryTab = 'seeds' | 'content'
 
 export default function LibraryPage() {
-  const { savedDreamscapes, savedOutputs } = useAppStore()
+  const { isGuest } = useAuth()
+  const { saveDreamscape } = useAppStore()
+
+  const [dreamscapes, setDreamscapes] = useState<Dreamscape[]>([])
+  const [outputs, setOutputs] = useState<OutputVariant[]>([])
+  const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<LibraryTab>('seeds')
+
+  const adapter = getPersistenceAdapter(isGuest)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [ds, outs] = await Promise.all([adapter.getDreamscapes(), adapter.getOutputs()])
+      setDreamscapes(ds)
+      setOutputs(outs)
+    } catch (error) {
+      console.error('Failed to load library data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [isGuest])
+
+  useEffect(() => { load() }, [load])
+
+  // ── dreamscape mutations ───────────────────────────────────────────────────
+
+  const handleDeleteDreamscape = async (id: string) => {
+    setDreamscapes((prev) => prev.filter((d) => d.id !== id))
+    await adapter.deleteDreamscape(id).catch(console.error)
+  }
+
+  const handleRenameDreamscape = async (dreamscape: Dreamscape, title: string) => {
+    const updated = { ...dreamscape, title, updatedAt: new Date().toISOString() }
+    setDreamscapes((prev) => prev.map((d) => d.id === dreamscape.id ? updated : d))
+    await adapter.saveDreamscape(updated).catch(console.error)
+  }
+
+  // ── output mutations ───────────────────────────────────────────────────────
+
+  const handleDeleteOutput = async (id: string) => {
+    setOutputs((prev) => prev.filter((o) => o.id !== id))
+    await adapter.deleteOutput(id).catch(console.error)
+  }
+
+  const handleRateOutput = async (id: string, rating: number) => {
+    setOutputs((prev) => prev.map((o) => o.id === id ? { ...o, rating } : o))
+    const found = outputs.find((o) => o.id === id)
+    if (found) await adapter.saveOutput({ ...found, rating }).catch(console.error)
+  }
+
+  const handleRenameOutput = async (id: string, title: string) => {
+    setOutputs((prev) => prev.map((o) => o.id === id ? { ...o, title } : o))
+    const found = outputs.find((o) => o.id === id)
+    if (found) await adapter.saveOutput({ ...found, title }).catch(console.error)
+  }
+
+  const handlePromoteToSeed = async (outputId: string) => {
+    const output = outputs.find((o) => o.id === outputId)
+    if (!output) return
+
+    const now = new Date().toISOString()
+    const newDreamscape: Dreamscape = {
+      id: uid(),
+      title: `From: ${output.title}`,
+      chunks: [{ id: uid(), title: 'Promoted seed', text: output.text }],
+      origin: 'derived',
+      sourceOutputId: outputId,
+      createdAt: now,
+      updatedAt: now,
+    }
+
+    setDreamscapes((prev) => [newDreamscape, ...prev])
+    await saveDreamscape(newDreamscape).catch(console.error)
+  }
+
+  // ── render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -609,7 +688,7 @@ export default function LibraryPage() {
             color: tab === 'seeds' ? '#fff' : '#94a3b8',
           }}
         >
-          Seeds ({savedDreamscapes.length})
+          Seeds ({dreamscapes.length})
         </button>
         <button
           onClick={() => setTab('content')}
@@ -619,11 +698,32 @@ export default function LibraryPage() {
             color: tab === 'content' ? '#fff' : '#94a3b8',
           }}
         >
-          Content ({savedOutputs.length})
+          Content ({outputs.length})
         </button>
       </div>
 
-      {tab === 'seeds' ? <SeedsTab /> : <ContentTab />}
+      {loading ? (
+        <ThemedCard>
+          <p className="text-center text-text-muted py-8 text-sm">Loading…</p>
+        </ThemedCard>
+      ) : tab === 'seeds' ? (
+        <SeedsTab
+          dreamscapes={dreamscapes}
+          outputs={outputs}
+          onDelete={handleDeleteDreamscape}
+          onRename={handleRenameDreamscape}
+          onPromote={handlePromoteToSeed}
+        />
+      ) : (
+        <ContentTab
+          outputs={outputs}
+          dreamscapes={dreamscapes}
+          onDelete={handleDeleteOutput}
+          onRate={handleRateOutput}
+          onRename={handleRenameOutput}
+          onPromoteToSeed={handlePromoteToSeed}
+        />
+      )}
     </div>
   )
 }
