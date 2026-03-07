@@ -122,7 +122,42 @@ Once Studio's data model is clear, `parts` will likely need:
 
 ---
 
-## 5. Billing & Usage Metering (Phase 3)
+## 5. Library Delta Fetching — Incremental Data Sync
+
+The library cache (Zustand SWR-style) currently refetches all dreamscapes + outputs on background refresh.
+When a user's library grows large (100+ items), this becomes wasteful — most rows haven't changed.
+
+**Approach:** Use `updated_at` timestamps (already on every table) to fetch only changed rows since last sync.
+
+```typescript
+// Adapter method signature (add optional `since` param)
+async getDreamscapes(since?: string): Promise<Dreamscape[]>
+async getOutputs(since?: string): Promise<OutputVariant[]>
+
+// Supabase query with delta filter
+let query = supabase.from('dreamscapes').select('*')
+if (since) {
+  // Fetch both active AND newly-archived rows changed since last sync
+  query = query.gte('updated_at', since)
+  // Don't filter is_archived — need to know about soft deletes too
+}
+```
+
+**Merge logic in cache store:**
+- Delta rows replace existing entries by ID (upsert into cached array)
+- Rows with `is_archived = true` are removed from the cached array
+- Same pattern for chunks and origins (keyed by `dreamscape_id`)
+
+**Why this works:** Soft deletes (`is_archived = true`) bump `updated_at`, so the delta query
+catches creations, modifications, AND deletions in a single pass.
+
+**Why deferred:** The SWR cache alone eliminates perceived slowness for typical usage. Delta
+fetching only provides meaningful savings when the full dataset is large enough that re-fetching
+it wastes bandwidth and Supabase read units. Implement when library sizes justify the merge complexity.
+
+---
+
+## 6. Billing & Usage Metering (Phase 3)
 
 - Stripe integration for Pro tier
 - `usage_events` table: track API calls (OpenAI token usage) per user per day

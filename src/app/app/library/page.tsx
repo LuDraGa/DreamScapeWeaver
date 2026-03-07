@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/store/app-store'
 import { useAuth } from '@/lib/auth/context'
 import { getPersistenceAdapter } from '@/lib/persistence'
+import { useLibraryCache } from '@/store/library-cache'
 import { ThemedCard } from '@/components/design-system/themed-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -599,58 +600,57 @@ export default function LibraryPage() {
   const { isGuest } = useAuth()
   const { saveDreamscape } = useAppStore()
 
-  const [dreamscapes, setDreamscapes] = useState<Dreamscape[]>([])
-  const [outputs, setOutputs] = useState<OutputVariant[]>([])
-  const [loading, setLoading] = useState(true)
+  const {
+    dreamscapes,
+    outputs,
+    isLoading: loading,
+    load: loadCache,
+    addDreamscape: cacheAddDreamscape,
+    updateDreamscape: cacheUpdateDreamscape,
+    removeDreamscape: cacheRemoveDreamscape,
+    addOutput: cacheAddOutput,
+    updateOutput: cacheUpdateOutput,
+    removeOutput: cacheRemoveOutput,
+  } = useLibraryCache()
+
   const [tab, setTab] = useState<LibraryTab>('seeds')
 
   const adapter = getPersistenceAdapter(isGuest)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [ds, outs] = await Promise.all([adapter.getDreamscapes(), adapter.getOutputs()])
-      setDreamscapes(ds)
-      setOutputs(outs)
-    } catch (error) {
-      console.error('Failed to load library data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [isGuest])
-
-  useEffect(() => { load() }, [load])
+  useEffect(() => { loadCache(adapter) }, [isGuest])
 
   // ── dreamscape mutations ───────────────────────────────────────────────────
 
   const handleDeleteDreamscape = async (id: string) => {
-    setDreamscapes((prev) => prev.filter((d) => d.id !== id))
+    cacheRemoveDreamscape(id)
     await adapter.deleteDreamscape(id).catch(console.error)
   }
 
   const handleRenameDreamscape = async (dreamscape: Dreamscape, title: string) => {
     const updated = { ...dreamscape, title, updatedAt: new Date().toISOString() }
-    setDreamscapes((prev) => prev.map((d) => d.id === dreamscape.id ? updated : d))
+    cacheUpdateDreamscape(updated)
     await adapter.saveDreamscape(updated).catch(console.error)
   }
 
   // ── output mutations ───────────────────────────────────────────────────────
 
   const handleDeleteOutput = async (id: string) => {
-    setOutputs((prev) => prev.filter((o) => o.id !== id))
+    cacheRemoveOutput(id)
     await adapter.deleteOutput(id).catch(console.error)
   }
 
   const handleRateOutput = async (id: string, rating: number) => {
-    setOutputs((prev) => prev.map((o) => o.id === id ? { ...o, rating } : o))
     const found = outputs.find((o) => o.id === id)
-    if (found) await adapter.saveOutput({ ...found, rating }).catch(console.error)
+    if (!found) return
+    cacheUpdateOutput({ ...found, rating })
+    await adapter.saveOutput({ ...found, rating }).catch(console.error)
   }
 
   const handleRenameOutput = async (id: string, title: string) => {
-    setOutputs((prev) => prev.map((o) => o.id === id ? { ...o, title } : o))
     const found = outputs.find((o) => o.id === id)
-    if (found) await adapter.saveOutput({ ...found, title }).catch(console.error)
+    if (!found) return
+    cacheUpdateOutput({ ...found, title })
+    await adapter.saveOutput({ ...found, title }).catch(console.error)
   }
 
   const handlePromoteToSeed = async (outputId: string) => {
@@ -668,7 +668,7 @@ export default function LibraryPage() {
       updatedAt: now,
     }
 
-    setDreamscapes((prev) => [newDreamscape, ...prev])
+    cacheAddDreamscape(newDreamscape)
     await saveDreamscape(newDreamscape).catch(console.error)
   }
 

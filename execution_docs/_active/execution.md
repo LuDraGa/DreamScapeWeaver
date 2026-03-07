@@ -1,52 +1,30 @@
 # StoryWeaver - Active Execution
 
-## Task: Logged-in user backend-first data flow
+## Task: Library SWR-style Caching via Zustand
 
-**Session**: 2026-03-06
-**Context**: For logged-in users — library and settings pages fetch directly from Supabase (no Zustand), create flow ephemeral state stays in Zustand but resets cleanly on each new flow entry.
+**Session**: 2026-03-07
+**Context**: Library page re-fetches all data on every mount. Added Zustand cache store for instant display + background refresh.
 
 ## Execution Status
 
-### ✅ Completed Tasks
-- Analysis of current broken state (loadLibraryData never called, persist middleware fights Supabase)
+### Completed Tasks
 
-### 🔄 In Progress
-- None
+- [x] Created `src/store/library-cache.ts` — Zustand cache store with SWR-style `load()`, optimistic mutation helpers
+- [x] Updated `src/app/app/library/page.tsx` — consumes cache store instead of local `useState` for dreamscapes/outputs
+- [x] Updated `src/store/app-store.ts` — `saveDreamscape`/`saveOutput` push into cache optimistically; `setUserAuthState` invalidates cache on auth change
+- [x] Documented delta fetching as future option in `docs/FUTURE_GROWTH.md` (Section 5)
+- [x] Build passes clean (`pnpm build`)
 
-### ⏳ Pending Tasks
-- None
+### Pending Tasks
 
-## Changes Made
+- [ ] Manual QA: verify library loads instantly on return visits (logged-in)
+- [ ] Manual QA: verify create flow items appear in library without refetch
+- [ ] Manual QA: verify login/logout clears cache
 
-### Files Modified
-- `src/store/app-store.ts` — removed savedDreamscapes/savedOutputs state, slimmed to create-flow + settings only, fixed setCurrentDreamscape to always reset ephemeral state, saveDreamscape/saveOutput are now thin async adapter calls
-- `src/lib/auth/context.tsx` — added loadSettings() call on logged-in auth resolve
-- `src/app/app/library/page.tsx` — full rewrite: fetches directly from adapter, local state for all data, mutations call adapter directly
-- `src/app/app/settings/page.tsx` — fetches directly from adapter, local state, syncs to store on save for create flow
+## Files Changed
 
-### Files Created
--
-
-### Files Deleted
--
-
-## Implementation Notes
-
-### Architecture
-- Logged-in users: Library/Settings = direct Supabase fetch, no Zustand for data
-- Logged-in users: Create flow = Zustand ephemeral state (currentDreamscape, dialState, generatedOutputs)
-- saveDreamscape/saveOutput = thin adapter calls only, no in-memory array updates
-- settings stays in Zustand (needed by create flow), hydrated from Supabase on auth resolve
-- Guest users: unchanged (localStorage + Zustand persist)
-
-### Ephemeral reset
-- setCurrentDreamscape always resets generatedVariants=[], activeVariantIndex=0, currentDialState=null (fresh from default preset)
-- Prevents stale state bleeding from one flow into another
-
-### persist partialize
-- Drop savedDreamscapes, savedOutputs from persist
-- Keep settings + create-flow state for guests (currentDreamscape etc can be kept for navigation)
-
----
-
-*This document tracks active implementation progress*
+- **NEW** `src/store/library-cache.ts`
+- **EDIT** `src/app/app/library/page.tsx` — replaced local state with cache store
+- **EDIT** `src/store/app-store.ts` — cache integration on save + auth change
+- **EDIT** `docs/FUTURE_GROWTH.md` — added Section 5 (delta fetching)
+- **EDIT** `execution_docs/_active/planning.md` — planning doc for this task

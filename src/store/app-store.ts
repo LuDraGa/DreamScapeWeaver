@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Dreamscape, OutputVariant, AppSettings, DialState } from '@/lib/types'
 import { getPersistenceAdapter } from '@/lib/persistence'
+import { useLibraryCache } from '@/store/library-cache'
 import { PRESETS } from '@/lib/config'
 import { uid } from '@/lib/utils'
 
@@ -57,7 +58,12 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       // Initial state
       isGuest: true,
-      setUserAuthState: (isGuest) => set({ isGuest }),
+      setUserAuthState: (isGuest) => {
+        const wasGuest = get().isGuest
+        set({ isGuest })
+        // Auth state changed — invalidate library cache so next visit fetches fresh data
+        if (wasGuest !== isGuest) useLibraryCache.getState().invalidate()
+      },
 
       loginModalOpen: false,
       openLoginModal: () => set({ loginModalOpen: true }),
@@ -108,8 +114,9 @@ export const useAppStore = create<AppState>()(
 
       setActiveVariantIndex: (index) => set({ activeVariantIndex: index }),
 
-      // Persistence actions — write to backend/localStorage, no in-memory state update
+      // Persistence actions — write to backend + update library cache optimistically
       saveDreamscape: async (dreamscape) => {
+        useLibraryCache.getState().addDreamscape(dreamscape)
         const adapter = getPersistenceAdapter(get().isGuest)
         await adapter.saveDreamscape(dreamscape).catch((err) => {
           console.error('Failed to save dreamscape:', err)
@@ -117,6 +124,7 @@ export const useAppStore = create<AppState>()(
       },
 
       saveOutput: async (output) => {
+        useLibraryCache.getState().addOutput(output)
         const adapter = getPersistenceAdapter(get().isGuest)
         await adapter.saveOutput(output).catch((err) => {
           console.error('Failed to save output:', err)
