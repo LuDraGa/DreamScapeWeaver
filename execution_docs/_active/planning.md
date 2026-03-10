@@ -1,310 +1,175 @@
-# Planning: Phase 2b RDBMS Schema — ERD Revision
+# Billing & Credits System — Planning
 
-**Started:** 2026-03-05
-**Context:** User reviewed the FigJam ERD and requested 5 targeted improvements. This doc captures the full design before FigJam update and SQL generation.
-
----
-
-## Scope of Changes
-
-1. Resolve circular FK between dreamscapes ↔ output_variants
-2. Universal base fields on all tables (created_at, updated_at, created_by, updated_by, is_archived)
-3. output_variants.feedback: TEXT[] → TEXT nullable (UI enforces 1000 char)
-4. Versioning: dreamscape_chunks + output_variants get immutable version history tables
-5. Promote platform + format + template_id onto output_variants (extracted from dial_state JSONB)
-6. Add CHECK constraints on origin, cadence, platform
+**Date**: 2026-03-07
+**Scope**: Phase 3 — Credits system, Cashfree payments, Langfuse observability, generation_events
 
 ---
 
-## Decision: Circular FK Resolution
+## Decisions Locked
 
-**Problem:**
-- `dreamscapes.source_output_id → output_variants.id` (nullable SET NULL)
-- `output_variants.dreamscape_id → dreamscapes.id` (nullable SET NULL)
-These two FKs form a cycle. Insert order is ambiguous for derived dreamscapes.
-
-**Options considered:**
-- Deferred constraints (DEFERRABLE INITIALLY DEFERRED) — keeps schema simple but requires all derived-dreamscape inserts to be wrapped in explicit transactions. Easy to miss in app code.
-- Separate lineage table — breaks cycle completely, no special transaction handling, extensible.
-
-**Decision: separate `dreamscape_origins` table**
-- Remove `dreamscapes.source_output_id`
-- Add `storyweaver.dreamscape_origins (dreamscape_id PK FK, source_output_id FK nullable SET NULL)`
-- 1:1 extension — only exists for dreamscapes with `origin = 'derived'`
-- If source output is deleted: `source_output_id` goes NULL, row stays (you know it was derived, reference is lost)
-- No circular FK anywhere in schema
-- Insert flow: insert dreamscape → insert dreamscape_origins row referencing an existing output
-
----
-
-## Decision: Base Fields Pattern
-
-All tables get:
-```sql
-created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-updated_at TIMESTAMPTZ NOT NULL DEFAULT now()   -- auto-updated by trigger
-created_by UUID REFERENCES profiles(id) ON DELETE SET NULL
-updated_by UUID REFERENCES profiles(id) ON DELETE SET NULL
-is_archived BOOLEAN NOT NULL DEFAULT false
-```
-
-**profiles edge case:** `created_by` is a self-reference (the user doesn't exist yet during insert).
-Resolution: `created_by` is nullable on profiles. Set to self after profile creation, or leave NULL for system-created profiles.
-
-**Version tables** (dreamscape_chunk_versions, output_variant_versions) are **immutable** — they get `created_at` + `created_by` only. No `updated_at`, `updated_by`, `is_archived` — a version row never changes.
-
-**user_settings** gets `created_at` added (currently missing). The lazy-creation pattern stays for now.
+| Decision | Value |
+|----------|-------|
+| Payment provider | Cashfree (INR primary, USD reference only) |
+| Gross margin target | 80% |
+| Credit value | 1 credit = $0.0001 / ~₹0.0083 |
+| Debit order | Subscription credits first, then top-up |
+| Sub credit carryover | None — expire at period end |
+| Top-up credit expiry | Never |
+| LLM observability | Langfuse (traces, token cost, latency) |
+| Billing source of truth | Self-hosted `generation_events` Supabase table |
+| Weekly packs | No — small top-up packs instead |
+| Credit deduction model | Flat per action type |
+| Auth gate | Logged-in users only. Guests see login prompt, no usage. |
+| Signup bonus | 10,000 credits on first login (configurable in billing.yaml) |
+| Config-driven | ALL plan IDs, prices, credit costs live in billing.yaml only. No hardcoding in app code. |
 
 ---
 
-## Decision: Versioning
+## Credit Costs Per Action (80% gross margin)
 
-**What gets versioned:**
-- `dreamscape_chunks` — body + title change when user edits or enhancement is applied
-- `output_variants` — body + title change when user edits or transform is applied
-- dreamscapes title changes are lower stakes; deferred
+| Action | Credits | API cost basis |
+|--------|---------|---------------|
+| Seed generation | 500 | $0.010 |
+| Enhancement / stitch | 400 | $0.008 |
+| Output generation (3 variants) | 1,150 | $0.023 |
+| Part transform (Studio) | 300 | $0.006 |
+| **Full workflow** | **~2,050** | **~$0.041** |
 
-**Pattern:** current state stays on main table, history in separate `_versions` table.
+---
 
-Main tables get: `current_version SMALLINT NOT NULL DEFAULT 1`
+## Subscription Plans
+
+| Plan | Price (INR) | Monthly Credits | Top-up Discount |
+|------|-------------|----------------|-----------------|
+| Starter | ₹1,250 | 100,000 | 0% |
+| Pro | ₹3,350 | 300,000 | 15% |
+| Studio | ₹6,700 | 900,000 | 30% |
+
+## Top-up Packs (base price, discount per active plan)
+
+| Pack | Credits | Base (INR) |
+|------|---------|------------|
+| Micro | 15,000 | ₹250 |
+| Small | 50,000 | ₹750 |
+| Medium | 150,000 | ₹2,100 |
+| Large | 400,000 | ₹5,000 |
+
+---
+
+## DB Schema (new tables in `storyweaver` schema)
 
 ```sql
--- Chunk versions
-CREATE TABLE storyweaver.dreamscape_chunk_versions (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  chunk_id         UUID NOT NULL REFERENCES dreamscape_chunks(id) ON DELETE CASCADE,
-  version_num      SMALLINT NOT NULL,
-  title            TEXT NOT NULL DEFAULT '',
-  body             TEXT NOT NULL DEFAULT '',
-  change_source    TEXT NOT NULL,          -- 'initial' | 'user_edit' | 'enhancement'
-  enhancement_goal TEXT,                   -- nullable — which goal ('vivid', 'conflict', etc.)
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  created_by       UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  UNIQUE (chunk_id, version_num)
-);
+storyweaver.subscriptions
+  id UUID PK, user_id UUID FK → profiles
+  plan_id TEXT NOT NULL  -- 'starter' | 'pro' | 'studio'
+  status TEXT NOT NULL DEFAULT 'active'  -- 'active' | 'cancelled' | 'past_due'
+  current_period_start TIMESTAMPTZ, current_period_end TIMESTAMPTZ
+  cashfree_subscription_id TEXT, cashfree_plan_id TEXT
+  created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ
 
--- Output variant versions
-CREATE TABLE storyweaver.output_variant_versions (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  output_variant_id UUID NOT NULL REFERENCES output_variants(id) ON DELETE CASCADE,
-  version_num       SMALLINT NOT NULL,
-  title             TEXT NOT NULL DEFAULT '',
-  body              TEXT NOT NULL,
-  change_source     TEXT NOT NULL,          -- 'initial' | 'user_edit' | 'transform'
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  created_by        UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  UNIQUE (output_variant_id, version_num)
-);
-```
+storyweaver.credit_balance
+  user_id UUID PK FK → profiles
+  subscription_credits INT DEFAULT 0   -- expire at period end
+  topup_credits INT DEFAULT 0          -- never expire
+  updated_at TIMESTAMPTZ
 
-**Version lifecycle:**
-1. On create: insert main row (current_version = 1) + insert version row (version_num = 1, change_source = 'initial')
-2. On edit: increment current_version on main row, insert new version row
-3. On restore: treat restore as a new edit — insert new version row with body = old version's body
+storyweaver.credit_ledger              -- append-only, auditable
+  id UUID PK, user_id UUID FK
+  amount INT         -- positive=grant, negative=usage
+  type TEXT          -- 'subscription_grant' | 'topup_purchase' | 'generation_usage' | 'expiry_sweep' | 'signup_bonus'
+  credit_bucket TEXT -- 'subscription' | 'topup'
+  reference_id TEXT  -- output_variant_id | cashfree_payment_id
+  created_at TIMESTAMPTZ
 
----
+storyweaver.credit_purchases
+  id UUID PK, user_id UUID FK
+  pack_id TEXT, credits_granted INT
+  amount_paid_paise INT   -- INR paise (Cashfree uses smallest unit)
+  discount_pct INT DEFAULT 0
+  cashfree_order_id TEXT, cashfree_payment_id TEXT
+  created_at TIMESTAMPTZ
 
-## Decision: feedback field
-
-`output_variants.feedback`: `TEXT[] NOT NULL DEFAULT {}` → `TEXT nullable`
-No constraint. Free-form. UI enforces 1000 char max. No default.
-
----
-
-## Decision: Promoted fields on output_variants
-
-Extract from dial_state JSONB to first-class columns:
-- `platform TEXT NOT NULL` — enables fast GROUP BY without JSONB extraction
-- `format TEXT NOT NULL` — the specific format/template type
-- `template_id TEXT` — nullable, the exact template config used
-
-Keep `dial_state JSONB NOT NULL` — still the full snapshot. Promoted columns are denormalized for queryability.
-
----
-
-## Decision: CHECK Constraints
-
-```sql
--- dreamscapes.origin
-CHECK (origin IN ('generated', 'derived', 'imported'))
-
--- performance_snapshots.cadence
-CHECK (cadence IN ('day', 'week', 'month'))
-
--- performance_snapshots.platform
-CHECK (platform IN ('reddit', 'reels', 'tiktok', 'youtube', 'blog', 'marketing', 'email'))
+storyweaver.generation_events
+  id UUID PK, user_id UUID FK
+  output_variant_id UUID  -- nullable
+  action_type TEXT        -- 'seed' | 'enhance' | 'output' | 'transform'
+  model TEXT, prompt_tokens INT, completion_tokens INT
+  credits_charged INT, credit_bucket TEXT
+  langfuse_trace_id TEXT  -- link back to Langfuse trace
+  created_at TIMESTAMPTZ
 ```
 
 ---
 
-## Full Updated Schema
+## Implementation Phases
 
-### storyweaver.profiles (modified)
-```
-id          UUID PK
-email       TEXT UNIQUE NOT NULL
-role        user_role NOT NULL DEFAULT 'normal'
-created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by  UUID nullable FK → self (set after creation)
-updated_by  UUID nullable FK → self
-is_archived BOOLEAN NOT NULL DEFAULT false
-```
+### Phase A — Config & Schema (foundation)
+- [ ] `src/config/billing.yaml` ✅ DONE
+- [ ] `src/lib/billing/config.ts` — parse billing.yaml, export typed config
+- [ ] Supabase migration for 5 new billing tables (above)
+- [ ] Add billing TypeScript types to `src/lib/types.ts`
+- [ ] Update `src/lib/env.ts` — LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, CASHFREE_APP_ID, CASHFREE_SECRET_KEY, CASHFREE_WEBHOOK_SECRET
 
-### storyweaver.user_settings (modified)
-```
-user_id         UUID PK FK → profiles (CASCADE)
-avoid_phrases   TEXT[] NOT NULL DEFAULT {}
-default_preset  TEXT NOT NULL DEFAULT 'reddit-aitah'
-power_user_mode BOOLEAN NOT NULL DEFAULT false
-auto_avoid_ai   BOOLEAN NOT NULL DEFAULT true
-developer_mode  BOOLEAN NOT NULL DEFAULT false
-created_at      TIMESTAMPTZ NOT NULL DEFAULT now()   [NEW]
-updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by      UUID FK nullable
-updated_by      UUID FK nullable
-is_archived     BOOLEAN NOT NULL DEFAULT false       [NEW]
-```
+### Phase B — Langfuse Integration (LLM observability)
+- [ ] Install `langfuse` SDK
+- [ ] Wrap OpenAI calls in `src/lib/adapters/openai.ts` with Langfuse trace
+- [ ] Pass `langfuse_trace_id` through to generation_events rows
+- [ ] Verify traces appear in Langfuse dashboard
 
-### storyweaver.dreamscapes (modified)
-```
-id              UUID PK DEFAULT gen_random_uuid()
-user_id         UUID FK NOT NULL → profiles (CASCADE)
-title           TEXT NOT NULL DEFAULT ''
-origin          TEXT NOT NULL DEFAULT 'generated'    CHECK (IN ('generated','derived','imported'))
-current_version SMALLINT NOT NULL DEFAULT 1          [NEW]
-created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by      UUID FK nullable
-updated_by      UUID FK nullable
-is_archived     BOOLEAN NOT NULL DEFAULT false       [NEW]
--- REMOVED: source_output_id (moved to dreamscape_origins)
-```
+### Phase C — Credit Tracking (core logic)
+- [ ] `src/lib/billing/credits.ts`:
+  - `getBalance(userId)` → reads credit_balance
+  - `hasCredits(userId, amount)` → pre-check
+  - `debitCredits(userId, amount, actionType, referenceId)` → debit from correct bucket, write ledger row, update balance
+  - `grantSignupBonus(userId)` → one-time, idempotent via ledger check
+- [ ] Update 4 API routes: pre-check balance → call LLM → debit + write generation_event
+- [ ] `src/middleware.ts` — check auth for all /app/* API routes, return 401 for guests
+- [ ] Return `{ error: 'insufficient_credits', balance }` (HTTP 402) when balance is zero
 
-### storyweaver.dreamscape_origins (NEW)
-```
-dreamscape_id    UUID PK FK → dreamscapes (CASCADE)
-source_output_id UUID FK nullable → output_variants (SET NULL)
-created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by       UUID FK nullable
-```
-1:1 with dreamscapes. Only exists when origin = 'derived'. Breaks the circular FK.
+### Phase D — Cashfree Integration
+- [ ] `src/lib/billing/cashfree.ts` — Cashfree SDK wrapper (all plan IDs read from billing.yaml config)
+- [ ] `POST /api/billing/subscribe` — create subscription using plan_id from config
+- [ ] `POST /api/billing/topup` — create Cashfree order using pack config + apply plan discount
+- [ ] `POST /api/billing/webhook` — handle:
+  - `SUBSCRIPTION_ACTIVATED` → grant monthly credits, subscription_grant ledger row
+  - `SUBSCRIPTION_RENEWED` → expiry_sweep old sub credits + grant new month
+  - `SUBSCRIPTION_CANCELLED` → update subscriptions.status
+  - `PAYMENT_SUCCESS` (topup) → grant topup_credits, topup_purchase ledger row, write credit_purchases row
+  - `PAYMENT_FAILED` → update subscription status to past_due
+- [ ] `GET /api/billing/balance` — returns { subscription_credits, topup_credits, total }
+- [ ] `GET /api/billing/history` — last 20 ledger entries
 
-### storyweaver.dreamscape_chunks (modified)
-```
-id              UUID PK DEFAULT gen_random_uuid()
-dreamscape_id   UUID FK NOT NULL → dreamscapes (CASCADE)
-user_id         UUID FK NOT NULL (RLS shortcut)
-position        SMALLINT NOT NULL
-title           TEXT NOT NULL DEFAULT ''
-body            TEXT NOT NULL DEFAULT ''
-current_version SMALLINT NOT NULL DEFAULT 1          [NEW]
-created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by      UUID FK nullable
-updated_by      UUID FK nullable
-is_archived     BOOLEAN NOT NULL DEFAULT false       [NEW]
-UNIQUE (dreamscape_id, position)
-```
+### Phase E — Monthly Credit Sweep (cron)
+- [ ] `src/app/api/cron/billing-sweep/route.ts` — finds subscriptions with expired period, zeros sub credits, writes expiry_sweep ledger row
+- [ ] `vercel.json` — daily cron schedule
+- [ ] Webhook SUBSCRIPTION_RENEWED also handles sweep (belt + suspenders approach)
 
-### storyweaver.dreamscape_chunk_versions (NEW)
-```
-id               UUID PK DEFAULT gen_random_uuid()
-chunk_id         UUID FK NOT NULL → dreamscape_chunks (CASCADE)
-version_num      SMALLINT NOT NULL
-title            TEXT NOT NULL DEFAULT ''
-body             TEXT NOT NULL DEFAULT ''
-change_source    TEXT NOT NULL    -- 'initial' | 'user_edit' | 'enhancement'
-enhancement_goal TEXT nullable   -- 'vivid' | 'conflict' | 'believable' | 'stitch' | 'less-ai'
-created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by       UUID FK nullable
-UNIQUE (chunk_id, version_num)
-```
+### Phase F — UI
+- [ ] `src/app/app/billing/page.tsx`:
+  - Current plan card + credit balance (sub + top-up separated)
+  - Usage this period (generation_events count + credits used)
+  - Subscription upgrade/downgrade
+  - Top-up pack grid (shows discounted price based on active plan)
+  - Ledger history table (last 20 entries)
+- [ ] Add Billing link to nav
+- [ ] Surface 402 errors in create/studio UI with "Top up credits" CTA
 
-### storyweaver.output_variants (modified)
-```
-id              UUID PK DEFAULT gen_random_uuid()
-user_id         UUID FK NOT NULL → profiles (CASCADE)
-dreamscape_id   UUID FK nullable → dreamscapes (SET NULL)
-platform        TEXT NOT NULL                        [NEW — promoted from dial_state]
-format          TEXT NOT NULL                        [NEW — promoted from dial_state]
-template_id     TEXT nullable                        [NEW]
-title           TEXT NOT NULL DEFAULT ''
-body            TEXT NOT NULL
-dial_state      JSONB NOT NULL
-rating          SMALLINT nullable CHECK (rating BETWEEN 1 AND 5)
-feedback        TEXT nullable                        [CHANGED from TEXT[]]
-notes           TEXT nullable
-current_version SMALLINT NOT NULL DEFAULT 1          [NEW]
-created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by      UUID FK nullable
-updated_by      UUID FK nullable
-is_archived     BOOLEAN NOT NULL DEFAULT false       [NEW]
-```
-
-### storyweaver.output_variant_versions (NEW)
-```
-id                UUID PK DEFAULT gen_random_uuid()
-output_variant_id UUID FK NOT NULL → output_variants (CASCADE)
-version_num       SMALLINT NOT NULL
-title             TEXT NOT NULL DEFAULT ''
-body              TEXT NOT NULL
-change_source     TEXT NOT NULL    -- 'initial' | 'user_edit' | 'transform'
-created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
-created_by        UUID FK nullable
-UNIQUE (output_variant_id, version_num)
-```
-
-### storyweaver.performance_snapshots (modified)
-```
-id                UUID PK DEFAULT gen_random_uuid()
-output_variant_id UUID FK NOT NULL → output_variants (CASCADE)
-user_id           UUID FK NOT NULL (RLS shortcut)
-cadence           TEXT NOT NULL    CHECK (IN ('day','week','month'))
-platform          TEXT NOT NULL    CHECK (IN ('reddit','reels','tiktok','youtube','blog','marketing','email'))
-metrics           JSONB NOT NULL
-recorded_at       TIMESTAMPTZ NOT NULL
-created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
-updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()  [NEW]
-created_by        UUID FK nullable
-updated_by        UUID FK nullable
-is_archived       BOOLEAN NOT NULL DEFAULT false      [NEW]
-UNIQUE (output_variant_id, platform, cadence, recorded_at)
-```
+### Phase G — Auth enforcement for credit flows
+- [ ] On any API generation attempt without auth: return 401 + { redirect: '/auth/login' }
+- [ ] Frontend: intercept 401 on generation calls, show "Sign in to continue" modal
 
 ---
 
-## Relationship Summary
+## Open Questions — RESOLVED
 
-```
-profiles → user_settings          1:1  CASCADE (lazy creation)
-profiles → dreamscapes            1:N  CASCADE
-profiles → output_variants        1:N  CASCADE
-dreamscapes → dreamscape_chunks   1:N  CASCADE
-dreamscapes → dreamscape_origins  1:1  CASCADE (only for origin='derived')
-dreamscape_origins → output_variants  N:1  SET NULL
-output_variants → dreamscapes     N:1  SET NULL (core generation relationship)
-output_variants → performance_snapshots  1:N  CASCADE
-output_variants → output_variant_versions  1:N  CASCADE
-dreamscape_chunks → dreamscape_chunk_versions  1:N  CASCADE
-```
-No circular FKs.
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | Cashfree plan IDs | Config-driven via billing.yaml — user fills after creating plans in dashboard |
+| 2 | Auth gate | Logged-in only. Guests prompted to login. |
+| 3 | Free tier | 10,000 signup bonus credits on first login (configurable) |
+| 4 | Currency | INR primary via Cashfree. USD in config for future. |
+| 5 | LLM observability | Langfuse (not Helicone) |
 
----
-
-## FigJam Update Plan
-
-The Figma MCP's generate_diagram does NOT support ERD syntax — only flowchart/sequence/state/gantt.
-Resolution: generate a relationship flowchart in FigJam as a supplementary view (shows tables and relationships),
-plus provide the user with the exact cell-by-cell changes to make to the existing ERD manually.
-
----
-
-## Status
-
-- [x] Design complete
-- [ ] User approval
-- [ ] FigJam flowchart generated
-- [ ] FigJam ERD manual update instructions provided
-- [ ] SQL migration script written (future task)
+## Remaining Unknown
+- Does user have Langfuse account / keys yet?
+- Does user have Cashfree subscription plan types to create, or should we document the exact steps?

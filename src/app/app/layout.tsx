@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { SparklesIcon, PenIcon, BookIcon, GearIcon } from '@/components/icons'
+import { SparklesIcon, PenIcon, BookIcon, GearIcon, CoinsIcon } from '@/components/icons'
 import { useAuth } from '@/lib/auth/context'
 import { useAppStore } from '@/store/app-store'
 import { LoginModal } from '@/components/auth/LoginModal'
@@ -12,14 +12,36 @@ import { LoginModal } from '@/components/auth/LoginModal'
 const navItems = [
   { id: 'create', label: 'Create', icon: PenIcon, href: '/app/create', guestAllowed: true },
   { id: 'library', label: 'Library', icon: BookIcon, href: '/app/library', guestAllowed: false },
+  { id: 'billing', label: 'Billing', icon: CoinsIcon, href: '/app/billing', guestAllowed: false },
   { id: 'settings', label: 'Settings', icon: GearIcon, href: '/app/settings', guestAllowed: false },
 ]
 
+function formatCreditsShort(n: number): string {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
+  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`
+  return n.toString()
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [creditBalance, setCreditBalance] = useState<number | null>(null)
   const pathname = usePathname()
   const { user, isGuest, isLoading, logout } = useAuth()
   const { openLoginModal } = useAppStore()
+
+  const fetchBalance = useCallback(async () => {
+    try {
+      const res = await fetch('/api/billing/balance')
+      if (res.ok) {
+        const data = await res.json()
+        setCreditBalance(data.balance.subscriptionCredits + data.balance.topupCredits)
+      }
+    } catch { /* silent */ }
+  }, [])
+
+  useEffect(() => {
+    if (!isGuest && user) fetchBalance()
+  }, [isGuest, user, fetchBalance])
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -88,6 +110,28 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )
           })}
         </div>
+
+        {/* Credit balance badge */}
+        {!isGuest && creditBalance !== null && (
+          <Link
+            href="/app/billing"
+            className={cn(
+              'mx-2 mb-3 flex items-center gap-2 px-3 py-2 rounded-xl transition-all hover:opacity-90',
+              sidebarCollapsed ? 'justify-center' : ''
+            )}
+            style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' }}
+          >
+            <CoinsIcon className="w-4 h-4 shrink-0" style={{ color: '#a5b4fc' }} />
+            {!sidebarCollapsed && (
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold" style={{ color: '#a5b4fc' }}>
+                  {formatCreditsShort(creditBalance)}
+                </span>
+                <span className="text-[10px]" style={{ color: '#64748b' }}>credits</span>
+              </div>
+            )}
+          </Link>
+        )}
 
         {/* Auth section */}
         <div className="px-2 mb-2">

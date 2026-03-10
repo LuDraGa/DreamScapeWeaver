@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 }
 
 export default function SettingsPage() {
-  const { isGuest } = useAuth()
+  const { isGuest, role } = useAuth()
   const { updateSettings: syncToStore } = useAppStore()
 
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
@@ -171,29 +171,31 @@ export default function SettingsPage() {
         </div>
       </ThemedCard>
 
-      {/* Developer Mode */}
-      <ThemedCard className="mb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-medium text-text-primary">Developer Mode</h2>
-            <p className="text-sm text-text-muted mt-1">
-              Show prompt inspector for debugging AI prompts
-            </p>
+      {/* Developer Mode — admin only */}
+      {(role === 'admin' || role === 'dev') && (
+        <ThemedCard className="mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-text-primary">Developer Mode</h2>
+              <p className="text-sm text-text-muted mt-1">
+                Show prompt inspector for debugging AI prompts
+              </p>
+            </div>
+            <Button
+              variant={settings.developerMode ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => persist({ ...settings, developerMode: !settings.developerMode })}
+              className={
+                settings.developerMode
+                  ? 'bg-primary hover:bg-primary-light text-white'
+                  : 'bg-transparent border-[#1e293b] text-text-secondary'
+              }
+            >
+              {settings.developerMode ? 'Enabled' : 'Disabled'}
+            </Button>
           </div>
-          <Button
-            variant={settings.developerMode ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => persist({ ...settings, developerMode: !settings.developerMode })}
-            className={
-              settings.developerMode
-                ? 'bg-primary hover:bg-primary-light text-white'
-                : 'bg-transparent border-[#1e293b] text-text-secondary'
-            }
-          >
-            {settings.developerMode ? 'Enabled' : 'Disabled'}
-          </Button>
-        </div>
-      </ThemedCard>
+        </ThemedCard>
+      )}
 
       {/* Reset Data */}
       <ThemedCard className="border-red-500/20">

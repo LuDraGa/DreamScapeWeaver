@@ -155,6 +155,121 @@ export interface TemplateCompatibility {
   message?: string
 }
 
+// Billing — config types (parsed from billing.yaml)
+
+export interface BillingConfig {
+  currency: {
+    primary: string
+    secondary: string
+    usd_to_inr_rate: number
+  }
+  subscriptions: Record<string, SubscriptionPlanConfig>
+  topup_packs: Record<string, TopupPackConfig>
+  credit_costs: {
+    seed_generation: number
+    enhancement: number
+    output_generation: number
+    part_transform: number
+  }
+  credit_rules: {
+    debit_order: string[]
+    subscription_credits_carry_over: boolean
+    topup_credits_expire: boolean
+    signup_bonus_credits: number
+  }
+  models: {
+    default: string
+    cost_per_1k_input_tokens_usd: number
+    cost_per_1k_output_tokens_usd: number
+  }
+  observability: {
+    langfuse_enabled: boolean
+    generation_events_enabled: boolean
+  }
+}
+
+export interface SubscriptionPlanConfig {
+  name: string
+  monthly_credits: number
+  price_inr: number
+  price_usd: number
+  topup_discount_pct: number
+  cashfree_plan_id: string
+  description: string
+  features: string[]
+}
+
+export interface TopupPackConfig {
+  name: string
+  credits: number
+  base_price_inr: number
+  base_price_usd: number
+  description: string
+}
+
+// Billing — runtime types (DB rows)
+
+export type SubscriptionStatus = 'active' | 'cancelled' | 'past_due'
+export type CreditLedgerType = 'subscription_grant' | 'topup_purchase' | 'generation_usage' | 'expiry_sweep' | 'signup_bonus'
+export type CreditBucket = 'subscription' | 'topup'
+export type GenerationActionType = 'seed' | 'enhance' | 'output' | 'transform'
+
+export interface Subscription {
+  id: string
+  userId: string
+  planId: string
+  status: SubscriptionStatus
+  currentPeriodStart: string
+  currentPeriodEnd: string
+  cashfreeSubscriptionId: string | null
+  cashfreePlanId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreditBalance {
+  userId: string
+  subscriptionCredits: number
+  topupCredits: number
+  updatedAt: string
+}
+
+export interface CreditLedgerEntry {
+  id: string
+  userId: string
+  amount: number
+  type: CreditLedgerType
+  creditBucket: CreditBucket
+  referenceId: string | null
+  createdAt: string
+}
+
+export interface CreditPurchase {
+  id: string
+  userId: string
+  packId: string
+  creditsGranted: number
+  amountPaidPaise: number
+  discountPct: number
+  cashfreeOrderId: string | null
+  cashfreePaymentId: string | null
+  createdAt: string
+}
+
+export interface GenerationEvent {
+  id: string
+  userId: string
+  outputVariantId: string | null
+  actionType: GenerationActionType
+  model: string
+  promptTokens: number | null
+  completionTokens: number | null
+  creditsCharged: number
+  creditBucket: CreditBucket
+  langfuseTraceId: string | null
+  createdAt: string
+}
+
 // Settings
 export interface AppSettings {
   defaultPreset: string

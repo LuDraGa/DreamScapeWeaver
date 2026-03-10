@@ -14,6 +14,7 @@ import type {
 import { uid } from '@/lib/utils'
 import { env } from '@/lib/env'
 import { buildEnhancementPrompt } from '@/lib/prompt-builders'
+import { startLangfuseGeneration } from '@/lib/billing/langfuse'
 
 /**
  * OpenAI adapter for story generation with structured outputs
@@ -228,21 +229,23 @@ export async function generateDreamscapes(
 
 ${params.vibe ? `Match this vibe: ${params.vibe}` : 'Generate diverse, creative premises across different genres and tones'}`
 
+    const messages = [
+      { role: 'system' as const, content: systemPrompt },
+      { role: 'user' as const, content: `Generate ${params.count} unique story seed ideas.` },
+    ]
+
+    const lt = startLangfuseGeneration('seed-generation', messages, { temperature: 0.9 }, {
+      metadata: { count: params.count, vibe: params.vibe },
+    })
+
     const completion = await openai.beta.chat.completions.parse({
       model: 'gpt-4o-2024-08-06',
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: `Generate ${params.count} unique story seed ideas.`,
-        },
-      ],
+      messages,
       response_format: zodResponseFormat(DreamscapesResponseSchema, 'dreamscapes'),
-      temperature: 0.9, // High creativity
+      temperature: 0.9,
     })
+
+    await lt.end(completion)
 
     const result = completion.choices[0].message.parsed
     if (!result) {
@@ -288,25 +291,28 @@ export async function enhanceDreamscape(
     if (params.goalPreset === 'stitch' && params.chunks.length > 1) {
       const combined = params.chunks.map((c) => c.text).join('\n\n---\n\n')
 
-      const completion = await openai.beta.chat.completions.parse({
-        model: 'gpt-4o-2024-08-06',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a story editor who finds creative connections between separate story ideas. Combine the provided story seeds into one coherent narrative that:
+      const stitchMessages = [
+        {
+          role: 'system' as const,
+          content: `You are a story editor who finds creative connections between separate story ideas. Combine the provided story seeds into one coherent narrative that:
 - Reveals how the separate ideas are actually connected
 - Creates a larger, more interesting story
 - Maintains the core elements of each seed
 - Adds narrative tissue that makes the connection feel organic and surprising`,
-          },
-          {
-            role: 'user',
-            content: `Combine these story ideas:\n\n${combined}`,
-          },
-        ],
+        },
+        { role: 'user' as const, content: `Combine these story ideas:\n\n${combined}` },
+      ]
+
+      const lt = startLangfuseGeneration('enhancement-stitch', stitchMessages, { temperature: 0.8 })
+
+      const completion = await openai.beta.chat.completions.parse({
+        model: 'gpt-4o-2024-08-06',
+        messages: stitchMessages,
         response_format: zodResponseFormat(StitchedSeedResponseSchema, 'stitched_seed'),
         temperature: 0.8,
       })
+
+      await lt.end(completion)
 
       const result = completion.choices[0].message.parsed
       if (!result) {
@@ -380,21 +386,26 @@ IMPORTANT: Keep it brief - just enhance the seed (2-4 sentences), don't expand i
 
     const enhancedChunks = await Promise.all(
       params.chunks.map(async (chunk) => {
+        const chunkMessages = [
+          { role: 'system' as const, content: systemPrompt },
+          { role: 'user' as const, content: chunk.text },
+        ]
+
+        const lt = startLangfuseGeneration(
+          `enhancement-${params.goalPreset}`,
+          chunkMessages,
+          { temperature: 0.7 },
+          { metadata: { goalPreset: params.goalPreset, chunkId: chunk.id } }
+        )
+
         const completion = await openai.beta.chat.completions.parse({
           model: 'gpt-4o-2024-08-06',
-          messages: [
-            {
-              role: 'system',
-              content: systemPrompt,
-            },
-            {
-              role: 'user',
-              content: chunk.text,
-            },
-          ],
+          messages: chunkMessages,
           response_format: zodResponseFormat(EnhancedChunkSchema, 'enhanced_chunk'),
           temperature: 0.7,
         })
+
+        await lt.end(completion)
 
         const result = completion.choices[0].message.parsed
         if (!result) {
@@ -425,22 +436,23 @@ async function generateVariant(
   seed: string
 ): Promise<OutputVariant> {
   const systemPrompt = buildSystemPrompt(dialState)
+  const messages = [
+    { role: 'system' as const, content: systemPrompt },
+    { role: 'user' as const, content: `Write a complete story based on this seed:\n\n${seed}` },
+  ]
+
+  const lt = startLangfuseGeneration('output-generation', messages, { temperature: 0.7 }, {
+    metadata: { variantTitle: title, platform: dialState.platform },
+  })
 
   const completion = await openai.beta.chat.completions.parse({
     model: 'gpt-4o-2024-08-06',
-    messages: [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      {
-        role: 'user',
-        content: `Write a complete story based on this seed:\n\n${seed}`,
-      },
-    ],
+    messages,
     response_format: zodResponseFormat(StoryOutputSchema, 'story_output'),
     temperature: 0.7,
   })
+
+  await lt.end(completion)
 
   const result = completion.choices[0].message.parsed
   if (!result) {

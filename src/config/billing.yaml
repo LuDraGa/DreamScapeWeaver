@@ -1,0 +1,148 @@
+# StoryWeaver Billing Configuration
+# -----------------------------------
+# ALL pricing, credit costs, plan IDs, and tier definitions live here.
+# No plan IDs, prices, or credit values are hardcoded in application code —
+# every billing decision is driven by this file.
+#
+# To change prices, credits, or add tiers: edit this file only.
+# To add a new Cashfree plan: create it in Cashfree dashboard, paste the
+# plan_id here, and it will be picked up automatically on next deploy.
+#
+# Credit value: 1 credit = $0.0001 USD / ~₹0.0083 INR
+
+# ---------------------------------------------------------------------------
+# Primary Currency
+# Cashfree charges in INR. USD is kept for reference / future international.
+# ---------------------------------------------------------------------------
+currency:
+  primary: "INR"
+  secondary: "USD"           # future international support
+  usd_to_inr_rate: 84.0     # update periodically; used for display only
+
+# ---------------------------------------------------------------------------
+# Subscription Plans
+# After creating a plan in Cashfree dashboard, paste the plan_id below.
+# The app reads plan_id from here — never hardcoded.
+# ---------------------------------------------------------------------------
+subscriptions:
+  starter:
+    name: "Starter"
+    monthly_credits: 100000
+    price_inr: 1250
+    price_usd: 15.00                 # reference only
+    topup_discount_pct: 0
+    cashfree_plan_id: ""             # TODO: create in Cashfree dashboard → paste here
+    description: "For hobbyists and occasional creators"
+    features:
+      - "100,000 credits/month"
+      - "~48 full story workflows"
+      - "Credits reset monthly"
+
+  pro:
+    name: "Pro"
+    monthly_credits: 300000
+    price_inr: 3350
+    price_usd: 40.00
+    topup_discount_pct: 15
+    cashfree_plan_id: ""             # TODO: create in Cashfree dashboard → paste here
+    description: "For regular content creators"
+    features:
+      - "300,000 credits/month"
+      - "~146 full story workflows"
+      - "15% discount on top-up packs"
+      - "Credits reset monthly"
+
+  studio:
+    name: "Studio"
+    monthly_credits: 900000
+    price_inr: 6700
+    price_usd: 80.00
+    topup_discount_pct: 30
+    cashfree_plan_id: ""             # TODO: create in Cashfree dashboard → paste here
+    description: "For professional studios and power creators"
+    features:
+      - "900,000 credits/month"
+      - "~439 full story workflows"
+      - "30% discount on top-up packs"
+      - "Credits reset monthly"
+      - "Priority support"
+
+# ---------------------------------------------------------------------------
+# Top-up Packs
+# Subscription discount is applied at checkout based on user's active plan.
+# No subscription = 0% discount (base price).
+# ---------------------------------------------------------------------------
+topup_packs:
+  micro:
+    name: "Micro Pack"
+    credits: 15000
+    base_price_inr: 250
+    base_price_usd: 3.00
+    description: "Quick boost"
+
+  small:
+    name: "Small Pack"
+    credits: 50000
+    base_price_inr: 750
+    base_price_usd: 9.00
+    description: "A week's extra headroom"
+
+  medium:
+    name: "Medium Pack"
+    credits: 150000
+    base_price_inr: 2100
+    base_price_usd: 25.00
+    description: "A month's top-up for heavy months"
+
+  large:
+    name: "Large Pack"
+    credits: 400000
+    base_price_inr: 5000
+    base_price_usd: 60.00
+    description: "Best per-credit rate for one-time purchases"
+
+# ---------------------------------------------------------------------------
+# Credit Costs Per Action
+# Based on 80% gross margin on gpt-4o API costs.
+# Update if model changes or margin target changes.
+# ---------------------------------------------------------------------------
+credit_costs:
+  seed_generation: 500
+  enhancement: 400
+  output_generation: 1150
+  part_transform: 300
+
+# ---------------------------------------------------------------------------
+# Credit Accounting Rules
+# ---------------------------------------------------------------------------
+credit_rules:
+  # Debit order when user has both buckets
+  debit_order:
+    - subscription                  # subscription credits first (time-limited)
+    - topup                         # top-up credits as overflow (never expire)
+
+  subscription_credits_carry_over: false   # sub credits expire at period end
+  topup_credits_expire: false              # top-up credits never expire
+
+  # Credits granted on first login (requires account, not guest)
+  # Set to 0 to disable free tier
+  signup_bonus_credits: 10000
+
+# ---------------------------------------------------------------------------
+# LLM Model Config
+# Used for generation_events cost attribution and Langfuse tracing.
+# ---------------------------------------------------------------------------
+models:
+  default: "gpt-4o"
+  # Rates used for generation_events logging only (billing uses flat credit_costs)
+  cost_per_1k_input_tokens_usd: 0.0025    # gpt-4o input
+  cost_per_1k_output_tokens_usd: 0.0100   # gpt-4o output
+
+# ---------------------------------------------------------------------------
+# Observability
+# ---------------------------------------------------------------------------
+observability:
+  # Langfuse for LLM tracing (prompts, tokens, latency, cost per trace)
+  # generation_events table for billing source of truth
+  langfuse_enabled: true
+  generation_events_enabled: true

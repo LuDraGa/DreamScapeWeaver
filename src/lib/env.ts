@@ -15,6 +15,21 @@ export const env = {
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   },
 
+  // Langfuse (LLM observability)
+  langfuse: {
+    secretKey: process.env.LANGFUSE_SECRET_KEY || '',
+    publicKey: process.env.LANGFUSE_PUBLIC_KEY || '',
+    baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com',
+  },
+
+  // Cashfree (payments)
+  cashfree: {
+    appId: process.env.CASHFREE_APP_ID || '',
+    secretKey: process.env.CASHFREE_SECRET_KEY || '',
+    webhookSecret: process.env.CASHFREE_WEBHOOK_SECRET || '',
+    environment: (process.env.CASHFREE_ENVIRONMENT || 'sandbox') as 'sandbox' | 'production',
+  },
+
   // Feature flags
   features: {
     useMockAdapter: process.env.NEXT_PUBLIC_USE_MOCK_ADAPTER === 'true',

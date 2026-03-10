@@ -17,6 +17,10 @@ import {
   Check,
   Copy,
   Layers,
+  Coins,
+  Zap,
+  TrendingUp,
+  Clock,
 } from 'lucide-react'
 
 export {
@@ -39,4 +43,8 @@ export {
   Check as CheckIcon,
   Copy as CopyIcon,
   Layers as LayersIcon,
+  Coins as CoinsIcon,
+  Zap as ZapIcon,
+  TrendingUp as TrendingUpIcon,
+  Clock as ClockIcon,
 }

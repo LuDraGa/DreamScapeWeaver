@@ -1,0 +1,44 @@
+name: Sync Cashfree Plans
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/config/billing.yaml'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Sync plans to Cashfree
+        run: npx tsx scripts/sync-cashfree-plans.ts
+        env:
+          CASHFREE_APP_ID: ${{ secrets.CASHFREE_APP_ID }}
+          CASHFREE_SECRET_KEY: ${{ secrets.CASHFREE_SECRET_KEY }}
+          CASHFREE_ENVIRONMENT: production
+
+      - name: Commit updated billing.yaml (if plan IDs changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet src/config/billing.yaml || (
+            git add src/config/billing.yaml
+            git commit -m "chore: update Cashfree plan IDs in billing.yaml [skip ci]"
+            git push
+          )
