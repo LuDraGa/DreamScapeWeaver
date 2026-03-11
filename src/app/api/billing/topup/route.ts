@@ -100,8 +100,13 @@ export async function POST(request: NextRequest) {
       orderAmount: order.orderAmount,
       credits: pack.credits,
     })
-  } catch (error) {
-    console.error('Topup order error:', error)
+  } catch (error: unknown) {
+    const axiosErr = error as { response?: { data?: unknown, status?: number } }
+    if (axiosErr.response) {
+      console.error('Topup order error:', axiosErr.response.status, JSON.stringify(axiosErr.response.data))
+    } else {
+      console.error('Topup order error:', error)
+    }
     return NextResponse.json(
       { error: 'Failed to create top-up order' },
       { status: 500 }
