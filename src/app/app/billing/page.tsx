@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { ThemedCard } from '@/components/design-system/themed-card'
 import { CoinsIcon, ZapIcon, TrendingUpIcon, ClockIcon } from '@/components/icons'
+import { load as loadCashfree } from '@cashfreepayments/cashfree-js'
 
 interface BalanceData {
   balance: { subscriptionCredits: number, topupCredits: number }
@@ -65,11 +67,37 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export default function BillingPage() {
+export default function BillingPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-xl font-semibold mb-1 text-text-primary">Billing & Credits</h1>
+        <p className="text-sm mb-6 text-text-muted">Manage your subscription and credit balance</p>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-32 rounded-2xl bg-[rgba(15,23,42,0.4)] animate-pulse" />
+          ))}
+        </div>
+      </div>
+    }>
+      <BillingPage />
+    </Suspense>
+  )
+}
+
+function BillingPage() {
   const { isGuest } = useAuth()
+  const searchParams = useSearchParams()
   const [balanceData, setBalanceData] = useState<BalanceData | null>(null)
   const [historyData, setHistoryData] = useState<HistoryData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
+  }, [])
 
   const fetchData = useCallback(async () => {
     try {
@@ -90,6 +118,100 @@ export default function BillingPage() {
     if (!isGuest) fetchData()
     else setLoading(false)
   }, [isGuest, fetchData])
+
+  // Handle return from Cashfree checkout
+  useEffect(() => {
+    const status = searchParams.get('status')
+    const orderId = searchParams.get('order_id')
+    const subscription = searchParams.get('subscription')
+
+    if (status === 'SUCCESS' && orderId) {
+      showToast('Payment successful! Credits will be added shortly.', 'success')
+      // Refresh data after a short delay to allow webhook processing
+      setTimeout(fetchData, 2000)
+    } else if (status === 'FAILED' && orderId) {
+      showToast('Payment failed. Please try again.', 'error')
+    } else if (subscription === 'success') {
+      showToast('Subscription created! Credits will be granted once payment is confirmed.', 'success')
+      setTimeout(fetchData, 2000)
+    }
+  }, [searchParams, showToast, fetchData])
+
+  // ---------------------------------------------------------------------------
+  // Top-up checkout
+  // ---------------------------------------------------------------------------
+  const handleTopup = async (packId: string) => {
+    setActionLoading(`topup-${packId}`)
+    try {
+      const res = await fetch('/api/billing/topup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packId }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        showToast(err.error || 'Failed to initiate purchase', 'error')
+        return
+      }
+
+      const { paymentSessionId } = await res.json()
+
+      // Open Cashfree checkout
+      const cashfree = await loadCashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'sandbox' ? 'sandbox' : 'production' })
+      if (!cashfree) {
+        showToast('Payment gateway failed to load', 'error')
+        return
+      }
+
+      await cashfree.checkout({ paymentSessionId, redirectTarget: '_self' })
+    } catch (err) {
+      console.error('Topup error:', err)
+      showToast('Something went wrong. Please try again.', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Subscribe
+  // ---------------------------------------------------------------------------
+  const handleSubscribe = async (planId: string) => {
+    setActionLoading(`subscribe-${planId}`)
+    try {
+      const res = await fetch('/api/billing/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        showToast(err.error || 'Failed to create subscription', 'error')
+        return
+      }
+
+      const { sessionId } = await res.json()
+
+      if (sessionId) {
+        // Open Cashfree subscription checkout
+        const cashfree = await loadCashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'sandbox' ? 'sandbox' : 'production' })
+        if (!cashfree) {
+          showToast('Payment gateway failed to load', 'error')
+          return
+        }
+        await cashfree.checkout({ paymentSessionId: sessionId, redirectTarget: '_self' })
+      } else {
+        showToast('Subscription created. Redirecting...', 'success')
+        setTimeout(fetchData, 2000)
+      }
+    } catch (err) {
+      console.error('Subscribe error:', err)
+      showToast('Something went wrong. Please try again.', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
 
   if (isGuest) {
     return (
@@ -117,6 +239,20 @@ export default function BillingPage() {
     <div className="max-w-3xl mx-auto">
       <h1 className="text-xl font-semibold mb-1 text-text-primary">Billing & Credits</h1>
       <p className="text-sm mb-6 text-text-muted">Manage your subscription and credit balance</p>
+
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className="fixed top-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg animate-in slide-in-from-right-5 duration-300"
+          style={{
+            background: toast.type === 'success' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+            border: `1px solid ${toast.type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
+            color: toast.type === 'success' ? '#34d399' : '#f87171',
+          }}
+        >
+          {toast.message}
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-4">
@@ -177,11 +313,9 @@ export default function BillingPage() {
               let barPercent: number
 
               if (planInfo) {
-                // Subscribed: show subscription usage this period
                 barLabel = 'Subscription usage this period'
                 barPercent = usagePercent
               } else {
-                // Free: show welcome bonus usage
                 const bonusUsed = Math.max(0, SIGNUP_BONUS - bal.topupCredits)
                 barPercent = Math.min(100, Math.round((bonusUsed / SIGNUP_BONUS) * 100))
                 barLabel = `Welcome bonus — ${formatCredits(bal.topupCredits)} of ${formatCredits(SIGNUP_BONUS)} remaining`
@@ -238,27 +372,40 @@ export default function BillingPage() {
                   </div>
                 )}
               </div>
-              <button
-                className="text-sm font-medium px-4 py-2 rounded-xl transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff' }}
-              >
-                {planInfo ? 'Change plan' : 'View plans'}
-              </button>
+              {!planInfo && (
+                <button
+                  onClick={() => {
+                    document.getElementById('plan-tiers')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="text-sm font-medium px-4 py-2 rounded-xl transition-all hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff' }}
+                >
+                  View plans
+                </button>
+              )}
             </div>
 
-            {/* Plan tiers preview */}
+            {/* Plan tiers */}
             {!planInfo && (
-              <div className="grid grid-cols-3 gap-3 mt-4">
+              <div id="plan-tiers" className="grid grid-cols-3 gap-3 mt-4">
                 {Object.entries(PLAN_DETAILS).map(([id, plan]) => (
-                  <div
+                  <button
                     key={id}
-                    className="rounded-xl px-3 py-3 text-center cursor-pointer transition-all hover:scale-[1.02]"
+                    onClick={() => handleSubscribe(id)}
+                    disabled={actionLoading === `subscribe-${id}`}
+                    className="rounded-xl px-3 py-3 text-center cursor-pointer transition-all hover:scale-[1.02] hover:border-[#6366f1] disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ background: 'rgba(15,23,42,0.5)', border: '1px solid #1e293b' }}
                   >
                     <div className="text-sm font-semibold text-text-primary mb-0.5">{plan.name}</div>
                     <div className="text-lg font-bold" style={{ color: '#a5b4fc' }}>{plan.price}</div>
                     <div className="text-xs text-text-muted">{formatCredits(plan.credits)} credits/mo</div>
-                  </div>
+                    <div
+                      className="mt-2 text-xs font-medium py-1 rounded-lg transition-all"
+                      style={{ background: 'rgba(99,102,241,0.12)', color: '#a5b4fc' }}
+                    >
+                      {actionLoading === `subscribe-${id}` ? 'Processing...' : 'Subscribe'}
+                    </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -271,7 +418,9 @@ export default function BillingPage() {
               {TOPUP_PACKS.map((pack) => (
                 <button
                   key={pack.id}
-                  className="relative rounded-xl px-4 py-4 text-left transition-all hover:scale-[1.02] hover:border-[#6366f1] group"
+                  onClick={() => handleTopup(pack.id)}
+                  disabled={actionLoading === `topup-${pack.id}`}
+                  className="relative rounded-xl px-4 py-4 text-left transition-all hover:scale-[1.02] hover:border-[#6366f1] group disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid #1e293b' }}
                 >
                   {pack.tag && (
@@ -283,7 +432,9 @@ export default function BillingPage() {
                     </span>
                   )}
                   <div className="text-xs text-text-muted mb-1">{pack.name}</div>
-                  <div className="text-lg font-bold text-text-primary">{formatCredits(pack.credits)}</div>
+                  <div className="text-lg font-bold text-text-primary">
+                    {actionLoading === `topup-${pack.id}` ? '...' : formatCredits(pack.credits)}
+                  </div>
                   <div className="text-sm font-semibold mt-1" style={{ color: '#a5b4fc' }}>{pack.price}</div>
                 </button>
               ))}

@@ -12,10 +12,14 @@
  *   CASHFREE_APP_ID, CASHFREE_SECRET_KEY, CASHFREE_ENVIRONMENT
  */
 
+import { config } from 'dotenv'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { parse, stringify } from 'yaml'
 import { Cashfree, CFEnvironment } from 'cashfree-pg'
+
+// Load .env.local so script can run standalone via `npx tsx`
+config({ path: join(process.cwd(), '.env.local') })
 
 const BILLING_YAML_PATH = join(process.cwd(), 'src/config/billing.yaml')
 
