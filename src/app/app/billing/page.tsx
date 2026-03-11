@@ -268,7 +268,6 @@ function BillingPage() {
 
             {/* Usage bar */}
             {(() => {
-              const SIGNUP_BONUS = 10000
               let barLabel: string
               let barPercent: number
 
@@ -276,9 +275,16 @@ function BillingPage() {
                 barLabel = 'Subscription usage this period'
                 barPercent = usagePercent
               } else {
-                const bonusUsed = Math.max(0, SIGNUP_BONUS - bal.topupCredits)
-                barPercent = Math.min(100, Math.round((bonusUsed / SIGNUP_BONUS) * 100))
-                barLabel = `Welcome bonus — ${formatCredits(bal.topupCredits)} of ${formatCredits(SIGNUP_BONUS)} remaining`
+                // For non-subscribers: show credits used vs total available
+                const totalUsed = historyData?.usage.totalCreditsUsed ?? 0
+                const totalEver = totalCredits + totalUsed // current balance + what was used
+                if (totalEver > 0) {
+                  barPercent = Math.min(100, Math.round((totalUsed / totalEver) * 100))
+                  barLabel = `${formatCredits(totalCredits)} credits remaining`
+                } else {
+                  barPercent = 0
+                  barLabel = 'No credits used yet'
+                }
               }
 
               return (

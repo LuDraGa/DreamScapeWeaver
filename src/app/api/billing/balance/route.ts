@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getBalance } from '@/lib/billing/credits'
+import { getBalance, grantSignupBonus } from '@/lib/billing/credits'
 
 /**
  * GET /api/billing/balance
  * Returns current credit balance for authenticated user.
+ * Also ensures signup bonus is granted (catches users who logged in before bonus code existed).
  */
 export async function GET() {
   try {
@@ -17,6 +18,9 @@ export async function GET() {
         { status: 401 }
       )
     }
+
+    // Ensure signup bonus is granted (idempotent — no-ops if already granted)
+    await grantSignupBonus(user.id).catch(() => {})
 
     const balance = await getBalance(user.id)
 
