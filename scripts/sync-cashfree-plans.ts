@@ -103,7 +103,13 @@ async function main() {
       console.log(`  → Updated billing.yaml with plan_id: ${cfPlanId}`)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
-      console.error(`  ✗ Failed to create: ${message}`)
+      // Log full Axios response for debugging
+      const axiosErr = err as { response?: { data?: unknown, status?: number } }
+      if (axiosErr.response) {
+        console.error(`  ✗ Failed to create (${axiosErr.response.status}): ${JSON.stringify(axiosErr.response.data)}`)
+      } else {
+        console.error(`  ✗ Failed to create: ${message}`)
+      }
     }
   }
 

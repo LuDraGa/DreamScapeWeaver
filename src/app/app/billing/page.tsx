@@ -173,46 +173,6 @@ function BillingPage() {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Subscribe
-  // ---------------------------------------------------------------------------
-  const handleSubscribe = async (planId: string) => {
-    setActionLoading(`subscribe-${planId}`)
-    try {
-      const res = await fetch('/api/billing/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
-      })
-
-      if (!res.ok) {
-        const err = await res.json()
-        showToast(err.error || 'Failed to create subscription', 'error')
-        return
-      }
-
-      const { sessionId } = await res.json()
-
-      if (sessionId) {
-        // Open Cashfree subscription checkout
-        const cashfree = await loadCashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'sandbox' ? 'sandbox' : 'production' })
-        if (!cashfree) {
-          showToast('Payment gateway failed to load', 'error')
-          return
-        }
-        await cashfree.checkout({ paymentSessionId: sessionId, redirectTarget: '_self' })
-      } else {
-        showToast('Subscription created. Redirecting...', 'success')
-        setTimeout(fetchData, 2000)
-      }
-    } catch (err) {
-      console.error('Subscribe error:', err)
-      showToast('Something went wrong. Please try again.', 'error')
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
   if (isGuest) {
     return (
       <div className="max-w-3xl mx-auto">
@@ -345,70 +305,42 @@ function BillingPage() {
             })()}
           </ThemedCard>
 
-          {/* Current Plan */}
+          {/* Subscription Plans — Coming Soon */}
           <ThemedCard>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-text-secondary mb-0.5">Current Plan</h3>
-                {planInfo ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold text-text-primary">{planInfo.name}</span>
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}
-                    >
-                      {planInfo.price}/mo
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold text-text-primary">Free</span>
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: 'rgba(100,116,139,0.15)', color: '#94a3b8' }}
-                    >
-                      No subscription
-                    </span>
-                  </div>
-                )}
+                <h3 className="text-sm font-medium text-text-secondary mb-0.5">Subscription Plans</h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold text-text-primary">Coming soon</span>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}
+                  >
+                    Monthly credits + discounts
+                  </span>
+                </div>
               </div>
-              {!planInfo && (
-                <button
-                  onClick={() => {
-                    document.getElementById('plan-tiers')?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                  className="text-sm font-medium px-4 py-2 rounded-xl transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff' }}
-                >
-                  View plans
-                </button>
-              )}
             </div>
 
-            {/* Plan tiers */}
-            {!planInfo && (
-              <div id="plan-tiers" className="grid grid-cols-3 gap-3 mt-4">
-                {Object.entries(PLAN_DETAILS).map(([id, plan]) => (
-                  <button
-                    key={id}
-                    onClick={() => handleSubscribe(id)}
-                    disabled={actionLoading === `subscribe-${id}`}
-                    className="rounded-xl px-3 py-3 text-center cursor-pointer transition-all hover:scale-[1.02] hover:border-[#6366f1] disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ background: 'rgba(15,23,42,0.5)', border: '1px solid #1e293b' }}
+            <div className="grid grid-cols-3 gap-3 mt-4">
+              {Object.entries(PLAN_DETAILS).map(([id, plan]) => (
+                <div
+                  key={id}
+                  className="rounded-xl px-3 py-3 text-center opacity-50"
+                  style={{ background: 'rgba(15,23,42,0.5)', border: '1px solid #1e293b' }}
+                >
+                  <div className="text-sm font-semibold text-text-primary mb-0.5">{plan.name}</div>
+                  <div className="text-lg font-bold" style={{ color: '#a5b4fc' }}>{plan.price}</div>
+                  <div className="text-xs text-text-muted">{formatCredits(plan.credits)} credits/mo</div>
+                  <div
+                    className="mt-2 text-xs font-medium py-1 rounded-lg"
+                    style={{ background: 'rgba(100,116,139,0.1)', color: '#64748b' }}
                   >
-                    <div className="text-sm font-semibold text-text-primary mb-0.5">{plan.name}</div>
-                    <div className="text-lg font-bold" style={{ color: '#a5b4fc' }}>{plan.price}</div>
-                    <div className="text-xs text-text-muted">{formatCredits(plan.credits)} credits/mo</div>
-                    <div
-                      className="mt-2 text-xs font-medium py-1 rounded-lg transition-all"
-                      style={{ background: 'rgba(99,102,241,0.12)', color: '#a5b4fc' }}
-                    >
-                      {actionLoading === `subscribe-${id}` ? 'Processing...' : 'Subscribe'}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+                    Coming soon
+                  </div>
+                </div>
+              ))}
+            </div>
           </ThemedCard>
 
           {/* Top-up Packs */}
