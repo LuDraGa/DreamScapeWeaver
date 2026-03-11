@@ -35,6 +35,7 @@ export async function createTopupOrder(params: {
   packId: string
   activePlanId: string | null
   purchaseId: string
+  origin: string
 }): Promise<{
   orderId: string
   paymentSessionId: string
@@ -60,7 +61,7 @@ export async function createTopupOrder(params: {
       customer_phone: '9999999999', // placeholder — Cashfree requires phone
     },
     order_meta: {
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL || ''}/app/billing?order_id={order_id}&status={order_status}`,
+      return_url: `${params.origin}/app/billing?order_id={order_id}&status={order_status}`,
     },
     order_note: `StoryWeaver ${pack.name} — ${pack.credits} credits`,
     order_tags: {

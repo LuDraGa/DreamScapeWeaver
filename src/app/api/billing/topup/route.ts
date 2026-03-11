@@ -79,12 +79,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Cashfree order
+    const origin = request.headers.get('origin') || request.headers.get('referer')?.replace(/\/[^/]*$/, '') || 'https://dream-scape-weaver.vercel.app'
     const order = await createTopupOrder({
       userId: user.id,
       email: user.email ?? '',
       packId,
       activePlanId,
       purchaseId: purchase.id,
+      origin,
     })
 
     // Update purchase with order ID
