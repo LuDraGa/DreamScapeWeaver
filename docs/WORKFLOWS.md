@@ -1,143 +1,55 @@
 # Workflows
 
-## CreatePage: 4-Step Generation Flow
+## CreatePage: Two Flow Modes
 
-### Step 0: Seed Creation
+The CreatePage supports two distinct flows depending on user mode:
+- **Normal users**: Template-first flow (Template → Seed → Rate & Save)
+- **Power users**: Idea-first flow (Dreamscape → Platform & Style → Generate → Review)
 
-**Manual Entry**:
-```jsx
-<textarea
-  value={chunk.text}
-  onChange={(e) => updateChunk(chunk.id, 'text', e.target.value)}
-  placeholder="A middle-aged accountant discovers..."
-/>
+### Normal User Flow: Template → Seed → Rate & Save
+
+#### Step 0: Template Selection
+
+User picks a template from a categorized gallery (reddit, short-form, long-form, marketing, etc.):
+
+```
+Category tabs → Template grid → Style variant picker → Template settings summary
 ```
 
-- Multi-chunk support (click "Add Another Part")
-- Drag-to-reorder chunks with up/down buttons
-- Can load saved dreamscapes from Library
+- Templates show icon, name, description, duration, word count
+- After selecting a template, user picks a **style variant** (e.g., "Controversial", "Emotional", "Unhinged" for AITAH)
+- Style variant selection shows name + description for each option
+- Template settings summary shows intensity values, genres, and avoid phrases
 
-**AI Generation** (Dreamscape Generator panel):
-```javascript
-const handleGenerateDreamscapes = async () => {
-  setGenLoading(true)
-  const results = await generateDreamscapes({
-    count: genCount,      // 1-10 seeds
-    vibe: genVibe         // Optional vibe/genre hint
-  })
-  setGenResults(results)
-  setGenLoading(false)
-}
-```
+#### Step 1: Seed Input + Generation
 
-- Click seed to add to chunks
-- Can generate multiple batches
-- Results append to existing chunks
+- Seed text area with selected template badge shown
+- **Template-aware seed generation**: passes `selectedTemplate.seedPrompt` to the API, producing platform-specific seeds instead of generic ones
+- Admin users see a prompt editor for inspecting/editing the system and user prompts
+- Style variant is passed through to `buildPromptFromTemplate` for output generation
 
-### Step 1: Enhancement (Optional)
+#### Step 2: Rate & Save
 
-Accessed via "Enhance/Merge" button when chunks exist.
+- View generated output
+- Rate, copy, save to library
 
-**Enhancement Goals**:
-```javascript
-const ENHANCEMENT_GOALS = [
-  { id: "vivid", label: "Add vividness", icon: "🎨" },
-  { id: "conflict", label: "Add conflict", icon: "⚔️" },
-  { id: "believable", label: "Make it more believable", icon: "🎯" },
-  { id: "stitch", label: "Stitch chunks together", icon: "🧵" },
-  { id: "less-ai", label: "Make it less AI-ish", icon: "🤖" },
-]
-```
+### Power User Flow: Dreamscape → Platform → Generate → Review
 
-**Flow**:
-1. User selects enhancement goal
-2. Clicks "Enhance"
-3. System calls `enhanceDreamscape({ chunks, goalPreset })`
-4. Results displayed in panel:
-   - **Stitched seed** (if goal === "stitch") - Shows combined narrative
-   - **Enhanced chunks** (other goals) - Shows each chunk with additions
-5. User clicks "Use This" to replace current chunks
+#### Step 0: Dreamscape Creation
 
-**Stitch Example**:
-```
-Input chunks:
-1. "A barista starts leaving coded messages in latte art..."
-2. "A detective going through a messy divorce..."
+- Multi-chunk seed editor with "Add Another Part"
+- AI seed generation (generic dreamscapes, no template context)
+- Drag-to-reorder chunks
 
-Output (stitched):
-"What started as two separate incidents ended up being connected...
-[Chunk 1 text]
----
-[Chunk 2 text]
-The thing is — these aren't two stories. They're the same story from different angles."
-```
+#### Step 1: Platform & Style Configuration
 
-### Step 2: Generation Configuration
+Preset selection auto-fills platform, format, word count, tone, and all 7 intensity dials. Advanced customization panel allows manual dial adjustment.
 
-**Preset Selection**:
-```jsx
-<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-  {PRESETS.map((preset) => (
-    <button onClick={() => handleSelectPreset(preset.id)}>
-      <span>{preset.emoji}</span>
-      <div>{preset.name}</div>
-      <div>{preset.subtitle}</div>
-    </button>
-  ))}
-</div>
-```
+#### Step 2: Generate
 
-Clicking preset auto-fills:
-- Platform
-- Output format
-- Word count
-- Tone
-- All 7 intensity dials
+Calls `generateOutputs()` with full dial state.
 
-**Advanced Customization** (toggle panel):
-```jsx
-// Platform & Format
-<select value={dialState.platform}>
-  {PLATFORMS.map(p => <option value={p.id}>{p.name}</option>)}
-</select>
-
-// Intensity Dials (7 sliders)
-{Object.entries(DIALS).map(([key, config]) => (
-  <Slider
-    label={config.label}
-    value={dialState.intensity[key]}
-    onChange={(v) => setDialState(s => ({
-      ...s,
-      intensity: { ...s.intensity, [key]: v }
-    }))}
-    min={config.min}
-    max={config.max}
-  />
-))}
-
-// Other Controls
-<input type="number" value={dialState.wordCount} />
-<select value={dialState.tone}>
-  {TONES.map(t => <option>{t}</option>)}
-</select>
-```
-
-**Generate Action**:
-```javascript
-const handleGenerate = async () => {
-  setGenerating(true)
-  const variants = await generateOutputs({
-    dreamscape: { chunks },
-    dialState
-  })
-  setOutputs(variants)
-  setActiveVariant(0)
-  setStep(3)
-  setGenerating(false)
-}
-```
-
-### Step 3: Output Review & Refinement
+#### Step 3: Output Review & Refinement
 
 **Variant Tabs**:
 ```jsx
@@ -381,11 +293,27 @@ AppContext.savedDreamscapes
 localStorage.setItem('sg_dreamscapes', ...)
 ```
 
-### Generation Flow
+### Normal User Generation Flow (Template-First)
+```
+Template selection (category → template → style variant)
+  ↓
+Seed input (manual or template-aware AI generation)
+  ↓
+buildPromptFromTemplate(template, dreamscape, styleVariantId)
+  → injects styleModifier, selfCheckRubric, fewShotExcerpt into prompt
+  ↓
+generateOutputs() [OpenAI API]
+  ↓
+Output review → Rate & Save
+  ↓
+localStorage.setItem('sg_outputs', ...)
+```
+
+### Power User Generation Flow
 ```
 chunks + dialState
   ↓
-generateOutputs() [mock API]
+generateOutputs() [OpenAI API]
   ↓
 outputs state (CreatePage)
   ↓
@@ -396,6 +324,18 @@ saveOutput() [user clicks Save]
 AppContext.savedOutputs
   ↓
 localStorage.setItem('sg_outputs', ...)
+```
+
+### Template-Aware Seed Generation Flow
+```
+User clicks "Generate Seeds" with template selected
+  ↓
+API receives seedPrompt from template (if available)
+  ↓
+openai.generateDreamscapes({ seedPrompt, count })
+  → uses template.seedPrompt.system + .user instead of generic prompt
+  ↓
+Platform-specific seeds returned (e.g., AITAH seeds = interpersonal conflicts)
 ```
 
 ### Enhancement Flow

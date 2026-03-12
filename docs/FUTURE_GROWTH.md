@@ -110,15 +110,13 @@ payment events). `created_by` / `updated_by` on all tables provides lightweight 
 
 ---
 
-## 4. Studio Parts Persistence
+## 4. Template Expansion — Non-Hero Templates
 
-The Studio page (`/app/studio`) manages "parts" but its data model is not yet well-defined.
-Do not design or implement the `parts` table until the Studio feature is more stable.
+Currently 9 "hero" templates have the full quality pipeline (seedPrompt, styleVariants, selfCheckRubric, fewShotExcerpt). The remaining ~40 templates work but lack these upgrades.
 
-Once Studio's data model is clear, `parts` will likely need:
-- `project_id` FK (once Projects ships)
-- `output_variant_id` FK (linking part to a generated output)
-- `transform_history` JSONB (audit of part transformations)
+**When to expand**: When usage data shows which non-hero templates are popular. Upgrading a template takes ~15 minutes of prompt engineering per template.
+
+**Priority order**: Upgrade templates based on actual usage, not guesswork. The template system is backward-compatible — non-hero templates gracefully fall back to generic seed generation and no style variants.
 
 ---
 

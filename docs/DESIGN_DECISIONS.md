@@ -255,47 +255,36 @@ localStorage.setItem('storyweaver_dreamscapes', data)
 
 ---
 
-## Intensity Dials: Story Control System (Evolving)
+## Style Variants Replace Intensity Dials (for Normal Users)
 
-**Current State**: Stories are controlled by 7 intensity dials (stakes, darkness, pace, twist, realism, catharsis, moralClarity).
+**Decision**: Normal users control output quality through **style variants** (2-3 curated options per template), not 7 intensity dials.
 
-**Status**: ⚠️ **Under review** - May be simplified or refactored
+**Rationale**:
+- 7 dials are overwhelming for non-power-users and don't clearly map to output quality
+- Style variants are template-specific and named meaningfully (e.g., "Controversial", "Emotional", "Unhinged" for AITAH)
+- Each variant's `promptModifier` contains expert-crafted instructions that produce distinct, high-quality outputs
+- Reproducibility is high: same seed + template + style variant = consistent quality
+- Variability comes from different seeds and style choices, not random dial positions
 
-**Potential additions**:
-- **Language Complexity** dial: Control reading level
-  - Low (1-3): Simple, direct language (Reels/TikTok - anyone can understand)
-  - Medium (4-7): Standard narrative language
-  - High (8-10): Complex vocabulary, literary style (short story series - focused on reading experience and visualization)
-
-**Rationale for current system**:
-- Granular control over story characteristics
-- Platform-specific optimization (e.g., Reddit AITAH = high realism)
-- Preset-based quick start (presets = dial configurations)
-
-**Implementation** (current):
-```javascript
-const DIALS = {
-  stakes: { label: "Stakes", min: 1, max: 10 },
-  darkness: { label: "Darkness", min: 1, max: 10 },
-  pace: { label: "Pace", min: 1, max: 10 },
-  twist: { label: "Twist Factor", min: 1, max: 10 },
-  realism: { label: "Realism", min: 1, max: 10 },
-  catharsis: { label: "Catharsis", min: 1, max: 10 },
-  moralClarity: { label: "Moral Clarity", min: 1, max: 10 },
+**Implementation**:
+```typescript
+interface StyleVariant {
+  id: string
+  name: string           // User-facing name
+  description: string    // One-line description
+  promptModifier: string // Full style instructions injected into prompt
 }
 
-// Presets are pre-configured dial states
-const PRESETS = [
-  {
-    id: "reddit-aitah",
-    intensity: { stakes: 7, darkness: 5, pace: 6, ... }
-  }
-]
+// Each hero template has 2-3 style variants
+// e.g., AITAH: "Controversial", "Emotional", "Unhinged"
+// e.g., nosleep: "Slow Burn", "Paranoia", "Visceral"
 ```
 
-**Why this matters**: All prompt generation must respect dial settings. If dials change, prompt builders must be updated.
+**Power users** still have access to the full 7-dial system via power user mode. The dials are not removed — they're just hidden for normal users.
 
-**Open question**: Is 7-dimensional control too complex? Consider consolidation or adding platform-specific dials (e.g., language complexity).
+**Anti-patterns**:
+- ❌ Don't add more dials to solve quality problems — add better style variants
+- ❌ Don't randomize style variant selection — explicit user choice enables reproducibility
 
 ---
 
@@ -335,22 +324,53 @@ const PRESETS = [
 
 ---
 
-## Preset-First Workflow
+## Template-First Workflow (Normal Users)
 
-**Decision**: Users start with a preset, then optionally customize (not blank slate).
+**Decision**: Normal users select a **template** before entering a seed. The template drives seed generation, style options, and output quality.
 
 **Rationale**:
-- Faster to start (preset = good defaults)
-- Platform-optimized (Reddit AITAH preset knows what works on Reddit)
-- Discoverable (presets teach users what settings matter)
+- Seeds generated without template context are generic and don't match platform conventions
+- Template-first ensures seeds are platform-aware from the start (e.g., AITAH seeds focus on interpersonal conflicts)
+- Style variants only make sense in the context of a specific template
+- Self-check rubrics and few-shot excerpts are template-specific quality tools
 
-**Flow**:
-1. Select preset (e.g., "Reddit AITAH")
-2. Preset auto-fills: platform, format, intensity dials, word count, tone
-3. User can customize in Advanced Settings
-4. Click Generate
+**Flow** (Normal users):
+1. Select template from categorized gallery (reddit, short-form, long-form, etc.)
+2. Pick a style variant (e.g., "Controversial" for AITAH)
+3. Enter seed manually OR generate platform-aware seeds using template's `seedPrompt`
+4. Generate output (template + style variant + rubric + few-shot all injected into prompt)
+5. Rate & Save
 
-**Anti-pattern**: Don't start with empty form requiring all fields
+**Flow** (Power users):
+1. Enter seed / generate generic dreamscapes (original flow)
+2. Select preset (auto-fills platform, dials, word count, tone)
+3. Customize dials in Advanced Settings
+4. Generate output
+5. Review 3 variants → Rate & Save
+
+**Anti-pattern**: Don't start normal users with empty form or generic seed generation
+
+---
+
+## Template Quality Pipeline: Zero-Cost Quality Layers
+
+**Decision**: Quality improvements are baked into templates via `selfCheckRubric` and `fewShotExcerpt` — injected into the same API call at zero extra cost.
+
+**Rationale**:
+- Self-check rubric adds quality criteria to the prompt (e.g., "Does it maintain the 'this is true' illusion?")
+- Few-shot excerpt provides structural guidance without full examples (saves tokens)
+- Both are template-specific, so they match the platform's conventions
+- No additional API calls — quality comes from better prompts, not more prompts
+
+**Implementation** (`buildPromptFromTemplate`):
+```typescript
+// Style variant's promptModifier → replaces {styleModifier}
+// selfCheckRubric array → joined as numbered list → replaces {selfCheckRubric}
+// fewShotExcerpt string → replaces {fewShotExcerpt}
+// avoidPhrases array → joined → replaces {avoidPhrases}
+```
+
+**Anti-pattern**: ❌ Don't add post-generation validation API calls for quality — fix the prompt instead
 
 ---
 
@@ -493,17 +513,31 @@ New outputs get the full current shape. Old outputs silently fill gaps with defa
 
 ---
 
+## Admin Prompt Editing
+
+**Decision**: Admin/dev users can inspect and edit system + user prompts before generation.
+
+**Rationale**:
+- Enables rapid prompt iteration without code changes
+- Admin prompt editor shows the fully assembled prompt (template + style + rubric + few-shot)
+- Edits are session-only — they don't persist back to template JSON
+
+**Implementation**: Admin prompt editor is visible when `settings.developerMode` is true. Shows two text areas (system prompt, user prompt) that override the template-built prompts for that generation.
+
+---
+
 ## Summary: Key Principles
 
 1. **Feature flags**: Always in Settings, never URL params
 2. **Storage**: Namespace with `sg:*` prefix
 3. **UI**: Follow design system patterns
 4. **Debug tools**: Bottom drawer pattern
-5. **Workflow**: Preset-first, not blank slate
+5. **Workflow**: Template-first for normal users, preset-first for power users
 6. **State**: Zustand + localStorage (Zustand already in use)
-7. **Intensity dials**: Under review, may add language complexity control
+7. **Quality control**: Style variants for normal users, intensity dials for power users
 8. **Library**: Two-tab (Seeds / Content), hook-first cards, multi-select NOT filters
 9. **Lineage**: DAG model, breadcrumb navigation (no graph visualization)
+10. **Quality pipeline**: selfCheckRubric + fewShotExcerpt + styleModifier = zero-cost quality layers
 
 ---
 

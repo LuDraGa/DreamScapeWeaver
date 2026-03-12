@@ -120,6 +120,13 @@ export type TemplateCategory = 'short-form' | 'reddit' | 'long-form' | 'video-pr
 export type CompatibilityLevel = 'perfect' | 'good' | 'maybe'
 export type CompatibilityCheckType = 'any' | 'story-based' | 'conflict-based' | 'opinion-based'
 
+export interface StyleVariant {
+  id: string
+  name: string
+  description: string
+  promptModifier: string
+}
+
 export interface Template {
   id: string
   displayName: string
@@ -141,6 +148,17 @@ export interface Template {
     system: string
     user: string
   }
+  // Template-aware seed generation (optional — falls back to generic if absent)
+  seedPrompt?: {
+    system: string
+    user: string
+  }
+  // Named style variants (2-3 per hero template)
+  styleVariants?: StyleVariant[]
+  // Quality criteria appended to generation prompt
+  selfCheckRubric?: string[]
+  // Condensed structural example for few-shot guidance
+  fewShotExcerpt?: string
   compatibility: {
     perfectMatch: string[]
     goodFit: string[]
@@ -284,6 +302,12 @@ export interface GenerateDreamscapesParams {
   count: number
   vibe?: string
   intensity: IntensityValues
+  // Template-aware seed generation — overrides generic seed prompt
+  seedPrompt?: {
+    system: string
+    user: string
+  }
+  templateId?: string
 }
 
 export interface EnhanceDreamscapeParams {
@@ -305,6 +329,7 @@ export interface GenerateOutputsParams {
   dialState: DialState
   systemPromptOverride?: string
   userPromptOverride?: string
+  styleVariantId?: string
 }
 
 // Auth types

@@ -5,7 +5,7 @@
   "icon": "😈",
   "description": "Satisfying payback stories that hook viewers in the first 3 seconds",
   "duration": "30-60s",
-  "wordCount": 125,
+  "wordCount": 150,
   "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
   "settings": {
     "tone": "narrative",
@@ -25,12 +25,46 @@
       "wait for it",
       "you won't believe what happened next",
       "watch till the end",
-      "that's when things got interesting"
+      "that's when things got interesting",
+      "sweet revenge"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for short-form revenge content optimized for TikTok/Reels. Generate seeds about minor everyday injustices with creative payback potential. The wrongdoing should be specific and relatable — something that would make anyone's blood boil a little. The revenge must be proportional and clever, never violent. NO criminal activity, no workplace harassment, no physical confrontation.",
+    "user": "Generate {count} unique revenge story seeds for short-form video. Each seed should be:\n- A specific, relatable injustice (petty but genuinely annoying)\n- 2-3 sentences describing the situation and the creative payback\n- The revenge should be CLEVER and proportional — not cruel\n- Fast-paced enough for a 30-60 second video\n\nExamples of GOOD seeds: neighbor who keeps stealing your parking spot, someone who cuts in line every day, coworker who takes credit for your work in meetings.\n\nExamples of BAD seeds: anything requiring violence, illegal activity, or disproportionate revenge.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "satisfying",
+      "name": "Satisfying",
+      "description": "Clean payback that fits perfectly — the punishment fits the crime",
+      "promptModifier": "STYLE: SATISFYING\n- The revenge is elegant and perfectly proportional to the crime\n- Use the wrongdoer's own behavior or rules against them\n- Deadpan delivery — the narrator barely acknowledges they did anything\n- The payoff should feel INEVITABLE, like the wrongdoer set up their own demise\n- End with a clean victory line\n- The reader should want to applaud"
+    },
+    {
+      "id": "petty-genius",
+      "name": "Petty Genius",
+      "description": "Impressively creative revenge for a tiny offense",
+      "promptModifier": "STYLE: PETTY GENIUS\n- The offense is hilariously minor\n- The revenge is disproportionately creative and elaborate\n- The narrator is fully aware of how petty they're being and doesn't care\n- Include one detail that shows an absurd amount of effort for a tiny grudge\n- Tone: proud of being petty, zero shame\n- The reader should laugh at the audacity of the planning"
+    },
+    {
+      "id": "karma",
+      "name": "Karma",
+      "description": "The wrongdoer's own actions come back to bite them",
+      "promptModifier": "STYLE: KARMA\n- The narrator doesn't actively do anything — they just SET THE STAGE\n- The wrongdoer's own behavior creates their downfall\n- Include the moment where the narrator realizes they don't even need to act\n- The payoff feels like the universe correcting itself\n- Smug, observational tone — 'I just sat back and watched'\n- End with the wrongdoer facing consequences they built themselves"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does the hook grab attention in the first line? (state the injustice immediately)",
+    "Is the revenge creative and proportional? (clever, not cruel)",
+    "Is the payoff genuinely satisfying? Would someone share this?",
+    "Is it 125-175 words?",
+    "Does the pacing move FAST? (short sentences, quick escalation)",
+    "Does it avoid ALL listed avoid-phrases?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: '[The injustice, stated in one punchy line.]'\n→ 'I tried being nice. [Brief failed attempt.]'\n→ 'So I got creative.' OR 'Fine. Game on.'\n→ [The revenge — what the narrator did, described with deadpan precision]\n→ [The payoff — wrongdoer's reaction]\n→ [Smug one-liner closing]\n\nKey beats: immediate hook, failed niceness, creative payback, satisfying payoff, deadpan delivery throughout.",
   "promptTemplate": {
-    "system": "You are a viral TikTok/Reels scriptwriter specializing in revenge stories that maximize engagement and shareability. Your scripts hook viewers in the first 3 seconds and deliver satisfying payback.",
-    "user": "Create a 30-60 second short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Open with a HOOK in the first 3 seconds (the injustice/wrongdoing)\n- Build tension quickly\n- Deliver satisfying, creative payback\n- End with a punchline or twist\n- Write in deadpan, slightly sarcastic narrative tone\n- 125 words maximum\n- Use first-person POV\n- Include natural pauses for dramatic effect (use ... or line breaks)\n- Format: [HOOK] → [BUILDUP] → [PAYBACK] → [PUNCHLINE]\n\nOptimize for:\n- Watch-through rate (keep them watching to the end)\n- Shareability (satisfying enough to send to friends)\n- Comment engagement (make people debate the revenge)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "You are an expert short-form scriptwriter specializing in satisfying revenge stories. Your scripts hook in 3 seconds, deliver creative payback, and leave viewers wanting to share. Deadpan delivery is your signature.",
+    "user": "Create a 30-60 second revenge short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Hook (the injustice — one punchy line)\n2. Failed attempt (tried being nice)\n3. The plan (got creative)\n4. Execution (the revenge in action)\n5. Payoff (reaction + resolution)\n\nRULES:\n- 150 words maximum\n- First-person, deadpan narrative tone\n- State the injustice IMMEDIATELY — no buildup to the problem\n- Short sentences, fast pacing\n- The revenge must be clever, not violent\n- End with a satisfying punchline\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": ["revenge", "payback", "justice", "karma", "got back at"],
@@ -38,5 +72,5 @@
     "checkType": "conflict-based",
     "dreamscapeTypes": ["conflict", "revenge", "injustice"]
   },
-  "exampleOutput": "So my coworker kept stealing my lunch from the break room fridge.\n\nEvery. Single. Day.\n\nI asked nicely. I left notes. Nothing worked.\n\nSo I made a \"special\" sandwich...\n\nLoaded it with Carolina Reaper hot sauce. Extra spicy mayo. The works.\n\nNext day? I hear screaming from the break room.\n\nHe never touched my lunch again.\n\nAnd HR had some questions about why he was crying at his desk."
+  "exampleOutput": "So my coworker kept stealing my lunch from the break room fridge.\n\nEvery. Single. Day.\n\nI asked nicely. I left notes. Nothing worked.\n\nSo I made a \"special\" sandwich.\n\nLoaded it with Carolina Reaper hot sauce. Extra spicy mayo. The works.\n\nLabeled it clearly: MY LUNCH. DO NOT EAT.\n\nNext day? I hear screaming from the break room.\n\nHe's chugging milk straight from the carton. Face red. Eyes watering.\n\nHe looks at me. I look at him.\n\nI shrug. \"I like spicy food.\"\n\nHe never touched my lunch again.\n\nAnd I started bringing normal sandwiches.\n\nBut he doesn't know that."
 }

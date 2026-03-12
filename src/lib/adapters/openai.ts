@@ -215,12 +215,22 @@ function adjustIntensity(
 
 /**
  * Generate story seed ideas (Dreamscapes)
+ * When seedPrompt is provided (template-aware mode), uses template-specific prompts
+ * instead of the generic seed generation prompt.
  */
 export async function generateDreamscapes(
   params: GenerateDreamscapesParams
 ): Promise<Dreamscape[]> {
   try {
-    const systemPrompt = `You are a creative story idea generator. Generate compelling, original story premises that:
+    // Template-aware seed generation: use template's seedPrompt if provided
+    let systemPrompt: string
+    let userPrompt: string
+
+    if (params.seedPrompt) {
+      systemPrompt = params.seedPrompt.system
+      userPrompt = params.seedPrompt.user.replace('{count}', String(params.count))
+    } else {
+      systemPrompt = `You are a creative story idea generator. Generate compelling, original story premises that:
 - Are 1-2 sentences long
 - Have clear conflict or intrigue
 - Include a twist or unexpected element
@@ -228,10 +238,12 @@ export async function generateDreamscapes(
 - Feel fresh and engaging
 
 ${params.vibe ? `Match this vibe: ${params.vibe}` : 'Generate diverse, creative premises across different genres and tones'}`
+      userPrompt = `Generate ${params.count} unique story seed ideas.`
+    }
 
     const messages = [
       { role: 'system' as const, content: systemPrompt },
-      { role: 'user' as const, content: `Generate ${params.count} unique story seed ideas.` },
+      { role: 'user' as const, content: userPrompt },
     ]
 
     const lt = startLangfuseGeneration('seed-generation', messages, { temperature: 0.9 }, {

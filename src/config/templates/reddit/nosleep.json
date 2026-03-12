@@ -25,12 +25,48 @@
       "that's when things got interesting",
       "this will probably get buried",
       "I know this sounds crazy but",
-      "you won't believe this"
+      "you won't believe this",
+      "needless to say",
+      "a chill ran down my spine"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for r/nosleep horror content. Generate realistic horror premises grounded in everyday settings — apartments, workplaces, family homes, roads, hospitals, hotels. The horror comes from something WRONG in a normal place. Focus on creeping dread, not jump scares. NO obvious supernatural setups (no 'I found a haunted doll'). The seed should describe a mundane situation where one detail is deeply unsettling.",
+    "user": "Generate {count} unique r/nosleep story seeds. Each seed should be:\n- A realistic horror premise grounded in an everyday setting\n- 2-3 sentences describing a normal situation with one deeply wrong detail\n- The horror should be IMPLIED, not stated outright\n- The reader should feel uneasy just reading the seed\n\nExamples of GOOD seed topics: noticing your apartment layout doesn't match the floor plan, finding security camera footage of yourself sleeping in poses you don't remember, a new coworker who knows details about your life they shouldn't.\n\nExamples of BAD seed topics: haunted dolls, zombie outbreaks, demon summoning, anything with 'ancient curse.'\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "slow-burn",
+      "name": "Slow Burn",
+      "description": "Creeping dread — nothing obviously wrong until it's too late",
+      "promptModifier": "STYLE: SLOW BURN\n- Start completely normal — the reader should feel safe for the first few paragraphs\n- Introduce wrongness gradually through tiny details that accumulate\n- Each new detail is individually dismissible but collectively terrifying\n- The narrator rationalizes each sign away (reader sees the truth before narrator does)\n- The moment of realization should hit like a wall\n- End without resolution — the horror is ongoing"
+    },
+    {
+      "id": "paranoia",
+      "name": "Paranoia",
+      "description": "Can't trust their own perception — reader questions reality",
+      "promptModifier": "STYLE: PARANOIA\n- The narrator can't trust their own memory, perception, or sanity\n- Include moments where the narrator questions if they're imagining things\n- Other people don't notice what the narrator notices (or do they?)\n- Plant details that could be explained rationally OR supernaturally\n- The reader should be genuinely unsure if the narrator is right or losing it\n- End ambiguously — is the horror real, or is the narrator the horror?"
+    },
+    {
+      "id": "visceral",
+      "name": "Visceral",
+      "description": "Physical threat, body horror, immediate danger",
+      "promptModifier": "STYLE: VISCERAL\n- The horror is physical and immediate — something is WRONG with the body or environment\n- Include sensory details that make the reader uncomfortable (sounds, textures, smells)\n- The threat escalates from unsettling to dangerous quickly\n- The narrator is trapped or can't escape\n- Body horror elements: things that shouldn't be there, things that have changed\n- End with the threat still present and closing in"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does it maintain the 'this is true' illusion throughout? (r/nosleep's golden rule)",
+    "Is the atmosphere genuinely unsettling? Would someone feel uneasy reading this alone at night?",
+    "Does it build dread gradually rather than relying on jump scares?",
+    "Is it 1000-2000 words?",
+    "Does it avoid explaining too much? (the unknown is scarier than the known)",
+    "Does it end with unresolved horror? (no tidy resolution)",
+    "Does it sound like a real person recounting a real experience?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'I need to write this down while I still remember. Something is wrong with [mundane thing].'\n→ [Normal life established — specific, grounding details about apartment/job/routine]\n→ [First sign — easily dismissed. 'I figured it was just...']\n→ [Second sign — harder to dismiss. 'That's when I started paying attention.']\n→ [Pattern emerges — these aren't coincidences]\n→ [Escalation — the wrongness becomes active/threatening]\n→ [Horror revealed — the implication of what's actually happening]\n→ [Unresolved ending — the situation is ongoing, narrator is unsafe]\n\nKey beats: mundane normalcy, first crack, escalating wrongness, horrifying implication, no resolution.",
   "promptTemplate": {
-    "system": "You are an expert writer for r/nosleep, specializing in atmospheric first-person horror that treats everything as absolutely true. Your stories build creeping dread through realistic details and leave readers disturbed.",
-    "user": "Create a 1500-word r/nosleep story based on this story seed:\n\n{dreamscape}\n\nIMPORTANT - HANDLING MULTIPLE FRAGMENTS:\nIf the seed above contains multiple [Fragment] sections, weave them into ONE cohesive horror narrative. Connect all fragments chronologically, filling gaps to create smooth flow. If the complete story would exceed 2000 words, create PART 1 and indicate where PART 2 continues.\n\nREQUIREMENTS:\n- Write as if EVERYTHING IS TRUE (r/nosleep's golden rule)\n- Use first-person, present or recent past tense\n- Build ATMOSPHERE with specific, realistic details\n- Create CREEPING DREAD (slow escalation of wrongness)\n- Include UNEXPLAINED ELEMENTS (don't over-explain)\n- End with UNRESOLVED HORROR or disturbing implication\n- 1500 words maximum\n- Make it feel like a real person's account\n- Include mundane details that make horror feel real\n- Format: [NORMAL SITUATION] → [FIRST SIGN] → [ESCALATION] → [HORROR REVEALED] → [UNRESOLVED ENDING]\n\nOptimize for:\n- Atmosphere (make them feel uneasy)\n- Believability (could this be real?)\n- Lingering dread (they think about it later)\n\nSPECIAL RULES:\n- Maximum darkness (10) - genuinely scary\n- Low catharsis (2) - no comforting resolution\n- Moderate realism (7) - realistic enough to believe\n- NEVER break the \"this is true\" illusion\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
+    "system": "You are an expert writer for r/nosleep, specializing in atmospheric first-person horror that treats everything as absolutely true. Your stories build creeping dread through realistic details and leave readers genuinely disturbed. You never break the illusion that this is a real account.",
+    "user": "Create a 1000-2000 word r/nosleep story based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Normal situation (establish reality with specific, mundane details)\n2. First sign (something off, easily rationalized)\n3. Second sign (pattern emerging, harder to dismiss)\n4. Escalation (the wrongness becomes active)\n5. Horror revealed (the terrifying implication)\n6. Unresolved ending (situation ongoing, no comfort)\n\nRULES:\n- Everything is TRUE — never break the illusion\n- First-person, present or recent past tense\n- Build atmosphere through specific, realistic details\n- Create dread through implication, not gore\n- Include mundane details that make the horror feel real\n- Do NOT over-explain — the unknown is scarier\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
   },
   "compatibility": {
     "perfectMatch": ["horror", "creepy", "terrifying", "haunted", "stalker", "disappeared"],

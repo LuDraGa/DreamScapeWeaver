@@ -216,9 +216,28 @@ export function sortTemplatesByCompatibility(
 }
 
 /**
- * Build prompt from template and dreamscape
+ * Get the default style variant for a template
  */
-export function buildPromptFromTemplate(template: Template, dreamscape: Dreamscape): {
+export function getDefaultStyleVariant(template: Template): string | undefined {
+  return template.styleVariants?.[0]?.id
+}
+
+/**
+ * Get a specific style variant by ID
+ */
+export function getStyleVariant(template: Template, variantId: string) {
+  return template.styleVariants?.find((v) => v.id === variantId)
+}
+
+/**
+ * Build prompt from template and dreamscape
+ * Optionally applies a style variant's prompt modifier and self-check rubric
+ */
+export function buildPromptFromTemplate(
+  template: Template,
+  dreamscape: Dreamscape,
+  styleVariantId?: string,
+): {
   systemPrompt: string
   userPrompt: string
 } {
@@ -241,10 +260,27 @@ The story seed above contains ${dreamscape.chunks.length} [Fragment] sections. Y
 - DO NOT treat fragments as separate stories - they are pieces of ONE story\n`
       : ''
 
+  // Resolve style variant prompt modifier
+  const styleVariant = styleVariantId
+    ? template.styleVariants?.find((v) => v.id === styleVariantId)
+    : template.styleVariants?.[0] // default to first variant
+  const styleModifierText = styleVariant?.promptModifier || ''
+
+  // Build self-check rubric text
+  const rubricText = template.selfCheckRubric?.length
+    ? `\nBefore outputting, verify your post passes ALL of these:\n${template.selfCheckRubric.map((r) => `□ ${r}`).join('\n')}\n`
+    : ''
+
+  // Build few-shot excerpt text
+  const fewShotText = template.fewShotExcerpt || ''
+
   // Replace variables in user prompt
   let userPrompt = template.promptTemplate.user
   userPrompt = userPrompt.replace('{dreamscape}', dreamscapeText + fragmentStitchingInstructions)
   userPrompt = userPrompt.replace('{avoidPhrases}', template.settings.avoidPhrases.join(', '))
+  userPrompt = userPrompt.replace('{styleModifier}', styleModifierText)
+  userPrompt = userPrompt.replace('{selfCheckRubric}', rubricText)
+  userPrompt = userPrompt.replace('{fewShotExcerpt}', fewShotText)
 
   return {
     systemPrompt: template.promptTemplate.system,

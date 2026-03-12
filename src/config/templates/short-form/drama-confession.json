@@ -24,12 +24,46 @@
       "wait for it",
       "you won't believe",
       "watch till the end",
-      "keep watching"
+      "keep watching",
+      "this is so hard to say"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for emotional confession/drama short-form content. Generate seeds about real human vulnerabilities — regrets, hidden truths, relationship fractures, quiet sacrifices, moments of shame or grace. The confession should feel like something someone has carried for a long time. NO melodrama, no celebrity fantasies, no over-the-top tragedy. Grounded in real life.",
+    "user": "Generate {count} unique drama/confession story seeds for short-form video. Each seed should be:\n- A specific emotional truth or secret someone has been carrying\n- 2-3 sentences describing the confession and its emotional weight\n- Grounded in everyday relationships (friends, family, partners, coworkers)\n- The confession should make the reader pause and FEEL something\n\nExamples of GOOD seeds: realizing you were the toxic one in a friendship, a promise you broke that still haunts you, the moment you stopped trying to fix a relationship, a sacrifice nobody knows about.\n\nExamples of BAD seeds: celebrity encounters, lottery wins, anything requiring supernatural elements.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "raw",
+      "name": "Raw",
+      "description": "Unfiltered honesty — no softening, no excuses",
+      "promptModifier": "STYLE: RAW\n- No sugar-coating, no self-pity, no excuses\n- State the confession plainly and let it land\n- Short, declarative sentences — each one hits harder\n- The narrator doesn't ask for sympathy — they're just telling the truth\n- Leave space between emotional beats (implied pauses)\n- End without resolution — the weight is still there"
+    },
+    {
+      "id": "bittersweet",
+      "name": "Bittersweet",
+      "description": "Pain mixed with tenderness — beautiful and sad",
+      "promptModifier": "STYLE: BITTERSWEET\n- The confession carries both love and loss simultaneously\n- Include a detail that shows deep care alongside the pain\n- The beauty makes the sadness hit harder\n- Gentle, almost quiet delivery — like telling someone softly\n- End with a line that is both comforting and devastating\n- The reader should feel a lump in their throat, not tears"
+    },
+    {
+      "id": "gut-punch",
+      "name": "Gut Punch",
+      "description": "Builds normally then devastates with the reveal",
+      "promptModifier": "STYLE: GUT PUNCH\n- Start seemingly normal — even light or positive\n- Build a picture the reader thinks they understand\n- The confession reframes EVERYTHING in the final lines\n- The reveal should physically wind the reader\n- One detail planted early should take on new meaning after the reveal\n- End immediately after the punch — no explanation, no softening"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does the confession feel genuinely vulnerable? Would someone hesitate before sharing this?",
+    "Is the emotional weight specific, not generic? (specific detail > vague sadness)",
+    "Does it use SHORT sentences and line breaks for dramatic pacing?",
+    "Is it 150-200 words?",
+    "Does it sound like a real person speaking, not a writer writing?",
+    "Does it avoid ALL listed avoid-phrases?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'I need to confess something.' OR a specific detail that implies the confession.\n→ [The context — who, what relationship, when]\n→ [The weight — what happened, what was said or not said]\n→ [The detail that makes it real — a specific object, text, moment]\n→ [The emotional truth — what it means, what it cost]\n→ [The landing — unresolved, lingering, or quietly devastating]\n\nKey beats: vulnerability without self-pity, specific over generic, pauses between lines, no neat resolution.",
   "promptTemplate": {
-    "system": "You are a viral short-form video scriptwriter who specializes in emotionally vulnerable, intimate storytelling. Your scripts create deep connection through honest, raw confessions.",
-    "user": "Create a 60-90 second drama/confession short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with EMOTIONAL HOOK (vulnerable admission)\n- Build with RAW HONESTY (no sugar-coating)\n- Include INTERNAL CONFLICT (complexity, not simple)\n- End with CATHARTIC RESOLUTION or lingering question\n- Write in intimate, first-person confessional tone\n- 175 words maximum\n- Use emotional beats and pauses\n- Make it feel like a secret being shared\n- Format: [CONFESSION] → [BACKSTORY] → [CONFLICT] → [RESOLUTION/QUESTION]\n\nOptimize for:\n- Emotional resonance (make them feel deeply)\n- Comment engagement (people sharing their stories)\n- Vulnerability (authentic connection)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "You are an expert short-form scriptwriter specializing in emotionally vulnerable, intimate confession content. Your scripts create deep connection through honest, raw storytelling. Every line earns its place.",
+    "user": "Create a 60-90 second drama/confession short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Emotional hook (vulnerable admission or specific detail)\n2. Context (brief — who, what relationship)\n3. The confession (raw honesty, no sugar-coating)\n4. The specific detail (makes it real and unforgettable)\n5. The landing (unresolved or quietly devastating)\n\nRULES:\n- 175 words maximum\n- First-person, intimate tone\n- Short sentences, line breaks for pacing\n- Specific details over generic emotions\n- NO melodrama — understatement is more powerful\n- Each line should earn its place\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": ["confession", "secret", "never told anyone", "truth is", "admit"],

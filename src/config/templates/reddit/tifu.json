@@ -4,8 +4,8 @@
   "category": "reddit",
   "icon": "🤦",
   "description": "Today I F***ed Up - Funny failure stories with escalating chaos",
-  "duration": "90s narration",
-  "wordCount": 300,
+  "duration": "3-4min read",
+  "wordCount": 500,
   "platforms": ["reddit"],
   "subreddit": "tifu",
   "settings": {
@@ -25,12 +25,48 @@
       "that's when things got interesting",
       "this will probably get buried",
       "obligatory not today",
-      "edit: thanks for the gold"
+      "edit: thanks for the gold",
+      "needless to say",
+      "fast forward to"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for r/TIFU (Today I F***ed Up) content. Generate realistic, relatable mistake scenarios where a small error snowballs into an embarrassing disaster. Seeds must be grounded in everyday life — cooking failures, social blunders, workplace mistakes, misunderstandings, tech fails. NO fantasy or sci-fi. Every seed should make the reader think 'I could totally do that.'",
+    "user": "Generate {count} unique r/TIFU story seeds. Each seed should be:\n- A realistic mistake that escalates hilariously (could happen to anyone)\n- 2-3 sentences describing the initial mistake and the escalation\n- Include a specific, relatable context (workplace, date, family event, etc.)\n- The mistake should be SMALL but the consequences absurd\n\nExamples of GOOD seed topics: accidentally replying-all with a rant about the boss, confusing salt for sugar while cooking for in-laws, wearing the wrong outfit to a formal event, sending a text to the wrong person.\n\nExamples of BAD seed topics: hacking a computer system, time travel accidents, anything involving celebrities.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "classic",
+      "name": "Classic",
+      "description": "Standard escalating disaster with self-deprecating humor",
+      "promptModifier": "STYLE: CLASSIC TIFU\n- Each step makes it worse in a way that's both logical and absurd\n- The narrator is self-aware about how dumb their decisions were\n- Include at least 3 escalation beats (mistake → worse → disaster)\n- Deadpan delivery of increasingly ridiculous consequences\n- End with a TL;DR that summarizes the absurdity in one sentence"
+    },
+    {
+      "id": "wholesome",
+      "name": "Wholesome",
+      "description": "The f-up leads to something unexpectedly good",
+      "promptModifier": "STYLE: WHOLESOME TIFU\n- Start with a genuine mistake and real embarrassment\n- The escalation goes wrong in typical TIFU fashion\n- BUT the resolution reveals an unexpectedly positive outcome\n- The f-up accidentally led to something good (new friendship, funny memory, solved a problem)\n- Tone: self-deprecating but warm, readers should smile at the end"
+    },
+    {
+      "id": "cringe",
+      "name": "Cringe",
+      "description": "Maximum second-hand embarrassment",
+      "promptModifier": "STYLE: MAXIMUM CRINGE\n- The reader should physically wince while reading\n- Include social situations where escape is impossible\n- The narrator realizes their mistake in real-time but can't stop it\n- Other people's reactions make it worse (silence, staring, awkward laughter)\n- The embarrassment is specific and visceral, not abstract\n- Include one detail that makes the reader say 'oh no' out loud"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does it start with TIFU format? ('TIFU by...' or 'So this happened...')",
+    "Is there clear escalation? (small mistake → bigger mistake → disaster)",
+    "Is it actually funny? Would someone laugh out loud reading this?",
+    "Is it 400-700 words?",
+    "Does it sound like a real person telling a story? (casual voice, contractions, self-deprecation)",
+    "Does it end with a TL;DR?",
+    "Does it avoid ALL listed avoid-phrases?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'TIFU by trying to [mundane action] and accidentally [consequence].'\n→ 'So some context: [brief setup — who, where, why]'\n→ 'First mistake: [the small error that started it all]'\n→ 'Second mistake: [the escalation — trying to fix it makes it worse]'\n→ 'Third mistake: [the disaster — everything goes wrong]'\n→ 'The aftermath: [consequences, reactions from others]'\n→ 'TL;DR: [one sentence that captures the absurdity]'\n\nKey beats: relatable setup, escalating chaos, self-aware humor, specific embarrassing details.",
   "promptTemplate": {
-    "system": "You are an expert writer for r/TIFU, specializing in self-deprecating, humorous stories where small mistakes snowball into hilarious disasters.",
-    "user": "Create a 300-word r/TIFU post based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- MUST start with \"TIFU by [action]...\" or \"So this actually happened [timeframe] ago...\"\n- Write in self-deprecating, humorous first-person tone\n- Show ESCALATION (small mistake → bigger mistake → disaster)\n- Include specific, embarrassing details\n- End with consequences/aftermath\n- 300 words maximum\n- Make it relatable but absurd\n- Use casual language, contractions\n- Format: [SETUP] → [INITIAL MISTAKE] → [ESCALATION] → [DISASTER] → [AFTERMATH]\n\nOptimize for:\n- Humor (make readers laugh out loud)\n- Relatability (\"I would do this too\")\n- Escalation (each step makes it worse)\n\nSPECIAL RULES:\n- Low darkness (3) - keep it funny, not traumatic\n- High realism (8) - could actually happen\n- Self-aware humor throughout\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+    "system": "You are an expert writer for r/TIFU, specializing in self-deprecating, humorous stories where small mistakes snowball into hilarious disasters. Your posts are indistinguishable from real Reddit posts — casual first-person voice, natural humor, specific embarrassing details.",
+    "user": "Create a 400-700 word r/TIFU post based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. TIFU opening line (the hook)\n2. Context (brief setup — who, where, situation)\n3. The initial mistake (small, relatable)\n4. Escalation beats (2-3 steps of things getting worse)\n5. The disaster (peak absurdity)\n6. Aftermath (consequences, other people's reactions)\n7. TL;DR (one sentence)\n\nRULES:\n- Write in self-deprecating, humorous first-person tone\n- Show ESCALATION — each step makes it worse\n- Include specific, embarrassing details\n- Use casual language, contractions, natural humor\n- Make it relatable but absurd\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
   },
   "compatibility": {
     "perfectMatch": ["mistake", "messed up", "embarrassing", "failed", "went wrong"],

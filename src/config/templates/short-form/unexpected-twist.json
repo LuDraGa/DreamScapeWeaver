@@ -4,8 +4,8 @@
   "category": "short-form",
   "icon": "🎭",
   "description": "Stories with surprising endings that make viewers rewatch immediately",
-  "duration": "30-45s",
-  "wordCount": 100,
+  "duration": "30-60s",
+  "wordCount": 120,
   "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
   "settings": {
     "tone": "narrative",
@@ -25,12 +25,46 @@
       "wait for it",
       "you won't believe",
       "watch till the end",
-      "then I realized"
+      "then I realized",
+      "but here's the thing"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for twist-ending short-form content. Generate seeds where a seemingly obvious narrative gets completely reframed by a reveal. The twist must be EARNED — not random. Seeds should set up a clear assumption the audience will make, then shatter it. NO sci-fi, no supernatural, no dream-sequence copouts. Real situations, real twists.",
+    "user": "Generate {count} unique twist-ending story seeds for short-form video. Each seed should be:\n- A setup that leads the audience to one obvious conclusion\n- 2-3 sentences describing the scenario and hinting at the misdirection\n- The twist should reframe the ENTIRE story, not just add a surprise\n- Grounded in real relationships and situations\n\nExamples of GOOD twists: the person being followed is actually a worried parent, the 'cheating' partner is planning a surprise, the villain of the story turns out to be the narrator.\n\nExamples of BAD twists: it was all a dream, aliens, time travel, random coincidence.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "rewatch-bait",
+      "name": "Rewatch Bait",
+      "description": "Clues hidden in plain sight — viewers MUST rewatch",
+      "promptModifier": "STYLE: REWATCH BAIT\n- Plant 2-3 specific details early that seem innocent but are actually clues\n- Each clue should be noticeable on rewatch but invisible on first watch\n- The twist recontextualizes these details — the viewer sees a different story the second time\n- Use specific word choices that have double meanings\n- The final line should make the viewer immediately want to go back to the beginning\n- Reward the attentive viewer"
+    },
+    {
+      "id": "dark",
+      "name": "Dark",
+      "description": "The twist reveals something disturbing underneath",
+      "promptModifier": "STYLE: DARK TWIST\n- The setup feels normal, even warm or positive\n- The twist reveals something unsettling underneath the normalcy\n- The darkness comes from implication, not from graphic content\n- After the twist, the reader can't un-see the horror in the setup\n- End immediately after the reveal — let the darkness settle\n- The scariest part should be what the reader infers, not what's stated"
+    },
+    {
+      "id": "wholesome",
+      "name": "Wholesome",
+      "description": "Setup seems bad but the twist is unexpectedly heartwarming",
+      "promptModifier": "STYLE: WHOLESOME TWIST\n- Start with a setup that feels suspicious, sad, or concerning\n- Build tension — the audience expects the worst\n- The twist reveals the situation was actually beautiful all along\n- The reveal should make the reader smile or tear up\n- The contrast between expected darkness and actual warmth IS the payoff\n- End with one final detail that makes it even more touching"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does the twist REFRAME the entire story, not just surprise at the end?",
+    "Would a viewer immediately want to rewatch after the reveal?",
+    "Is the twist earned? (planted clues, not random)",
+    "Is it 100-150 words?",
+    "Does the setup convincingly lead to the wrong conclusion?",
+    "Does it avoid ALL listed avoid-phrases?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: [Normal-seeming situation described casually]\n→ [Detail 1 — seems innocent, is actually a clue]\n→ [Building the false narrative — audience assumes X]\n→ [Detail 2 — reinforces false assumption]\n→ [The moment — reveal approaches]\n→ [TWIST — reframes everything. One line that changes the whole story.]\n→ [Optional: one more line that drives it home]\n\nKey beats: convincing false narrative, hidden-in-plain-sight clues, single-moment reframe, immediate rewatchability.",
   "promptTemplate": {
-    "system": "You are a viral short-form video scriptwriter who specializes in misdirection and shocking plot twists. Your scripts set up one expectation then completely subvert it in the final seconds.",
-    "user": "Create a 30-45 second twist ending short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with SETUP (establish false narrative)\n- Use MISDIRECTION (lead viewer to wrong conclusion)\n- Plant SUBTLE CLUES (rewatchability factor)\n- End with SHOCKING TWIST (reframe everything)\n- Write in casual, conversational narrative\n- 100 words maximum\n- Use first-person POV\n- Make twist feel earned, not random\n- Format: [SETUP] → [MISDIRECTION] → [SUBTLE HINTS] → [TWIST]\n\nOptimize for:\n- Rewatchability (make them watch again to catch clues)\n- \"Wait, what?\" reactions\n- Comment debates and theories\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "You are an expert short-form scriptwriter specializing in misdirection and twist endings. Your scripts set up one narrative then completely reframe it in the final moments. Every detail serves the twist.",
+    "user": "Create a 30-60 second twist-ending short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Setup (establish the false narrative convincingly)\n2. Misdirection (lead audience to the wrong conclusion)\n3. Planted clues (details that take on new meaning after the twist)\n4. The twist (one moment that reframes everything)\n5. Landing (optional — one more line for impact)\n\nRULES:\n- 120 words maximum\n- First-person, casual narrative tone\n- The twist must be EARNED, not random\n- Plant at least 1 clue that's only visible on rewatch\n- Short sentences build to the reveal\n- The twist should change the MEANING of the setup\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": ["twist", "surprise", "unexpected", "turns out", "actually"],

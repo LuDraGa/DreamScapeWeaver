@@ -26,12 +26,47 @@
       "like I said",
       "obviously",
       "literally",
-      "wait for it"
+      "wait for it",
+      "so basically"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for YouTube story time content. Generate seeds about compelling personal experiences — life-changing encounters, workplace drama, family revelations, travel disasters, relationship turning points, near-misses. The story must have EMOTIONAL DEPTH and enough complexity for 10-15 minutes of narration. NO fictional premises — these should feel like real experiences someone would share on camera. Focus on stories with clear escalation and emotional payoff.",
+    "user": "Generate {count} unique YouTube story time seeds. Each seed should be:\n- A compelling personal experience with clear emotional arc\n- 3-4 sentences describing the situation, escalation, and emotional stakes\n- Complex enough for 10-15 minutes of detailed narration\n- Have a clear turning point or revelation\n\nExamples of GOOD seeds: discovering a family secret at a reunion, a work trip that went catastrophically wrong, the day you realized your best friend wasn't who you thought, a stranger's act of kindness that changed your perspective.\n\nExamples of BAD seeds: anything requiring specialized knowledge (medical/legal), celebrity encounters, anything that sounds like fiction.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "deep-dive",
+      "name": "Deep Dive",
+      "description": "Rich detail, scene-setting, and internal monologue — immersive storytelling",
+      "promptModifier": "STYLE: DEEP DIVE\n- Extensive scene-setting with sensory details (what things looked like, smelled like, felt like)\n- Include the narrator's internal thoughts and reactions in real-time\n- Slow build — let the reader settle into the world before the tension starts\n- Use dialogue to reveal character, not just advance plot\n- Multiple emotional layers — not just what happened but what it MEANT\n- The reader should feel like they were there"
+    },
+    {
+      "id": "dramatic",
+      "name": "Dramatic",
+      "description": "Tension-driven pacing with cliffhangers between sections",
+      "promptModifier": "STYLE: DRAMATIC\n- Open with the most tense moment, then rewind ('Let me explain how I got here')\n- Each section ends on a mini-cliffhanger that pulls the reader forward\n- Escalating tension — each beat raises the stakes\n- Use short, punchy sentences during high-tension moments\n- Contrast slow emotional beats with rapid action sequences\n- The climax should feel earned after the sustained build"
+    },
+    {
+      "id": "conversational",
+      "name": "Conversational",
+      "description": "Feels like a friend telling you the story over drinks",
+      "promptModifier": "STYLE: CONVERSATIONAL\n- Write like someone talking to a friend, not performing for an audience\n- Include asides, tangents that loop back, and natural humor\n- 'Oh, and I forgot to mention...' type additions that add richness\n- Casual delivery even for serious moments — understated emotion hits harder\n- Include reactions like 'I know, right?' and 'Here's the thing though'\n- The reader should hear a VOICE, not read a script"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does it have a clear emotional arc? (setup → escalation → climax → resolution)",
+    "Is the hook compelling enough to keep someone watching for 10+ minutes?",
+    "Does the dialogue sound like real people talking? (natural, not scripted)",
+    "Is it 1800-2500 words?",
+    "Does it include specific, grounding details that make it feel true?",
+    "Does the story earn its emotional payoff? (buildup matches the resolution)",
+    "Does it avoid ALL listed avoid-phrases?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\n[INTRO - 0:00] Hook — the most compelling moment or question. 'I still think about what happened that day.'\n→ [SETUP - 1:00] Context — who, when, where. Establish the normal before the storm.\n→ [RISING ACTION - 3:00] First sign something is different. Tension begins building.\n→ [ESCALATION - 5:00] Stakes rise. New information changes everything.\n→ [CLIMAX - 8:00] The turning point. The moment everything shifts.\n→ [FALLING ACTION - 10:00] Immediate aftermath. Reactions, realizations.\n→ [RESOLUTION - 12:00] What it means now. How it changed the narrator. Emotional landing.\n\nKey beats: compelling hook, slow context build, escalating tension, earned climax, meaningful resolution. Include chapter timestamps.",
   "promptTemplate": {
-    "system": "You are a YouTube storyteller specializing in personal narratives. Your scripts are detailed, emotionally engaging, and use pacing to build tension and payoff. You focus on vivid details, internal thoughts, and authentic dialogue.",
-    "user": "Create a 10-15 minute YouTube story time script based on this experience:\n\n{dreamscape}\n\nIMPORTANT - HANDLING MULTIPLE FRAGMENTS:\nIf the experience above contains multiple [Fragment] sections:\n- Weave ALL fragments into ONE cohesive, chronological narrative\n- Connect fragments smoothly with transitions and context\n- Fill in logical gaps between fragments to create flow\n- Treat fragments as key story beats, not separate stories\n- If the complete story exceeds 2500 words, create a PART 1 that ends on a cliffhanger, and note where PART 2 should begin\n\nREQUIREMENTS:\n- Hook with the most compelling moment or question\n- Build context slowly (who, when, where)\n- Use detailed scene-setting and sensory details\n- Include internal thoughts and reactions\n- Authentic dialogue (how people actually talk)\n- Build tension through pacing\n- Emotional payoff or insight at the end\n- Add [INTRO], [SETUP], [RISING ACTION], [CLIMAX], [RESOLUTION] markers\n- Chapter timestamps for key moments\n- ~2200 words total (or PART 1 if story is longer)\n- First-person POV, conversational tone\n\nAVOID these phrases: {avoidPhrases}\n\nIf creating a multi-part series, end with:\n[TO BE CONTINUED IN PART 2]\nPART 2 SHOULD START WITH: [brief description of where Part 2 picks up]\n\nWrite the full story script with timestamps and narrative markers."
+    "system": "You are an expert YouTube storyteller specializing in personal narratives. Your scripts are detailed, emotionally engaging, and use pacing to build tension and payoff. You focus on vivid details, internal thoughts, and authentic dialogue. Every story feels true.",
+    "user": "Create a 10-15 minute YouTube story time script based on this experience:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nIMPORTANT - HANDLING MULTIPLE FRAGMENTS:\nIf the experience above contains multiple [Fragment] sections:\n- Weave ALL fragments into ONE cohesive, chronological narrative\n- Connect fragments smoothly with transitions and context\n- Fill in logical gaps between fragments to create flow\n- Treat fragments as key story beats, not separate stories\n- If the complete story exceeds 2500 words, create a PART 1 that ends on a cliffhanger\n\nSTRUCTURE:\n1. [INTRO] Hook with the most compelling moment or question\n2. [SETUP] Build context slowly (who, when, where)\n3. [RISING ACTION] First signs, tension building\n4. [ESCALATION] Stakes rise, new information\n5. [CLIMAX] The turning point\n6. [RESOLUTION] Aftermath, meaning, emotional landing\n\nRULES:\n- ~2200 words total\n- First-person, conversational tone\n- Detailed scene-setting and sensory details\n- Authentic dialogue (how people actually talk)\n- Include internal thoughts and reactions\n- Chapter timestamps for key moments\n- Build tension through pacing, not exposition\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the full story script with timestamps and narrative markers:"
   },
   "compatibility": {
     "perfectMatch": ["happened", "experience", "time when", "remember", "story", "day", "moment"],
@@ -39,5 +74,5 @@
     "checkType": "story-based",
     "dreamscapeTypes": ["personal-narrative", "experience", "memoir", "anecdote"]
   },
-  "exampleOutput": "[INTRO - 0:00]\nI still remember the exact moment I knew something was wrong...\n\n[SETUP - 1:20]\nThis was back in 2019, I was working at...\n\n[Note: Full example output for preview only]"
+  "exampleOutput": "[INTRO - 0:00]\nI still remember the exact moment I knew something was wrong.\n\nIt was a Tuesday. Normal Tuesday. Coffee, commute, cubicle. Nothing about that morning suggested my entire life was about to change.\n\nBut that's how it always works, right? The big moments never announce themselves.\n\n[SETUP - 1:20]\nSo some context. This was back in 2019. I was working at a mid-size marketing agency...\n\n[RISING ACTION - 3:30]\nThe first sign was the email. Sent to the wrong distribution list...\n\n[CLIMAX - 8:00]\nThat's when my manager pulled me into the glass office...\n\n[RESOLUTION - 12:00]\nLooking back, I'm glad it happened. Not because it was easy — it wasn't. But because...\n\n[Note: Full script would be ~2200 words with complete scenes, dialogue, and emotional beats throughout each section]"
 }

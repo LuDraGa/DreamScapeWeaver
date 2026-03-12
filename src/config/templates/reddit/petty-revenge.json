@@ -4,8 +4,8 @@
   "category": "reddit",
   "icon": "😏",
   "description": "Satisfying small-scale revenge stories with creative payback",
-  "duration": "75s narration",
-  "wordCount": 250,
+  "duration": "2-3min read",
+  "wordCount": 400,
   "platforms": ["reddit"],
   "subreddit": "pettyrevenge",
   "settings": {
@@ -25,12 +25,46 @@
       "that's when things got interesting",
       "this will probably get buried",
       "sweet revenge",
-      "karma"
+      "karma",
+      "needless to say"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for r/pettyrevenge content. Generate realistic petty injustice scenarios — annoying neighbors, rude coworkers, inconsiderate roommates, parking space thieves, line cutters. The wrongdoing should be MINOR but PERSISTENT and genuinely annoying. Seeds must suggest creative payback potential. NO violence, no illegal activity, no fantasy.",
+    "user": "Generate {count} unique r/pettyrevenge story seeds. Each seed should be:\n- A realistic, petty injustice (minor but annoying wrongdoing that repeats)\n- 2-3 sentences describing the situation and hinting at creative payback\n- Grounded in everyday settings (workplace, apartment, neighborhood, commute)\n- The wrongdoer should be someone the narrator interacts with regularly\n\nExamples of GOOD seed topics: coworker who steals lunches, neighbor who parks in your spot, roommate who never cleans, someone who always cuts the coffee line.\n\nExamples of BAD seed topics: corporate espionage, supernatural revenge, anything requiring physical confrontation.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "satisfying",
+      "name": "Satisfying",
+      "description": "Clean, clever payback that fits perfectly",
+      "promptModifier": "STYLE: SATISFYING\n- The revenge is elegant and proportional — fits the crime perfectly\n- The payback uses the wrongdoer's own behavior or rules against them\n- The reader should feel genuine satisfaction at the outcome\n- End with a clean victory — the problem is solved\n- Deadpan delivery throughout — the narrator barely acknowledges they did anything"
+    },
+    {
+      "id": "escalating",
+      "name": "Escalating",
+      "description": "Revenge builds step by step, each move bigger",
+      "promptModifier": "STYLE: ESCALATING\n- Start with a mild response, then build with each failed attempt to stop the behavior\n- Each revenge step is slightly more creative/elaborate than the last\n- The wrongdoer keeps pushing, so the narrator keeps escalating\n- The final move is the most satisfying — the culmination of building frustration\n- Include the wrongdoer's increasingly frustrated reactions at each stage"
+    },
+    {
+      "id": "long-game",
+      "name": "Long Game",
+      "description": "Patience pays off — revenge planned over weeks/months",
+      "promptModifier": "STYLE: LONG GAME\n- The narrator endures the injustice patiently while planning\n- Include a moment of 'that's when I decided to play the long game'\n- The setup takes time — days, weeks, or months of preparation\n- The payoff is devastating precisely because of the patience invested\n- The wrongdoer never sees it coming because the narrator was so patient\n- Maximum delayed gratification energy"
+    }
+  ],
+  "selfCheckRubric": [
+    "Is the injustice relatable? (something that would genuinely annoy most people)",
+    "Is the revenge proportional and creative? (petty, not cruel)",
+    "Is the payoff satisfying? Does the reader feel 'they got what they deserved'?",
+    "Is it 300-500 words?",
+    "Does it sound like a real person telling the story? (casual, slightly smug tone)",
+    "Does it avoid ALL listed avoid-phrases?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: '[The injustice, stated plainly]. Every. Single. Day.'\n→ 'I've asked nicely. [Previous attempts to resolve it normally]'\n→ 'So I got creative.' OR 'That's when I had an idea.'\n→ [The revenge plan — what the narrator did]\n→ [The payoff — wrongdoer's reaction, problem solved]\n→ [Smug closing line]\n\nKey beats: clear injustice, failed normal attempts, creative revenge, satisfying payoff, deadpan delivery.",
   "promptTemplate": {
-    "system": "You are an expert writer for r/pettyrevenge, specializing in satisfying small-scale revenge stories where creative payback fits the crime perfectly.",
-    "user": "Create a 250-word r/pettyrevenge post based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Show clear, petty INJUSTICE (minor but annoying wrongdoing)\n- Display creative, proportional REVENGE (fits the crime)\n- Deliver satisfying PAYBACK (reader cheers)\n- End with subtle or overt VICTORY\n- Write in deadpan, slightly smug narrative tone\n- 250 words maximum\n- Use first-person POV\n- Make revenge feel deserved, not cruel\n- Format: [INJUSTICE] → [PLANNING/OPPORTUNITY] → [REVENGE] → [SATISFACTION]\n\nOptimize for:\n- Satisfaction (\"they got what they deserved\")\n- Creativity (clever, not obvious revenge)\n- Proportionality (petty crime = petty revenge)\n\nSPECIAL RULES:\n- Very high catharsis (10) - maximum satisfaction\n- Low stakes (4) - keep it petty, not serious\n- Low darkness (3) - funny, not mean-spirited\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+    "system": "You are an expert writer for r/pettyrevenge, specializing in satisfying small-scale revenge stories where creative payback fits the crime perfectly. Your posts use deadpan delivery and make readers cheer for the narrator.",
+    "user": "Create a 300-500 word r/pettyrevenge post based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. The injustice (what the wrongdoer keeps doing)\n2. Failed normal attempts (asking nicely, leaving notes, etc.)\n3. The plan (how the narrator got creative)\n4. The execution (the revenge in action)\n5. The payoff (wrongdoer's reaction, resolution)\n\nRULES:\n- Deadpan, slightly smug narrative tone\n- The revenge must be PETTY, not serious\n- Show that normal attempts failed first\n- Make the payback creative and proportional\n- First-person, casual Reddit voice\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
   },
   "compatibility": {
     "perfectMatch": ["revenge", "payback", "got back", "served them right", "deserved"],

@@ -2,50 +2,32 @@
 
 ## Running the Application
 
-This is a standalone React file designed for rapid prototyping. Multiple options to run:
+```bash
+pnpm dev      # Start dev server (Next.js 15)
+pnpm build    # Build for production
+pnpm lint     # Lint
+```
 
-### Option 1: Vite (Recommended)
+### Environment Variables
 
 ```bash
-# If you don't have a Vite project yet
-npm create vite@latest . -- --template react
-npm install
+# Required
+OPENAI_API_KEY=sk-...
 
-# Copy or rename the file
-# GenAI Story Generator.jsx → src/App.jsx
-# Or update src/main.jsx to import from the correct file
+# Auth (local dev)
+NEXT_PUBLIC_ENABLE_AUTH=false
+ENABLE_AUTH=false
 
-# Start dev server
-npm run dev
+# Auth (production/Vercel)
+NEXT_PUBLIC_ENABLE_AUTH=true
+ENABLE_AUTH=true
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+
+# Optional
+NEXT_PUBLIC_USE_MOCK_ADAPTER=true  # Use mock adapter instead of OpenAI
 ```
-
-### Option 2: Direct Browser (CDN)
-
-Create an `index.html`:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@19",
-        "react-dom/client": "https://esm.sh/react-dom@19/client"
-      }
-    }
-  </script>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="./GenAI Story Generator.jsx"></script>
-</body>
-</html>
-```
-
-### Option 3: CodeSandbox/StackBlitz
-
-Upload the file directly to online editors for instant preview.
 
 ## Code Style & Conventions
 
@@ -99,193 +81,96 @@ function ComponentName({ props }) {
 
 ## Common Development Tasks
 
-### Adding a New Preset
+### Upgrading a Hero Template
+
+Hero templates include the full quality pipeline. To upgrade a template:
+
+```bash
+# Add JSON file to the appropriate category
+src/config/templates/{category}/{template-name}.json
+```
+
+Required fields for hero templates:
+```json
+{
+  "seedPrompt": {
+    "system": "Platform-specific seed generation system prompt",
+    "user": "Seed generation user prompt with {count} variable"
+  },
+  "styleVariants": [
+    {
+      "id": "variant-id",
+      "name": "Display Name",
+      "description": "One-line description",
+      "promptModifier": "Full style instructions for the LLM"
+    }
+  ],
+  "selfCheckRubric": [
+    "Quality check question 1?",
+    "Quality check question 2?"
+  ],
+  "fewShotExcerpt": "Condensed structural reference (beats, not full examples)",
+  "promptTemplate": {
+    "system": "...",
+    "user": "... {dreamscape} {fewShotExcerpt} {styleModifier} {selfCheckRubric} {avoidPhrases} ..."
+  }
+}
+```
+
+All new fields are optional — non-hero templates still work without them.
+
+### Adding a Preset (Power User Mode)
 
 ```javascript
-// 1. Add to PRESETS array (line 7)
+// Edit src/config/presets.json
 {
   id: "horror-short",
   name: "Horror Short",
-  subtitle: "Creepy vibe",
-  emoji: "👻",
   platform: "reels",
   outputFormat: "reel-script",
   wordCount: 400,
   tone: "narrative",
-  intensity: {
-    stakes: 8,
-    darkness: 9,
-    pace: 7,
-    twist: 8,
-    realism: 5,
-    catharsis: 4,
-    moralClarity: 3
-  }
+  intensity: { stakes: 8, darkness: 9, pace: 7, twist: 8, realism: 5, catharsis: 4, moralClarity: 3 }
 }
-
-// 2. Preset will automatically appear in CreatePage preset grid
-```
-
-### Adding an Enhancement Goal
-
-```javascript
-// 1. Add to ENHANCEMENT_GOALS (line 59)
-{ id: "humor", label: "Add humor", icon: "😂" }
-
-// 2. Update enhanceDreamscape() mock (line 170)
-const suffixes = {
-  vivid: "\n\nThe fluorescent lights hummed...",
-  conflict: "\n\nBut there's a catch...",
-  believable: " (This actually happened...)",
-  stitch: "",
-  "less-ai": "",
-  humor: "\n\nAnd then things got weird. Like, really weird."  // ← Add this
-}
-```
-
-### Adding a Dial
-
-```javascript
-// 1. Add to DIALS object (line 42)
-suspense: { label: "Suspense", min: 1, max: 10 }
-
-// 2. Add to all preset intensity objects
-intensity: {
-  stakes: 7,
-  darkness: 5,
-  // ... existing dials
-  suspense: 6  // ← Add to each preset
-}
-
-// 3. Add slider in CreatePage advanced section (~line 650)
-<Slider
-  label={DIALS.suspense.label}
-  value={dialState.intensity.suspense}
-  onChange={(v) => setDialState(s => ({
-    ...s,
-    intensity: { ...s.intensity, suspense: v }
-  }))}
-  min={DIALS.suspense.min}
-  max={DIALS.suspense.max}
-/>
 ```
 
 ### Adding a Platform
 
 ```javascript
-// 1. Add to PLATFORMS (line 35)
+// Edit src/config/platforms.json
 {
   id: "youtube",
   name: "YouTube",
   metrics: ["views", "likes", "comments", "avgWatchTime"]
 }
-
-// 2. Platform will automatically appear in:
-//    - CreatePage platform selector
-//    - LibraryPage performance tracking
 ```
 
-### Adding a Component
+## Testing Flows
 
-Since this is a single file, add inline:
+### Normal User Flow (Template-First)
+1. Ensure `powerUserMode` is OFF in Settings
+2. Go to Create page
+3. Select a template category (e.g., "reddit")
+4. Select a template (e.g., "r/AITAH")
+5. Pick a style variant (e.g., "Controversial")
+6. Enter a seed or click "Generate Seeds" (should produce platform-specific seeds)
+7. Generate output — verify style variant and rubric affect quality
+8. Rate & Save
 
-```javascript
-// Add after existing components (around line 300)
-function NewComponent({ props }) {
-  return (
-    <div className="rounded-xl p-4"
-      style={{ background: "rgba(15,23,42,0.6)" }}>
-      {/* Component content */}
-    </div>
-  )
-}
+### Power User Flow
+1. Enable `powerUserMode` in Settings
+2. Go to Create page
+3. Enter seed text or generate dreamscapes (generic, not template-aware)
+4. Select preset → auto-fills dials
+5. Generate → verify 3 variants appear
+6. Rate & Save
 
-// Use anywhere in the app
-<NewComponent props={value} />
-```
-
-## Searching the Codebase
-
-Since this is a single file, use simple grep:
-
-```bash
-# Find all state declarations
-grep -n "useState" "GenAI Story Generator.jsx"
-
-# Find specific component
-grep -n "function CreatePage" "GenAI Story Generator.jsx"
-
-# Find all storage operations
-grep -n "localStorage" "GenAI Story Generator.jsx"
-
-# Find preset definitions
-grep -n "PRESETS\|intensity:" "GenAI Story Generator.jsx"
-
-# Find dial usage
-grep -n "dialState.intensity" "GenAI Story Generator.jsx"
-```
-
-### Line Number Reference
-
-```
-7-79:    CONFIG DATA (presets, platforms, dials, etc.)
-85-192:  MOCK API LAYER (generate functions)
-197-202: LOCAL STORAGE (load/save)
-207-232: APP CONTEXT (global state)
-238-297: UI COMPONENTS (icons, buttons, etc.)
-325-814: CreatePage (main workflow)
-815-972: LibraryPage (saved items)
-973-1027: SettingsPage (preferences)
-1029-1101: StoryGeneratorApp (navigation, sidebar)
-```
-
-## Testing in Browser
-
-### Check localStorage
-
-```javascript
-// Open browser console
-
-// Check stored data
-JSON.parse(localStorage.getItem('sg_dreamscapes'))
-JSON.parse(localStorage.getItem('sg_outputs'))
-JSON.parse(localStorage.getItem('sg_settings'))
-
-// Clear all data
-localStorage.clear()
-
-// Set specific value
-localStorage.setItem('sg_settings', JSON.stringify({
-  defaultPreset: "reddit-aitah",
-  avoidPhrases: ["It's worth noting that"],
-  autoAvoidAI: true
-}))
-```
-
-### Test UI Flows
-
-1. **Dreamscape creation**:
-   - Enter text in seed textarea
-   - Click "Continue"
-   - Verify stored in state
-
-2. **Generation**:
-   - Select preset
-   - Click "Generate"
-   - Verify 3 variants appear
-
-3. **Save to Library**:
-   - Rate a variant
-   - Click "Save to Library"
-   - Navigate to Library tab
-   - Verify output appears
-
-4. **Performance tracking**:
-   - Open saved output
-   - Click "Track Performance"
-   - Fill metrics form
-   - Save snapshot
-   - Verify appears in output card
+### Admin Prompt Editing
+1. Enable `developerMode` in Settings
+2. Select template + style variant
+3. Enter seed → prompt editor should show assembled prompt
+4. Verify `{styleModifier}`, `{selfCheckRubric}`, `{fewShotExcerpt}` are replaced
+5. Edit prompts → generate → verify edits took effect
 
 ## Debugging Tips
 

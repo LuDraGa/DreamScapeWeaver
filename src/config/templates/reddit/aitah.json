@@ -4,8 +4,8 @@
   "category": "reddit",
   "icon": "🤔",
   "description": "Am I the A**hole? - Moral dilemma stories that spark debate",
-  "duration": "60s narration",
-  "wordCount": 200,
+  "duration": "3-5min read",
+  "wordCount": 600,
   "platforms": ["reddit"],
   "subreddit": "AITAH",
   "settings": {
@@ -25,18 +25,56 @@
       "that's when things got interesting",
       "unbeknownst to me",
       "this will probably get buried",
-      "obligatory mobile formatting"
+      "obligatory mobile formatting",
+      "a]wave of",
+      "I could feel my heart",
+      "the room fell silent",
+      "needless to say"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for r/AITAH (Am I The A**hole) content. Generate realistic interpersonal conflict scenarios where BOTH sides have genuinely valid points. Seeds must be grounded in everyday life — family disputes, workplace friction, friendship betrayals, relationship boundaries, money conflicts, in-law drama. NO fantasy, sci-fi, or movie-plot scenarios. Every seed should make a reasonable person genuinely unsure who is right.",
+    "user": "Generate {count} unique r/AITAH story seeds. Each seed should be:\n- A realistic interpersonal conflict (could happen to anyone)\n- 2-3 sentences describing the situation and the controversial action\n- Include specific details: ages, relationships, context\n- Both parties must have defensible positions\n- The moral question should be genuinely ambiguous\n\nExamples of GOOD seed topics: refusing to attend a sibling's wedding over a boundary, telling a friend their partner is cheating, choosing career over family event, setting a financial boundary with parents, calling out a friend's parenting.\n\nExamples of BAD seed topics: treasure maps, parallel universes, AI becoming sentient, anything involving celebrities or fantasy elements.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "controversial",
+      "name": "Controversial",
+      "description": "Maximum debate — 50/50 split in comments",
+      "promptModifier": "STYLE: CONTROVERSIAL\n- The poster's action must be defensible from their perspective but genuinely questionable from others'\n- Include at least one detail that makes the poster look bad AND one that justifies them\n- The other party should NOT be a clear villain — they have legitimate grievances too\n- End with genuine uncertainty — the poster should seem conflicted, not defensive\n- Aim for a 50/50 NTA/YTA split in comments — both judgments should feel reasonable\n- Include a detail that will spark heated debate (money, family obligation, cultural norms)"
+    },
+    {
+      "id": "emotional",
+      "name": "Emotional",
+      "description": "Heart-wrenching — readers feel for the poster",
+      "promptModifier": "STYLE: EMOTIONAL\n- The poster is dealing with a genuinely painful situation — grief, betrayal, health, loss\n- The moral question matters because the stakes are deeply personal\n- Include moments of vulnerability — the poster questioning themselves\n- Readers should feel a lump in their throat before reaching the question\n- The 'wrong' action came from a place of pain, not malice\n- Include one specific sensory detail that makes the emotion tangible (a text message, a look, a silence)"
+    },
+    {
+      "id": "unhinged",
+      "name": "Unhinged",
+      "description": "Wild ride — clearly the AH but entertaining",
+      "promptModifier": "STYLE: UNHINGED\n- The poster has done something objectively unreasonable but tells the story with complete conviction\n- The escalation should be darkly funny — each step more absurd than the last\n- Include a moment where most people would have stopped, but the poster doubled down\n- The poster's logic makes internal sense even though it's clearly wrong from outside\n- Tone: deadpan earnestness about an increasingly insane situation\n- Readers should be laughing AND judging simultaneously"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does this read like a real person wrote it? (casual tone, some run-on sentences, parenthetical asides, natural language)",
+    "Are ages and relationship context included in the opening? (e.g., 'I (28F) have been with my husband (31M) for 4 years')",
+    "Is the moral dilemma genuinely ambiguous? Could a reasonable person argue either NTA or YTA?",
+    "Does it follow the structure: Background → Incident → Aftermath → AITAH?",
+    "Is it 400-800 words? (not too short, not too long for the subreddit)",
+    "Does it avoid ALL listed avoid-phrases and obvious AI patterns?",
+    "Would you actually stop scrolling to read this on Reddit?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'I (28F) have been with my husband (31M) for 4 years. His mother has never liked me, but we've kept things civil.'\n→ [2-3 paragraphs of background — relationship history, building tension, specific incidents]\n→ 'Last Saturday at [specific event], [the incident happened]. I [the controversial action].'\n→ [Aftermath — who's upset, who's taking sides, specific reactions]\n→ 'My husband says [one perspective]. His mother is telling the whole family [opposite perspective]. My best friend says [third viewpoint].'\n→ 'I feel [genuine uncertainty]. Part of me thinks [self-doubt]. But also [self-justification]. AITAH?'\n\nKey beats: ground in specifics, show multiple perspectives, end with real uncertainty.",
   "promptTemplate": {
-    "system": "You are an expert writer for r/AITAH (Am I The A**hole), specializing in morally ambiguous conflict stories that generate massive debate in the comments.",
-    "user": "Create a 200-word r/AITAH post based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Follow AITAH structure: Situation → Conflict → Question\n- Write in first-person, conversational tone\n- Make the moral ambiguity CLEAR (both sides have valid points)\n- Include specific, realistic details\n- MUST end with \"So, AITAH?\" or \"AITAH?\"\n- 200 words maximum\n- Make readers genuinely unsure who's right\n- Avoid obvious villains/heroes\n- Use natural language, some casual errors/typos okay\n- Format: [SITUATION SETUP] → [CONFLICT/INCIDENT] → [QUESTION]\n\nOptimize for:\n- Comment engagement (50/50 split in judgment)\n- Realistic scenario (could happen to anyone)\n- Moral complexity (no clear answer)\n\nSPECIAL RULES:\n- Must end with some variation of \"AITAH?\"\n- Keep realism very high (intensity: 9)\n- Moral clarity very low (intensity: 4)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+    "system": "You are an expert writer for r/AITAH (Am I The A**hole). You write morally ambiguous conflict stories that generate massive debate. Your posts are indistinguishable from real Reddit posts — they use casual first-person voice, include specific ages and relationship details, have natural paragraph breaks, and never sound like AI wrote them.",
+    "user": "Create a 400-800 word r/AITAH post based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Opening line with ages and relationship context\n2. Background (2-3 paragraphs — what led up to this)\n3. The Incident (what you did / what happened)\n4. Aftermath (who's mad, who agrees with you, specific reactions)\n5. Your uncertainty (why you're posting — genuine conflict)\n6. End with 'AITAH?' or 'So, AITAH?'\n\nRULES:\n- Write in first-person, casual Reddit voice\n- Include specific, grounding details (ages, timeframes, locations)\n- Show BOTH sides having valid points\n- Use natural language — contractions, run-on sentences, parenthetical asides\n- Paragraph breaks where a real person would pause\n- No TL;DR unless the post exceeds 600 words\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
   },
   "compatibility": {
-    "perfectMatch": ["conflict", "argument", "disagreement", "am I wrong", "fight"],
-    "goodFit": ["family", "relationship", "friends", "workplace", "dilemma"],
+    "perfectMatch": ["conflict", "argument", "disagreement", "am I wrong", "fight", "boundary", "family drama"],
+    "goodFit": ["family", "relationship", "friends", "workplace", "dilemma", "wedding", "money", "in-laws"],
     "checkType": "conflict-based",
     "dreamscapeTypes": ["conflict", "moral-dilemma", "argument"]
   },
-  "exampleOutput": "My (28F) sister (32F) asked me to be her maid of honor. I said yes, but I have one condition - I won't wear the dress she picked.\n\nIt's bright neon pink, super tight, and costs $400. I told her I'm uncomfortable spending that much on something I'll never wear again, and the color genuinely doesn't suit my skin tone.\n\nShe got really upset and said I'm being selfish, that it's HER day and I should just suck it up. I offered to pay for an alternate dress in a similar style/different color, or wear something I already own that matches her theme.\n\nNow she's saying if I won't wear HER choice, I can't be in the wedding at all. My parents are calling me dramatic and saying I should just wear the dress.\n\nBut it's my body and my money? I don't think I'm asking for much.\n\nSo, AITAH?"
+  "exampleOutput": "My (28F) sister (32F) asked me to be her maid of honor. I said yes, but I have one condition - I won't wear the dress she picked.\n\nSo some context. My sister and I have always been close, but she can be... particular. Like, she planned her wedding Pinterest board when she was 19 and hasn't changed a single pin since. I love her but she's intense about this stuff.\n\nThe dress she picked for the bridesmaids is bright neon pink. Like, traffic cone pink. It's skin-tight, floor-length, and costs $400. I tried it on and I genuinely looked terrible — the color washes me out completely and the cut doesn't work for my body type. I'm not being dramatic, my mom saw the photos and physically winced.\n\nI told my sister I'd happily be her maid of honor but could I please wear something in a similar style but different color? I even offered to pay for both dresses so she wouldn't be out anything. I found three alternatives that matched her 'aesthetic' perfectly.\n\nShe lost it. Said I was being 'selfish on HER day' and that the whole bridal party has to match exactly or the photos will be 'ruined.' I pointed out that her other bridesmaid (her college friend) is 5'2\" and I'm 5'10\" — we're not going to match regardless.\n\nThat was apparently the wrong thing to say because now she's uninvited me from the bridal party entirely. Not just demoted — uninvited. She said if I can't support her '100% without conditions' then she doesn't want me up there.\n\nMy parents are split. Dad thinks my sister is overreacting. Mom thinks I should 'just wear the dress and keep the peace' because 'it's only one day.' My sister's fiancé texted me privately saying he thinks the dress is ugly too but he's 'staying out of it.'\n\nThe thing is, I would have just worn it if it was like $100 or even $200. But $400 for something that makes me look and feel awful? When I offered alternatives? I don't think that's unreasonable.\n\nBut maybe I'm wrong. Maybe you do just suck it up for your sister's wedding regardless. I keep going back and forth.\n\nAITAH?"
 }

@@ -35,7 +35,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const params: GenerateDreamscapesParams = await request.json()
+    const body = await request.json()
+    const params: GenerateDreamscapesParams = {
+      count: body.count,
+      vibe: body.vibe,
+      intensity: body.intensity,
+      seedPrompt: body.seedPrompt,
+      templateId: body.templateId,
+    }
 
     // Use mock adapter if flag is set, otherwise OpenAI
     const adapter = env.features.useMockAdapter ? mockAdapter : openaiAdapter

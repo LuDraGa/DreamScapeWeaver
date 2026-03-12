@@ -4,8 +4,8 @@
   "category": "short-form",
   "icon": "👻",
   "description": "Quick horror stories with unsettling twists that viewers will rewatch",
-  "duration": "30-45s",
-  "wordCount": 100,
+  "duration": "30-60s",
+  "wordCount": 120,
   "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
   "settings": {
     "tone": "narrative",
@@ -25,12 +25,46 @@
       "wait for it",
       "you won't believe",
       "watch till the end",
-      "scary"
+      "scary",
+      "a chill ran down my spine"
     ]
   },
+  "seedPrompt": {
+    "system": "You are a story seed generator for short-form horror content optimized for TikTok/Reels. Generate seeds about creepy situations in mundane settings — apartments, bedrooms, offices, cars, grocery stores. The horror comes from one detail being WRONG. Focus on atmosphere and implication, not monsters or gore. The seed must work in under 60 seconds of narration. NO zombies, no demons, no haunted objects. Real settings, real dread.",
+    "user": "Generate {count} unique horror/creepy story seeds for short-form video. Each seed should be:\n- A normal situation with one deeply unsettling detail\n- 2-3 sentences — setup and the creepy element\n- The horror should work through IMPLICATION in under 60 seconds\n- Grounded in everyday settings (home, work, commute)\n\nExamples of GOOD seeds: finding a photo on your phone you didn't take while you were asleep, your smart home speaker answering a question nobody asked, noticing your reflection blinks when you don't.\n\nExamples of BAD seeds: haunted dolls, zombie attacks, demon summoning, ancient curses.\n\nGenerate the seeds now."
+  },
+  "styleVariants": [
+    {
+      "id": "atmospheric",
+      "name": "Atmospheric",
+      "description": "Creeping dread through details — nothing jumps out, everything feels wrong",
+      "promptModifier": "STYLE: ATMOSPHERIC\n- Build unease through accumulating wrong details, not a single scare\n- Each sentence should feel slightly more uncomfortable than the last\n- Use sensory details — sounds, silences, temperatures, smells\n- The horror is never stated directly — it's in the gaps between what's said\n- End with an unsettling implication, not a reveal\n- The reader should feel watched after finishing"
+    },
+    {
+      "id": "jump-scare",
+      "name": "Jump Scare",
+      "description": "Lull them into safety then HIT them with the reveal",
+      "promptModifier": "STYLE: JUMP SCARE\n- Establish a completely normal, even boring scene\n- Lull the viewer into feeling safe\n- Build with ONE subtle detail that something is off\n- The final reveal hits HARD and FAST — one line that changes everything\n- The scare comes from the sudden shift from normal to horrifying\n- End IMMEDIATELY after the scare — no explanation, no aftermath"
+    },
+    {
+      "id": "found-footage",
+      "name": "Found Footage",
+      "description": "Told through evidence — texts, recordings, photos, notes",
+      "promptModifier": "STYLE: FOUND FOOTAGE\n- Frame as discovered evidence — texts, voicemails, camera footage, notes\n- The narrator is piecing together what happened from fragments\n- Each piece of evidence reveals something more disturbing\n- Include timestamps or specific details that make it feel documented\n- The final piece of evidence is the most horrifying\n- End with the implication that the narrator is now involved"
+    }
+  ],
+  "selfCheckRubric": [
+    "Does it create genuine unease? Would someone feel creeped out reading this alone?",
+    "Does the horror come from IMPLICATION, not from stating something scary?",
+    "Is the pacing tight? (every sentence earns its place)",
+    "Is it 100-150 words?",
+    "Does it end with unresolved dread? (no explanation, no comfort)",
+    "Does it avoid ALL listed avoid-phrases?"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: [Normal situation — one sentence establishing mundane setting]\n→ [Detail 1 — something slightly off, easily dismissed]\n→ [Detail 2 — harder to dismiss, tension building]\n→ [The realization — the narrator (and reader) understands]\n→ [The horror — stated or implied in one devastating line]\n→ [Unresolved — no comfort, no explanation]\n\nKey beats: mundane normalcy, creeping wrongness, sudden realization, no resolution. Every word builds dread.",
   "promptTemplate": {
-    "system": "You are a viral short-form horror scriptwriter who creates atmospheric, unsettling stories with shocking reveals. Your scripts build dread in seconds and deliver disturbing twists.",
-    "user": "Create a 30-45 second horror/creepy short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with NORMAL SITUATION (establish false security)\n- Introduce UNSETTLING DETAIL (something's wrong)\n- Build CREEPING DREAD (escalate tension)\n- End with SHOCKING REVEAL or unresolved horror\n- Write in atmospheric, first-person narrative\n- 100 words maximum\n- Use short sentences for tension\n- Include pauses for impact\n- Format: [NORMAL] → [UNSETTLING] → [DREAD] → [REVEAL]\n\nOptimize for:\n- Rewatchability (make them notice new details)\n- Visceral reaction (creep them out)\n- Comment speculation (leave them theorizing)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "You are an expert short-form horror scriptwriter. Your scripts build atmospheric dread in seconds and leave viewers genuinely unsettled. You never explain the horror — you imply it.",
+    "user": "Create a 30-60 second horror/creepy short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Normal setting (establish mundane reality — one line)\n2. First sign (something slightly off)\n3. Escalation (the wrongness becomes undeniable)\n4. The horror (reveal or implication)\n5. No resolution (end in dread)\n\nRULES:\n- 120 words maximum\n- First-person, present or recent past tense\n- Short sentences build tension\n- Horror through IMPLICATION — never explain\n- Sensory details that make the reader uncomfortable\n- End without comfort or resolution\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": ["creepy", "horror", "terrifying", "disturbing", "haunted"],
@@ -38,5 +72,5 @@
     "checkType": "story-based",
     "dreamscapeTypes": ["horror", "creepy", "supernatural"]
   },
-  "exampleOutput": "I moved into my new apartment last week.\n\nEverything seemed normal.\n\nUntil I noticed the previous tenant's mail.\n\nSame name as me. Exact same name.\n\nI googled it.\n\nFound an obituary. From three years ago.\n\nSame apartment number.\n\nCause of death: Unknown.\n\nThen I heard footsteps upstairs.\n\nBut I'm on the top floor."
+  "exampleOutput": "I moved into my new apartment last week.\n\nEverything seemed normal.\n\nUntil I noticed the previous tenant's mail.\n\nSame name as me. Exact same name.\n\nI googled it.\n\nFound an obituary. From three years ago.\n\nSame apartment number.\n\nCause of death: Unknown.\n\nI told myself it was a coincidence. Common name.\n\nThen I found the journal under the floorboard.\n\nThe last entry:\n\n\"The new tenant moves in next week. Same name as me. Exact same name.\"\n\nIt was dated three years ago.\n\nI'm on the top floor.\n\nBut the footsteps above me just started again."
 }

@@ -70,9 +70,36 @@ interface Dreamscape {
 }
 ```
 
-### Intensity Dials
+### Templates & Hero Templates
 
-7-dimensional control system for story characteristics:
+Templates define platform-specific generation blueprints. **Hero templates** (9 total) are fully upgraded with the quality pipeline:
+
+- `seedPrompt` — Platform-aware seed generation prompts (replaces generic dreamscape prompt)
+- `styleVariants` — 2-3 curated style options per template (e.g., "Controversial", "Emotional", "Unhinged" for AITAH)
+- `selfCheckRubric` — Quality criteria injected into generation prompt (zero extra API cost)
+- `fewShotExcerpt` — Condensed structural reference baked into prompt
+- `promptTemplate` — Updated to accept `{styleModifier}`, `{selfCheckRubric}`, `{fewShotExcerpt}` variables
+
+**Hero templates**: reddit/aitah, reddit/tifu, reddit/petty-revenge, reddit/nosleep, short-form/drama-confession, short-form/unexpected-twist, short-form/revenge-story, short-form/horror-creepy, long-form/youtube-story-time
+
+### Style Variants
+
+Style variants replace intensity dials as the primary quality control for normal users. Each hero template offers 2-3 named styles:
+
+```typescript
+interface StyleVariant {
+  id: string
+  name: string           // e.g., "Controversial"
+  description: string    // e.g., "50/50 debate — both sides have valid points"
+  promptModifier: string // Full style instructions injected into prompt
+}
+```
+
+Style variants are **explicit user selections** (not random). This provides high reproducibility — the same seed + template + style variant produces consistent output quality.
+
+### Intensity Dials (Power User Mode Only)
+
+7-dimensional control system available only to power users:
 
 - **Stakes** (1-10) - How much is on the line
 - **Darkness** (1-10) - Tone/mood darkness
@@ -82,29 +109,11 @@ interface Dreamscape {
 - **Catharsis** (1-10) - Emotional payoff/satisfaction
 - **Moral Clarity** (1-10) - Good/bad distinction clarity
 
-### Presets
+Normal users don't see dials — style variants handle quality control instead.
 
-Pre-configured dial + platform + format combinations:
+### Template-Aware Seed Generation
 
-```javascript
-{
-  id: "reddit-aitah",
-  name: "Reddit AITAH",
-  platform: "reddit",
-  outputFormat: "reddit-post",
-  wordCount: 800,
-  tone: "narrative",
-  intensity: {
-    stakes: 7,
-    darkness: 5,
-    pace: 6,
-    twist: 7,
-    realism: 9,      // High believability for Reddit
-    catharsis: 6,
-    moralClarity: 4
-  }
-}
-```
+When a template has a `seedPrompt`, seed generation uses platform-specific prompts instead of the generic dreamscape prompt. This produces seeds that are already tuned for the target format (e.g., AITAH seeds focus on interpersonal conflicts, nosleep seeds focus on creeping dread in mundane settings).
 
 ### Enhancement Goals
 
