@@ -429,16 +429,21 @@ IMPORTANT: Keep it brief - just enhance the seed (2-4 sentences), don't expand i
 
 /**
  * Generate a single story variant
+ * When systemPromptOverride/userPromptOverride are provided (template flow),
+ * they replace the default buildSystemPrompt/seed prompt entirely.
  */
 async function generateVariant(
   title: string,
   dialState: DialState,
-  seed: string
+  seed: string,
+  systemPromptOverride?: string,
+  userPromptOverride?: string,
 ): Promise<OutputVariant> {
-  const systemPrompt = buildSystemPrompt(dialState)
+  const systemPrompt = systemPromptOverride || buildSystemPrompt(dialState)
+  const userPrompt = userPromptOverride || `Write a complete story based on this seed:\n\n${seed}`
   const messages = [
     { role: 'system' as const, content: systemPrompt },
-    { role: 'user' as const, content: `Write a complete story based on this seed:\n\n${seed}` },
+    { role: 'user' as const, content: userPrompt },
   ]
 
   const lt = startLangfuseGeneration('output-generation', messages, { temperature: 0.7 }, {
@@ -470,7 +475,7 @@ async function generateVariant(
 }
 
 /**
- * Generate full story outputs with dial parameters
+ * Generate a single story output with dial parameters
  */
 export async function generateOutputs(
   params: GenerateOutputsParams
@@ -478,22 +483,16 @@ export async function generateOutputs(
   try {
     const seed = params.dreamscape.chunks.map((c) => c.text).join('\n\n')
 
-    // Generate 3 variants with different intensity adjustments
-    const variants = await Promise.all([
-      generateVariant('Variant A — Balanced', params.dialState, seed),
-      generateVariant(
-        'Variant B — More Intense',
-        adjustIntensity(params.dialState, 'intense'),
-        seed
-      ),
-      generateVariant(
-        'Variant C — More Believable',
-        adjustIntensity(params.dialState, 'believable'),
-        seed
-      ),
-    ])
+    // Generate single variant
+    const variant = await generateVariant(
+      params.dialState.presetId || 'Story',
+      params.dialState,
+      seed,
+      params.systemPromptOverride,
+      params.userPromptOverride,
+    )
 
-    return variants
+    return [variant]
   } catch (error) {
     console.error('OpenAI generateOutputs error:', error)
     throw new Error('Failed to generate outputs with OpenAI')

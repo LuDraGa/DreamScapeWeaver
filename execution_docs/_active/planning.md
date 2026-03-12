@@ -1,175 +1,71 @@
-# Billing & Credits System — Planning
+# Planning: Simplify & Focus — Template Curation, Single Gen, Power User Gating
 
-**Date**: 2026-03-07
-**Scope**: Phase 3 — Credits system, Cashfree payments, Langfuse observability, generation_events
+**Date**: 2026-03-12
+**Branch**: `simplify-and-focus`
+**Context**: External product review feedback — reduce clutter, simplify generation, focus on output quality.
 
----
+## Goals
 
-## Decisions Locked
+1. **Curate hero templates** (9 kept, 37 moved behind power user mode)
+2. **Single generation** instead of 3 variants for all users
+3. **Gate dreamscape enhancement** behind power user mode
+4. **Wire template settings** to generation (template intensity/tone/genres actually reach the LLM)
+5. **Admin prompt editing** before generation
 
-| Decision | Value |
-|----------|-------|
-| Payment provider | Cashfree (INR primary, USD reference only) |
-| Gross margin target | 80% |
-| Credit value | 1 credit = $0.0001 / ~₹0.0083 |
-| Debit order | Subscription credits first, then top-up |
-| Sub credit carryover | None — expire at period end |
-| Top-up credit expiry | Never |
-| LLM observability | Langfuse (traces, token cost, latency) |
-| Billing source of truth | Self-hosted `generation_events` Supabase table |
-| Weekly packs | No — small top-up packs instead |
-| Credit deduction model | Flat per action type |
-| Auth gate | Logged-in users only. Guests see login prompt, no usage. |
-| Signup bonus | 10,000 credits on first login (configurable in billing.yaml) |
-| Config-driven | ALL plan IDs, prices, credit costs live in billing.yaml only. No hardcoding in app code. |
+## Hero Templates (Cascade-Informed)
 
----
+| Chain | Source (Reddit) | Adapt (Short-form) | Extend (Long-form) |
+|-------|----------------|-------------------|-------------------|
+| Moral Dilemma | AITAH | Drama/Confession | Story Time |
+| Relatable/Funny | TIFU | Unexpected Twist | Story Time |
+| Satisfying Payoff | Petty Revenge | Revenge Story | Story Time |
+| Horror/Thriller | NoSleep | Horror/Creepy | Story Time |
 
-## Credit Costs Per Action (80% gross margin)
+**9 hero templates**: aitah, tifu, petty-revenge, nosleep, drama-confession, unexpected-twist, revenge-story, horror-creepy, youtube-story-time
 
-| Action | Credits | API cost basis |
-|--------|---------|---------------|
-| Seed generation | 500 | $0.010 |
-| Enhancement / stitch | 400 | $0.008 |
-| Output generation (3 variants) | 1,150 | $0.023 |
-| Part transform (Studio) | 300 | $0.006 |
-| **Full workflow** | **~2,050** | **~$0.041** |
+## Step-by-Step Implementation Plan
 
----
+### Step 1: Define hero template list in `src/lib/templates.ts`
+- Add `HERO_TEMPLATE_IDS` constant
+- Add `getHeroTemplates()` and update `getTemplatesByCategory()` to accept `heroOnly` flag
+- Keep all templates importable (power users still need them)
 
-## Subscription Plans
+### Step 2: Single generation in `src/lib/adapters/openai.ts`
+- Change `generateOutputs()` to produce 1 variant instead of 3
+- Remove `adjustIntensity()` calls (no more Intense/Believable variants)
+- Title the single output based on template name instead of "Variant A — Balanced"
 
-| Plan | Price (INR) | Monthly Credits | Top-up Discount |
-|------|-------------|----------------|-----------------|
-| Starter | ₹1,250 | 100,000 | 0% |
-| Pro | ₹3,350 | 300,000 | 15% |
-| Studio | ₹6,700 | 900,000 | 30% |
+### Step 3: Wire template settings to generation
+- Add optional `systemPromptOverride` and `userPromptOverride` to `GenerateOutputsParams`
+- When provided, `generateVariant()` uses these instead of `buildSystemPrompt(dialState)`
+- `handleGenerateFromTemplate` in create page already builds template prompts via `buildPromptFromTemplate()` — pass them through the API
 
-## Top-up Packs (base price, discount per active plan)
+### Step 4: Update create page — template visibility gating
+- In Step B, only show hero template categories (reddit, short-form, long-form) for normal users
+- Show all 6 categories for power users
+- Within each category, only show hero templates for normal users
+- Button text: "Generate Story" instead of "Generate 3 Variants"
 
-| Pack | Credits | Base (INR) |
-|------|---------|------------|
-| Micro | 15,000 | ₹250 |
-| Small | 50,000 | ₹750 |
-| Medium | 150,000 | ₹2,100 |
-| Large | 400,000 | ₹5,000 |
+### Step 5: Gate dreamscape enhancement behind power user mode
+- Hide "Enhance" button in Step A for non-power users
+- Enhancement goals remain for power users
 
----
+### Step 6: Update Rate & Save step for single output
+- Remove variant tabs when only 1 output
+- Keep all tools: rating, feedback, comments, split, continue, save, "Use as Dreamscape", export
+- "Generate More" stays but generates 1 variant at a time
 
-## DB Schema (new tables in `storyweaver` schema)
+### Step 7: Admin prompt editing before generate
+- For admin/dev role users, show expandable "Edit Prompt" section in template preview
+- Display assembled system + user prompt
+- Allow editing, pass through to generation
 
-```sql
-storyweaver.subscriptions
-  id UUID PK, user_id UUID FK → profiles
-  plan_id TEXT NOT NULL  -- 'starter' | 'pro' | 'studio'
-  status TEXT NOT NULL DEFAULT 'active'  -- 'active' | 'cancelled' | 'past_due'
-  current_period_start TIMESTAMPTZ, current_period_end TIMESTAMPTZ
-  cashfree_subscription_id TEXT, cashfree_plan_id TEXT
-  created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ
+## Files to Modify
 
-storyweaver.credit_balance
-  user_id UUID PK FK → profiles
-  subscription_credits INT DEFAULT 0   -- expire at period end
-  topup_credits INT DEFAULT 0          -- never expire
-  updated_at TIMESTAMPTZ
-
-storyweaver.credit_ledger              -- append-only, auditable
-  id UUID PK, user_id UUID FK
-  amount INT         -- positive=grant, negative=usage
-  type TEXT          -- 'subscription_grant' | 'topup_purchase' | 'generation_usage' | 'expiry_sweep' | 'signup_bonus'
-  credit_bucket TEXT -- 'subscription' | 'topup'
-  reference_id TEXT  -- output_variant_id | cashfree_payment_id
-  created_at TIMESTAMPTZ
-
-storyweaver.credit_purchases
-  id UUID PK, user_id UUID FK
-  pack_id TEXT, credits_granted INT
-  amount_paid_paise INT   -- INR paise (Cashfree uses smallest unit)
-  discount_pct INT DEFAULT 0
-  cashfree_order_id TEXT, cashfree_payment_id TEXT
-  created_at TIMESTAMPTZ
-
-storyweaver.generation_events
-  id UUID PK, user_id UUID FK
-  output_variant_id UUID  -- nullable
-  action_type TEXT        -- 'seed' | 'enhance' | 'output' | 'transform'
-  model TEXT, prompt_tokens INT, completion_tokens INT
-  credits_charged INT, credit_bucket TEXT
-  langfuse_trace_id TEXT  -- link back to Langfuse trace
-  created_at TIMESTAMPTZ
-```
-
----
-
-## Implementation Phases
-
-### Phase A — Config & Schema (foundation)
-- [ ] `src/config/billing.yaml` ✅ DONE
-- [ ] `src/lib/billing/config.ts` — parse billing.yaml, export typed config
-- [ ] Supabase migration for 5 new billing tables (above)
-- [ ] Add billing TypeScript types to `src/lib/types.ts`
-- [ ] Update `src/lib/env.ts` — LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, CASHFREE_APP_ID, CASHFREE_SECRET_KEY, CASHFREE_WEBHOOK_SECRET
-
-### Phase B — Langfuse Integration (LLM observability)
-- [ ] Install `langfuse` SDK
-- [ ] Wrap OpenAI calls in `src/lib/adapters/openai.ts` with Langfuse trace
-- [ ] Pass `langfuse_trace_id` through to generation_events rows
-- [ ] Verify traces appear in Langfuse dashboard
-
-### Phase C — Credit Tracking (core logic)
-- [ ] `src/lib/billing/credits.ts`:
-  - `getBalance(userId)` → reads credit_balance
-  - `hasCredits(userId, amount)` → pre-check
-  - `debitCredits(userId, amount, actionType, referenceId)` → debit from correct bucket, write ledger row, update balance
-  - `grantSignupBonus(userId)` → one-time, idempotent via ledger check
-- [ ] Update 4 API routes: pre-check balance → call LLM → debit + write generation_event
-- [ ] `src/middleware.ts` — check auth for all /app/* API routes, return 401 for guests
-- [ ] Return `{ error: 'insufficient_credits', balance }` (HTTP 402) when balance is zero
-
-### Phase D — Cashfree Integration
-- [ ] `src/lib/billing/cashfree.ts` — Cashfree SDK wrapper (all plan IDs read from billing.yaml config)
-- [ ] `POST /api/billing/subscribe` — create subscription using plan_id from config
-- [ ] `POST /api/billing/topup` — create Cashfree order using pack config + apply plan discount
-- [ ] `POST /api/billing/webhook` — handle:
-  - `SUBSCRIPTION_ACTIVATED` → grant monthly credits, subscription_grant ledger row
-  - `SUBSCRIPTION_RENEWED` → expiry_sweep old sub credits + grant new month
-  - `SUBSCRIPTION_CANCELLED` → update subscriptions.status
-  - `PAYMENT_SUCCESS` (topup) → grant topup_credits, topup_purchase ledger row, write credit_purchases row
-  - `PAYMENT_FAILED` → update subscription status to past_due
-- [ ] `GET /api/billing/balance` — returns { subscription_credits, topup_credits, total }
-- [ ] `GET /api/billing/history` — last 20 ledger entries
-
-### Phase E — Monthly Credit Sweep (cron)
-- [ ] `src/app/api/cron/billing-sweep/route.ts` — finds subscriptions with expired period, zeros sub credits, writes expiry_sweep ledger row
-- [ ] `vercel.json` — daily cron schedule
-- [ ] Webhook SUBSCRIPTION_RENEWED also handles sweep (belt + suspenders approach)
-
-### Phase F — UI
-- [ ] `src/app/app/billing/page.tsx`:
-  - Current plan card + credit balance (sub + top-up separated)
-  - Usage this period (generation_events count + credits used)
-  - Subscription upgrade/downgrade
-  - Top-up pack grid (shows discounted price based on active plan)
-  - Ledger history table (last 20 entries)
-- [ ] Add Billing link to nav
-- [ ] Surface 402 errors in create/studio UI with "Top up credits" CTA
-
-### Phase G — Auth enforcement for credit flows
-- [ ] On any API generation attempt without auth: return 401 + { redirect: '/auth/login' }
-- [ ] Frontend: intercept 401 on generation calls, show "Sign in to continue" modal
-
----
-
-## Open Questions — RESOLVED
-
-| # | Question | Answer |
-|---|----------|--------|
-| 1 | Cashfree plan IDs | Config-driven via billing.yaml — user fills after creating plans in dashboard |
-| 2 | Auth gate | Logged-in only. Guests prompted to login. |
-| 3 | Free tier | 10,000 signup bonus credits on first login (configurable) |
-| 4 | Currency | INR primary via Cashfree. USD in config for future. |
-| 5 | LLM observability | Langfuse (not Helicone) |
-
-## Remaining Unknown
-- Does user have Langfuse account / keys yet?
-- Does user have Cashfree subscription plan types to create, or should we document the exact steps?
+| File | Changes |
+|------|---------|
+| `src/lib/templates.ts` | Hero template list, filtered getters |
+| `src/lib/adapters/openai.ts` | Single variant, accept prompt overrides |
+| `src/lib/types.ts` | Add prompt overrides to GenerateOutputsParams |
+| `src/app/api/outputs/generate/route.ts` | Pass prompt overrides to adapter |
+| `src/app/app/create/page.tsx` | Template gating, single output UI, enhance gating, admin prompt edit |

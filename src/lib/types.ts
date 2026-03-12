@@ -303,6 +303,8 @@ export interface EnhanceDreamscapeResult {
 export interface GenerateOutputsParams {
   dreamscape: Dreamscape
   dialState: DialState
+  systemPromptOverride?: string
+  userPromptOverride?: string
 }
 
 // Auth types

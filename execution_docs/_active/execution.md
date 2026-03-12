@@ -1,22 +1,23 @@
 # StoryWeaver - Active Execution
 
-## Task: Speed Optimization — Route Skeletons, Prefetch, Bundle Analyzer
+## Task: Simplify & Focus — Template Curation, Single Gen, Power User Gating
 
-**Session**: 2026-03-11
-**Context**: Adding perceived speed optimizations: loading.tsx skeletons for all 4 app routes, router.prefetch for likely next routes, and @next/bundle-analyzer setup.
+**Session**: 2026-03-12
+**Context**: Implementing product review feedback — curate templates, single generation, gate power features, wire template settings, admin prompt editing.
 
 ## Execution Status
 
 ### ✅ Completed Tasks
 
-- [x] Create loading.tsx for /app/app/create/
-- [x] Create loading.tsx for /app/app/library/
-- [x] Create loading.tsx for /app/app/billing/
-- [x] Create loading.tsx for /app/app/settings/
-- [x] Add router.prefetch('/app/create') in library page
-- [x] Install and configure @next/bundle-analyzer
+- [x] Step 1: Hero template list in `src/lib/templates.ts` — HERO_TEMPLATE_IDS (9), HERO_CATEGORIES (3), getTemplatesByCategory(cat, heroOnly), isHeroCategory()
+- [x] Step 2: Single generation in `src/lib/adapters/openai.ts` — generateOutputs() now returns 1 variant, removed adjustIntensity calls
+- [x] Step 3: Wire template settings — added systemPromptOverride/userPromptOverride to GenerateOutputsParams, generateVariant accepts them, handleGenerateFromTemplate passes template prompts through
+- [x] Step 4: Template visibility gating — category tabs filtered to hero categories for normal users, template grid filtered to hero templates
+- [x] Step 5: Gate dreamscape enhancement — Enhance button hidden for non-power users
+- [x] Step 6: Rate & Save for single output — variant tabs hidden when 1 output, "Generate More" → "Regenerate", heading adapts to count
+- [x] Step 7: Admin prompt editing — expandable "Edit Prompt (Admin)" section in template preview for admin/dev roles, pre-populates with template prompts, edits flow through to generation
+- [x] Mock adapter updated to return 1 variant
 - [x] Build verified — all routes compile cleanly
-- [x] Add empty state for Rate & Save step when no outputs generated
 
 ### 🔄 In Progress
 
@@ -28,37 +29,42 @@
 
 ## Changes Made
 
-### Files Created
-- src/app/app/create/loading.tsx — skeleton: title + step bar + chunk cards
-- src/app/app/library/loading.tsx — skeleton: title + tabs + search + 6 card grid
-- src/app/app/billing/loading.tsx — skeleton: title + 3 stat cards + topup grid + history
-- src/app/app/settings/loading.tsx — skeleton: title + 4 settings cards with form fields
-
 ### Files Modified
-- next.config.ts — added @next/bundle-analyzer (conditional on ANALYZE=true)
-- package.json — added "analyze" script, added @next/bundle-analyzer devDep
-- src/app/app/library/page.tsx — added router.prefetch('/app/create') on mount
-- src/app/app/create/page.tsx — added empty state for Rate & Save step (icon + message + "Go to Platform & Style" button)
+- `src/lib/templates.ts` — Added HERO_TEMPLATE_IDS, HERO_CATEGORIES, getHeroCategories(), isHeroCategory(), updated getTemplatesByCategory() with heroOnly param
+- `src/lib/adapters/openai.ts` — Single variant generation, generateVariant accepts prompt overrides
+- `src/lib/adapters/mock.ts` — Updated to return 1 variant instead of 3
+- `src/lib/types.ts` — Added systemPromptOverride/userPromptOverride to GenerateOutputsParams
+- `src/app/app/create/page.tsx` — Template gating, enhance gating, single output UI, admin prompt editor, auth/role imports
+
+### Files Created
+- None
 
 ### Files Deleted
--
+- None
 
 ## Implementation Notes
 
 ### Key Technical Details
-- loading.tsx files are Server Components — Next.js auto-wraps them as Suspense fallbacks during client-side navigation
-- Skeletons use existing Skeleton component + inline card styles matching ThemedCard appearance
-- Bundle analyzer opens browser treemaps for client + server bundles when `pnpm analyze` is run
-- Prefetch in library ensures create page JS is already downloaded before user clicks "Continue" on a dreamscape
-- Next.js Link components already prefetch visible links by default in production — sidebar nav benefits from this automatically
+- Hero templates: aitah, tifu, petty-revenge, nosleep, drama-confession, unexpected-twist, revenge-story, horror-creepy, youtube-story-time
+- Hero categories: reddit, short-form, long-form (3 of 6 categories visible to normal users)
+- Template prompts now flow: template JSON → buildPromptFromTemplate() → API route → openai adapter → LLM
+- Admin prompt editing uses amber-colored UI to distinguish from normal flow
+- API route didn't need changes — GenerateOutputsParams type expansion was sufficient since params are passed through directly
+- "Use as Dreamscape" button (cascade flow) already existed — no changes needed
+
+### Cascade Paths Enabled
+- AITAH → Drama/Confession → Story Time
+- TIFU → Unexpected Twist → Story Time
+- Petty Revenge → Revenge Story → Story Time
+- NoSleep → Horror/Creepy → Story Time
 
 ## Testing Notes
-- Build passes cleanly with all new files
-- Create page: 19.8 kB + 254 kB first load
-- Library page: 6.5 kB + 212 kB first load
-- Billing: 5.6 kB + 176 kB first load
-- Settings: 4.05 kB + 203 kB first load
+- Build passes cleanly
+- Create page: 20.3 kB + 255 kB first load (marginal increase from admin prompt editor)
 
 ## Developer Actions Required
-- [ ] Run `pnpm analyze` to see bundle treemap and identify optimization targets
-- [ ] Test route transitions in dev to see skeletons (they flash briefly during navigation)
+- [ ] Test full create flow as normal user (should see 3 categories, 9 templates, single generation)
+- [ ] Test power user mode (should see all 6 categories, all templates, single generation)
+- [ ] Test admin prompt editing (login as admin/dev role)
+- [ ] Test "Use as Dreamscape" cascade flow (generate Reddit story → use as seed → pick Reels template)
+- [ ] Test "Regenerate" button on Rate & Save step

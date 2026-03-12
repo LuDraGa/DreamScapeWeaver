@@ -46,7 +46,9 @@ import {
   buildOutputPrompt,
   type PromptData,
 } from '@/lib/prompt-builders'
-import { getTemplatesByCategory, buildPromptFromTemplate, checkTemplateCompatibility } from '@/lib/templates'
+import { getTemplatesByCategory, buildPromptFromTemplate, checkTemplateCompatibility, isHeroCategory } from '@/lib/templates'
+import { useAuth } from '@/lib/auth/context'
+import { canAccessDevTools } from '@/lib/auth/roles'
 import { ContentTypeSelector } from '@/components/create/content-type-selector'
 import { TemplateGallery } from '@/components/create/template-gallery'
 import { TemplatePreview } from '@/components/create/template-preview'
@@ -86,6 +88,8 @@ function randomizeIntensity(): IntensityValues {
  */
 export default function CreatePage() {
   const { currentDreamscape, setCurrentDreamscape, saveDreamscape, saveOutput, settings } = useAppStore()
+  const { role } = useAuth()
+  const isAdmin = role ? canAccessDevTools(role) : false
 
   // Step management — start at step 1 if a dreamscape was pre-loaded from Library
   const [step, setStep] = useState(() => currentDreamscape ? 1 : 0)
@@ -177,6 +181,11 @@ export default function CreatePage() {
   // Multi-part guidance (simple)
   const [splitGuidance, setSplitGuidance] = useState('')
   const [continueGuidance, setContinueGuidance] = useState('')
+
+  // Admin prompt editing (Step 7)
+  const [showPromptEditor, setShowPromptEditor] = useState(false)
+  const [editedSystemPrompt, setEditedSystemPrompt] = useState('')
+  const [editedUserPrompt, setEditedUserPrompt] = useState('')
 
   // UI state
   const [toast, setToast] = useState('')
@@ -635,18 +644,15 @@ Write the next part, continuing from where the story left off.`
   // ============================================================
 
   const handleGenerateStory = async () => {
-    // Auto-create dreamscape if it doesn't exist
-    let dreamscape = currentDreamscape
-    if (!dreamscape) {
-      dreamscape = {
-        id: uid(),
-        title: chunks[0].text.slice(0, 50) || 'Untitled',
-        chunks,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setCurrentDreamscape(dreamscape)
+    // Always build dreamscape from current chunks so edits are captured
+    const dreamscape: Dreamscape = {
+      id: currentDreamscape?.id || uid(),
+      title: chunks[0].text.slice(0, 50) || 'Untitled',
+      chunks,
+      createdAt: currentDreamscape?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
+    setCurrentDreamscape(dreamscape)
 
     setGenerating(true)
     try {
@@ -662,7 +668,7 @@ Write the next part, continuing from where the story left off.`
       setNotes({})
       setComments([])
       saveDreamscape(dreamscape)
-      showToast(`Generated ${outputs.length} variants!`)
+      showToast('Story generated!')
       setStep(3) // Move to Rate & Save step
     } catch (error) {
       showToast('Failed to generate story')
@@ -673,18 +679,15 @@ Write the next part, continuing from where the story left off.`
   }
 
   const handleGenerateFromTemplate = async (template: Template) => {
-    // Auto-create dreamscape if it doesn't exist
-    let dreamscape = currentDreamscape
-    if (!dreamscape) {
-      dreamscape = {
-        id: uid(),
-        title: chunks[0].text.slice(0, 50) || 'Untitled',
-        chunks,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setCurrentDreamscape(dreamscape)
+    // Always build dreamscape from current chunks so edits are captured
+    const dreamscape: Dreamscape = {
+      id: currentDreamscape?.id || uid(),
+      title: chunks[0].text.slice(0, 50) || 'Untitled',
+      chunks,
+      createdAt: currentDreamscape?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
+    setCurrentDreamscape(dreamscape)
 
     setGenerating(true)
     try {
@@ -707,10 +710,16 @@ Write the next part, continuing from where the story left off.`
         cohesionStrictness: 5,
       }
 
-      // Generate using template
+      // Use admin-edited prompts if available, otherwise use template prompts
+      const finalSystemPrompt = (isAdmin && editedSystemPrompt) ? editedSystemPrompt : systemPrompt
+      const finalUserPrompt = (isAdmin && editedUserPrompt) ? editedUserPrompt : userPrompt
+
+      // Generate using template — pass template prompts directly to LLM
       const outputs = await api.outputs.generate({
         dreamscape,
         dialState: templateDialState,
+        systemPromptOverride: finalSystemPrompt,
+        userPromptOverride: finalUserPrompt,
       })
 
       setGeneratedOutputs(outputs)
@@ -721,7 +730,7 @@ Write the next part, continuing from where the story left off.`
       setNotes({})
       setComments([])
       saveDreamscape(dreamscape)
-      showToast(`Generated ${outputs.length} variants!`)
+      showToast('Story generated!')
       // Normal mode: step 2 = Rate & Save, Power mode: step 3 = Rate & Save
       setStep(settings.powerUserMode ? 3 : 2)
     } catch (error) {
@@ -779,7 +788,7 @@ Write the next part, continuing from where the story left off.`
 
       setGeneratedOutputs((prev) => [...prev, ...relabeled])
       setActiveVariant(offset) // Jump to first new variant
-      showToast(`${outputs.length} more variants generated!`)
+      showToast('New version generated!')
     } catch (error) {
       showToast('Failed to generate more')
       console.error(error)
@@ -866,6 +875,7 @@ Write the next part, continuing from where the story left off.`
               <SparklesIcon className="w-4 h-4 mr-2" />
               Generate Ideas
             </Button>
+            {settings.powerUserMode && (
             <Button
               size="sm"
               variant="outline"
@@ -875,6 +885,7 @@ Write the next part, continuing from where the story left off.`
               <WandIcon className="w-4 h-4 mr-2" />
               Enhance
             </Button>
+            )}
             <Button
               size="sm"
               onClick={handleSaveDreamscape}
@@ -1246,16 +1257,16 @@ Write the next part, continuing from where the story left off.`
               Choose a template optimized for your target platform
             </p>
 
-            {/* Category Tabs - Always Visible */}
+            {/* Category Tabs - Hero categories for normal users, all for power users */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
               {[
-                { id: 'short-form' as const, icon: '📱', label: 'Short Videos' },
                 { id: 'reddit' as const, icon: '🗨️', label: 'Reddit Stories' },
+                { id: 'short-form' as const, icon: '📱', label: 'Short Videos' },
                 { id: 'long-form' as const, icon: '🎥', label: 'Long Videos' },
                 { id: 'video-production' as const, icon: '🎬', label: 'Video Production' },
                 { id: 'audio-production' as const, icon: '🎙️', label: 'Audio Production' },
                 { id: 'marketing' as const, icon: '💼', label: 'Marketing' },
-              ].map((cat) => (
+              ].filter((cat) => settings.powerUserMode || isHeroCategory(cat.id)).map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => {
@@ -1278,7 +1289,7 @@ Write the next part, continuing from where the story left off.`
             {/* Template Grid - Shows when category selected */}
             {selectedCategory && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 max-h-[60vh] overflow-y-auto pr-2">
-                {getTemplatesByCategory(selectedCategory).map((template) => {
+                {getTemplatesByCategory(selectedCategory, !settings.powerUserMode).map((template) => {
                   const compatibility = checkTemplateCompatibility(
                     {
                       id: uid(),
@@ -1451,6 +1462,56 @@ Write the next part, continuing from where the story left off.`
                   </ul>
                 </div>
 
+                {/* Admin Prompt Editor */}
+                {isAdmin && (
+                  <div className="mb-4">
+                    <button
+                      onClick={() => {
+                        if (!showPromptEditor) {
+                          const dreamscape = currentDreamscape || {
+                            id: uid(),
+                            title: chunks[0].text.slice(0, 50) || 'Untitled',
+                            chunks,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                          }
+                          const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, dreamscape)
+                          setEditedSystemPrompt(systemPrompt)
+                          setEditedUserPrompt(userPrompt)
+                        }
+                        setShowPromptEditor(!showPromptEditor)
+                      }}
+                      className="flex items-center gap-2 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors mb-2"
+                    >
+                      {showPromptEditor ? <ChevronUpIcon className="w-3.5 h-3.5" /> : <ChevronDownIcon className="w-3.5 h-3.5" />}
+                      Edit Prompt (Admin)
+                    </button>
+
+                    {showPromptEditor && (
+                      <div className="space-y-3 p-3 rounded-lg bg-[rgba(15,23,42,0.4)] border border-amber-500/20">
+                        <div>
+                          <label className="text-xs font-medium text-amber-400 mb-1 block">System Prompt</label>
+                          <textarea
+                            value={editedSystemPrompt}
+                            onChange={(e) => setEditedSystemPrompt(e.target.value)}
+                            className="w-full px-3 py-2 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500 resize-y"
+                            rows={8}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-amber-400 mb-1 block">User Prompt</label>
+                          <textarea
+                            value={editedUserPrompt}
+                            onChange={(e) => setEditedUserPrompt(e.target.value)}
+                            className="w-full px-3 py-2 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500 resize-y"
+                            rows={6}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Generate Button */}
                 <Button
                   onClick={() => handleGenerateFromTemplate(selectedTemplate)}
@@ -1458,7 +1519,7 @@ Write the next part, continuing from where the story left off.`
                   size="lg"
                   className="w-full bg-primary hover:bg-primary-light text-white"
                 >
-                  {generating ? 'Generating...' : 'Generate 3 Variants →'}
+                  {generating ? 'Generating...' : 'Generate Story →'}
                 </Button>
               </ThemedCard>
             )}
@@ -1743,7 +1804,7 @@ Write the next part, continuing from where the story left off.`
         <div style={{ display: step === 2 ? 'block' : 'none' }}>
         <h2 className="text-lg font-semibold mb-1 text-text-primary">Generate Story</h2>
         <p className="text-sm mb-5 text-text-muted">
-          We&apos;ll create 3 variants based on your dreamscape and preset.
+          We&apos;ll generate a story based on your dreamscape and preset.
         </p>
 
         <ThemedCard className="mb-6">
@@ -1842,7 +1903,9 @@ Write the next part, continuing from where the story left off.`
       <>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-lg font-semibold text-text-primary">Your Variants</h2>
+            <h2 className="text-lg font-semibold text-text-primary">
+              {generatedOutputs.length === 1 ? 'Your Story' : 'Your Variants'}
+            </h2>
             <p className="text-sm text-text-muted">Rate, refine, and save.</p>
           </div>
           <div className="flex gap-2">
@@ -1854,12 +1917,13 @@ Write the next part, continuing from where the story left off.`
               className="bg-transparent border-[#334155] text-text-secondary disabled:opacity-50"
             >
               <RefreshCwIcon className="w-3.5 h-3.5 mr-2" />
-              {generating ? 'Generating...' : 'Generate More'}
+              {generating ? 'Generating...' : 'Regenerate'}
             </Button>
           </div>
         </div>
 
-        {/* Variant Tabs */}
+        {/* Variant Tabs — only show when multiple outputs exist */}
+        {generatedOutputs.length > 1 && (
         <div className="flex gap-1 mb-4 p-1 rounded-xl bg-[rgba(15,23,42,0.5)]">
           {generatedOutputs.map((output, idx) => (
             <button
@@ -1875,6 +1939,7 @@ Write the next part, continuing from where the story left off.`
             </button>
           ))}
         </div>
+        )}
 
         {/* Variant Content */}
         <ThemedCard className="mb-4 border-[#1e293b]">

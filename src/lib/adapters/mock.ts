@@ -151,7 +151,7 @@ export const mockAdapter = {
     const isRedditTemplate = presetId.startsWith('reddit-')
     const isLongFormTemplate = presetId.startsWith('long-')
 
-    // Long-form video templates: return mock YouTube scripts
+    // Long-form video templates: return mock YouTube script
     if (isLongFormTemplate) {
       const mockYouTubeScript = `[INTRO - 0:00]
 Ever wondered how your brain knows you're being simulated? Today we're diving deep into a fascinating discovery that challenges everything we thought we knew about consciousness and reality.
@@ -191,22 +191,8 @@ If you found this fascinating, you might enjoy our video on quantum consciousnes
         {
           id: uid(),
           projectId: '',
-          title: 'Variant A — Educational Focus',
+          title: params.dialState.presetId || 'Story',
           text: mockYouTubeScript,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: uid(),
-          projectId: '',
-          title: 'Variant B — Story-Driven',
-          text: mockYouTubeScript.replace('[INTRO - 0:00]', '[INTRO - 0:00]\nI need to tell you about the day everything changed.'),
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: uid(),
-          projectId: '',
-          title: 'Variant C — Documentary Style',
-          text: mockYouTubeScript.replace('Ever wondered', 'On March 15th, 2023, an ordinary evacuation drill would reveal something extraordinary. The question we need to ask is'),
           createdAt: new Date().toISOString(),
         },
       ]
@@ -234,48 +220,20 @@ Then I saw my own avatar. It was me, standing in the parking lot… holding my l
         {
           id: uid(),
           projectId: '',
-          title: 'Variant A — Balanced',
+          title: params.dialState.presetId || 'Story',
           text: mockVideoScript,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: uid(),
-          projectId: '',
-          title: 'Variant B — More Intense',
-          text: mockVideoScript.replace('[SETUP', '[INTENSE SETUP'),
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: uid(),
-          projectId: '',
-          title: 'Variant C — Subtle Version',
-          text: mockVideoScript.replace('…running network diagnostics.', '…doing exactly what I\'m doing right now.'),
           createdAt: new Date().toISOString(),
         },
       ]
     }
 
-    // Reddit templates or power user mode: return Reddit stories
+    // Reddit templates or power user mode: return single Reddit story
     return [
       {
         id: uid(),
         projectId: '',
-        title: 'Variant A — Balanced',
+        title: params.dialState.presetId || 'Story',
         text: MOCK_STORIES.balanced,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: uid(),
-        projectId: '',
-        title: 'Variant B — More Intense',
-        text: MOCK_STORIES.intense,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: uid(),
-        projectId: '',
-        title: 'Variant C — More Believable',
-        text: MOCK_STORIES.believable,
         createdAt: new Date().toISOString(),
       },
     ]

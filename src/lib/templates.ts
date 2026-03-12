@@ -54,6 +54,23 @@ import testimonialRequest from '@/config/templates/marketing/testimonial-request
 import faq from '@/config/templates/marketing/faq.json'
 import brandStory from '@/config/templates/marketing/brand-story.json'
 
+// Hero templates — the curated set shown to normal users (cascade-informed selection)
+// Source (Reddit) → Adapt (Short-form) → Extend (Long-form)
+const HERO_TEMPLATE_IDS = new Set([
+  'reddit-aitah',              // Reddit — moral dilemma
+  'reddit-tifu',               // Reddit — relatable/funny
+  'reddit-petty-revenge',      // Reddit — satisfying payoff
+  'reddit-nosleep',            // Reddit — horror/thriller
+  'short-drama-confession',    // Short-form — emotional Reels/TikTok
+  'short-unexpected-twist',    // Short-form — viral Reels/TikTok
+  'short-revenge-story',       // Short-form — punchy revenge Reels
+  'short-horror-creepy',       // Short-form — horror Reels
+  'long-youtube-story-time',   // Long-form — YouTube deep-dive (shared endpoint)
+])
+
+// Categories that contain hero templates
+const HERO_CATEGORIES = new Set<TemplateCategory>(['reddit', 'short-form', 'long-form'])
+
 // All templates
 const ALL_TEMPLATES: Template[] = [
   // Short-form templates
@@ -118,10 +135,24 @@ export function getAllTemplates(): Template[] {
 }
 
 /**
- * Get templates by category
+ * Get templates by category, optionally filtered to hero templates only
  */
-export function getTemplatesByCategory(category: TemplateCategory): Template[] {
-  return ALL_TEMPLATES.filter((t) => t.category === category)
+export function getTemplatesByCategory(category: TemplateCategory, heroOnly = false): Template[] {
+  return ALL_TEMPLATES.filter((t) => t.category === category && (!heroOnly || HERO_TEMPLATE_IDS.has(t.id)))
+}
+
+/**
+ * Get hero template categories (the 3 categories that contain hero templates)
+ */
+export function getHeroCategories(): TemplateCategory[] {
+  return [...HERO_CATEGORIES] as TemplateCategory[]
+}
+
+/**
+ * Check if a category is a hero category
+ */
+export function isHeroCategory(category: TemplateCategory): boolean {
+  return HERO_CATEGORIES.has(category)
 }
 
 /**
