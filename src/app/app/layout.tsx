@@ -18,8 +18,8 @@ const navItems = [
 
 function formatCreditsShort(n: number): string {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
-  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`
-  return n.toString()
+  if (n >= 100000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`
+  return n.toLocaleString()
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
