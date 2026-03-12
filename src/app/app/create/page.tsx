@@ -1814,12 +1814,32 @@ Write the next part, continuing from where the story left off.`
       <div
         style={{
           display:
-            generatedOutputs.length > 0 &&
             ((!settings.powerUserMode && step === 2) || (settings.powerUserMode && step === 3))
               ? 'block'
               : 'none',
         }}
       >
+      {generatedOutputs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+            style={{ background: 'rgba(99,102,241,0.1)' }}
+          >
+            <SparklesIcon className="w-7 h-7" style={{ color: '#6366f1' }} />
+          </div>
+          <h2 className="text-lg font-semibold text-text-primary mb-2">No stories generated yet</h2>
+          <p className="text-sm text-text-muted mb-6 max-w-sm">
+            Head back to the Platform & Style step and hit Generate to create your story variants.
+          </p>
+          <Button
+            onClick={() => setStep(1)}
+            className="bg-primary hover:bg-primary-light text-white"
+          >
+            Go to Platform & Style
+          </Button>
+        </div>
+      ) : (
+      <>
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">Your Variants</h2>
@@ -2168,6 +2188,8 @@ Write the next part, continuing from where the story left off.`
             Export .txt
           </Button>
         </div>
+      </>
+      )}
       </div>
 
       {toast && <Toast message={toast} show={!!toast} onClose={() => setToast('')} />}

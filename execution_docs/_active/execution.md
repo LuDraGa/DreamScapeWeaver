@@ -1,51 +1,64 @@
 # StoryWeaver - Active Execution
 
-## Task: Phase 3 — Billing (Phase E + Frontend Wiring)
+## Task: Speed Optimization — Route Skeletons, Prefetch, Bundle Analyzer
 
 **Session**: 2026-03-11
-**Context**: Phase E (monthly sweep cron) + frontend wiring for Cashfree checkout on billing page.
+**Context**: Adding perceived speed optimizations: loading.tsx skeletons for all 4 app routes, router.prefetch for likely next routes, and @next/bundle-analyzer setup.
 
 ## Execution Status
 
 ### ✅ Completed Tasks
 
-**Phase E — Monthly Sweep**
-- ✅ Create `src/app/api/cron/billing-sweep/route.ts` — calls `sweep_expired_credits()` RPC
-- ✅ Create `vercel.json` — daily cron at midnight UTC (`0 0 * * *`)
+- [x] Create loading.tsx for /app/app/create/
+- [x] Create loading.tsx for /app/app/library/
+- [x] Create loading.tsx for /app/app/billing/
+- [x] Create loading.tsx for /app/app/settings/
+- [x] Add router.prefetch('/app/create') in library page
+- [x] Install and configure @next/bundle-analyzer
+- [x] Build verified — all routes compile cleanly
+- [x] Add empty state for Rate & Save step when no outputs generated
 
-**Frontend Wiring**
-- ✅ Install `@cashfreepayments/cashfree-js` for in-page checkout
-- ✅ Add type declarations for `@cashfreepayments/cashfree-js` (`src/types/cashfree-js.d.ts`)
-- ✅ Wire top-up pack buttons → `POST /api/billing/topup` → Cashfree checkout
-- ✅ Wire plan tier cards → `POST /api/billing/subscribe` → Cashfree subscription checkout
-- ✅ Handle return URL params (success/failure toasts)
-- ✅ Add loading states + disabled states during checkout
-- ✅ Wrap `useSearchParams` in Suspense boundary (Next.js 15 requirement)
-- ✅ Auto-refresh balance data after successful payment
-- ✅ Build passes clean
+### 🔄 In Progress
+
+*None*
+
+### ⏳ Pending Tasks
+
+*None*
 
 ## Changes Made
 
 ### Files Created
-- `src/app/api/cron/billing-sweep/route.ts`
-- `vercel.json`
-- `src/types/cashfree-js.d.ts`
+- src/app/app/create/loading.tsx — skeleton: title + step bar + chunk cards
+- src/app/app/library/loading.tsx — skeleton: title + tabs + search + 6 card grid
+- src/app/app/billing/loading.tsx — skeleton: title + 3 stat cards + topup grid + history
+- src/app/app/settings/loading.tsx — skeleton: title + 4 settings cards with form fields
 
 ### Files Modified
-- `package.json` — added `@cashfreepayments/cashfree-js`
-- `pnpm-lock.yaml`
-- `src/app/app/billing/page.tsx` — wired checkout flows + toasts + Suspense boundary
+- next.config.ts — added @next/bundle-analyzer (conditional on ANALYZE=true)
+- package.json — added "analyze" script, added @next/bundle-analyzer devDep
+- src/app/app/library/page.tsx — added router.prefetch('/app/create') on mount
+- src/app/app/create/page.tsx — added empty state for Rate & Save step (icon + message + "Go to Platform & Style" button)
+
+### Files Deleted
+-
+
+## Implementation Notes
+
+### Key Technical Details
+- loading.tsx files are Server Components — Next.js auto-wraps them as Suspense fallbacks during client-side navigation
+- Skeletons use existing Skeleton component + inline card styles matching ThemedCard appearance
+- Bundle analyzer opens browser treemaps for client + server bundles when `pnpm analyze` is run
+- Prefetch in library ensures create page JS is already downloaded before user clicks "Continue" on a dreamscape
+- Next.js Link components already prefetch visible links by default in production — sidebar nav benefits from this automatically
+
+## Testing Notes
+- Build passes cleanly with all new files
+- Create page: 19.8 kB + 254 kB first load
+- Library page: 6.5 kB + 212 kB first load
+- Billing: 5.6 kB + 176 kB first load
+- Settings: 4.05 kB + 203 kB first load
 
 ## Developer Actions Required
-- [ ] Run `supabase db push` to apply all billing migrations
-- [ ] Run `npx tsx scripts/sync-cashfree-plans.ts` to create plans in Cashfree
-- [ ] Add `CASHFREE_APP_ID` + `CASHFREE_SECRET_KEY` to GitHub repo secrets
-- [ ] Add `NEXT_PUBLIC_APP_URL` to Vercel env vars
-- [ ] Add `NEXT_PUBLIC_CASHFREE_ENVIRONMENT=production` to Vercel env vars
-- [ ] After deploying, configure webhook URL in Cashfree dashboard
-- [ ] Set `CASHFREE_WEBHOOK_SECRET` in `.env.local` + Vercel
-- [ ] Add `CRON_SECRET` to Vercel env vars (auto-set by Vercel for cron jobs)
-
----
-
-*This document tracks active implementation progress*
+- [ ] Run `pnpm analyze` to see bundle treemap and identify optimization targets
+- [ ] Test route transitions in dev to see skeletons (they flash briefly during navigation)

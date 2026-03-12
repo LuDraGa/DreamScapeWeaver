@@ -258,6 +258,9 @@ function SeedsTab({
   const [search, setSearch] = useState('')
   const originFilter = useMultiFilter()
 
+  // Prefetch the create page — most likely next navigation from library
+  useEffect(() => { router.prefetch('/app/create') }, [router])
+
   const originOptions = [
     { id: 'manual',    label: 'Manual' },
     { id: 'generated', label: 'AI Generated' },
