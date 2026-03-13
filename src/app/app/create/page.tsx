@@ -91,10 +91,11 @@ export default function CreatePage() {
   const { role } = useAuth()
   const isAdmin = role ? canAccessDevTools(role) : false
 
-  // Step management — start at step 1 if a dreamscape was pre-loaded from Library
-  const [step, setStep] = useState(() => currentDreamscape ? 1 : 0)
+  // Step management — always start at step 0 (combined setup for normal users)
+  // Pre-loaded dreamscapes from Library: setupTab defaults to 'format' so user picks a template
+  const [step, setStep] = useState(0)
 
-  // Normal user: Template → Seed → Rate & Save
+  // Normal user: Setup (tabbed) → Rate & Save
   // Power user: Dreamscape → Platform & Style → Generate → Rate & Save
   const steps = settings.powerUserMode
     ? [
@@ -104,9 +105,8 @@ export default function CreatePage() {
         { label: 'Rate & Save', s: 'D' },
       ]
     : [
-        { label: 'Template', s: 'A' },
-        { label: 'Seed', s: 'B' },
-        { label: 'Rate & Save', s: 'C' },
+        { label: 'Setup', s: 'A' },
+        { label: 'Rate & Save', s: 'B' },
       ]
 
   // Dreamscape state (Step A)
@@ -135,6 +135,7 @@ export default function CreatePage() {
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [selectedStyleVariant, setSelectedStyleVariant] = useState<string | undefined>(undefined)
+  const [setupTab, setSetupTab] = useState<'idea' | 'format'>(() => currentDreamscape ? 'format' : 'idea')
 
   // Initialize dialState from selected preset
   const getInitialDialState = (): DialState => {
@@ -733,8 +734,8 @@ Write the next part, continuing from where the story left off.`
       setComments([])
       saveDreamscape(dreamscape)
       showToast('Story generated!')
-      // Normal mode: step 2 = Rate & Save, Power mode: step 3 = Rate & Save
-      setStep(settings.powerUserMode ? 3 : 2)
+      // Normal mode: step 1 = Rate & Save, Power mode: step 3 = Rate & Save
+      setStep(settings.powerUserMode ? 3 : 1)
     } catch (error) {
       showToast('Failed to generate story')
       console.error(error)
@@ -818,6 +819,7 @@ Write the next part, continuing from where the story left off.`
     setSelectedCategory(null)
     setSelectedTemplate(null)
     setSelectedStyleVariant(undefined)
+    setSetupTab('idea')
   }
 
   const canProceed = chunks.some((c) => c.text.trim().length > 10)
@@ -866,171 +868,438 @@ Write the next part, continuing from where the story left off.`
       {/* STEP A: Template Selection (Normal) / Dreamscape (Power User) */}
       <div style={{ display: step === 0 ? 'block' : 'none' }}>
 
-        {/* Normal User: Template Selection First */}
+        {/* Normal User: Combined Setup — Tabbed (Your Idea | Choose Format) */}
         {!settings.powerUserMode && (
-          <div>
-            <h2 className="text-lg font-semibold mb-1 text-text-primary">Choose a Template</h2>
-            <p className="text-sm mb-5 text-text-muted">
-              Pick a content format optimized for your target platform
-            </p>
-
-            {/* Category Tabs */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              {[
-                { id: 'reddit' as const, icon: '🗨️', label: 'Reddit Stories' },
-                { id: 'short-form' as const, icon: '📱', label: 'Short Videos' },
-                { id: 'long-form' as const, icon: '🎥', label: 'Long Videos' },
-                { id: 'video-production' as const, icon: '🎬', label: 'Video Production' },
-                { id: 'audio-production' as const, icon: '🎙️', label: 'Audio Production' },
-                { id: 'marketing' as const, icon: '💼', label: 'Marketing' },
-              ].filter((cat) => settings.powerUserMode || isHeroCategory(cat.id)).map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCategory(cat.id)
-                    setSelectedTemplate(null)
-                    setSelectedStyleVariant(undefined)
-                  }}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all shrink-0"
-                  style={{
-                    background: selectedCategory === cat.id ? '#6366f1' : 'rgba(30,41,59,0.5)',
-                    color: selectedCategory === cat.id ? '#fff' : '#94a3b8',
-                    border: selectedCategory === cat.id ? '1px solid #818cf8' : '1px solid #334155',
-                  }}
-                >
-                  <span className="text-lg">{cat.icon}</span>
-                  <span>{cat.label}</span>
-                </button>
-              ))}
+          <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 200px)' }}>
+            {/* Tab Bar */}
+            <div className="flex gap-1 mb-5 p-1 rounded-xl bg-[rgba(15,23,42,0.5)]">
+              <button
+                onClick={() => setSetupTab('idea')}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+                style={{
+                  background: setupTab === 'idea' ? '#6366f1' : 'transparent',
+                  color: setupTab === 'idea' ? '#fff' : '#94a3b8',
+                }}
+              >
+                <span className="text-base">💡</span>
+                Your Idea
+                {canProceed && <span className="w-2 h-2 rounded-full bg-green-400 ml-1" />}
+              </button>
+              <button
+                onClick={() => setSetupTab('format')}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+                style={{
+                  background: setupTab === 'format' ? '#6366f1' : 'transparent',
+                  color: setupTab === 'format' ? '#fff' : '#94a3b8',
+                }}
+              >
+                <span className="text-base">📋</span>
+                Choose Format
+                {selectedTemplate && <span className="w-2 h-2 rounded-full bg-green-400 ml-1" />}
+              </button>
             </div>
 
-            {/* Template Grid */}
-            {selectedCategory && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 max-h-[60vh] overflow-y-auto pr-2">
-                {getTemplatesByCategory(selectedCategory, !settings.powerUserMode).map((template) => {
-                  const isSelected = selectedTemplate?.id === template.id
-                  return (
-                    <ThemedCard
-                      key={template.id}
-                      onClick={() => {
-                        setSelectedTemplate(template)
-                        setSelectedStyleVariant(getDefaultStyleVariant(template))
-                      }}
-                      className={`cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
-                          : 'hover:border-primary/50 hover:bg-primary/5'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-3xl">{template.icon}</span>
+            {/* Tab Content */}
+            <div className="flex-1 min-h-0">
+
+              {/* === YOUR IDEA TAB === */}
+              {setupTab === 'idea' && (
+                <div>
+                  {/* Generate Ideas Panel */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowGenPanel(!showGenPanel)}
+                        className="bg-transparent border-primary/30 text-primary-muted"
+                      >
+                        <SparklesIcon className="w-4 h-4 mr-2" />
+                        Generate Ideas {selectedTemplate?.seedPrompt ? `for ${selectedTemplate.displayName}` : ''}
+                      </Button>
+                      {!selectedTemplate && showGenPanel && (
+                        <span className="text-xs text-amber-400">
+                          Tip: Pick a format first for better seeds →
+                        </span>
+                      )}
+                    </div>
+
+                    {showGenPanel && (
+                      <ThemedCard className="mb-4 bg-primary/5 border-primary/20">
+                        <div className="flex items-end gap-3 mb-3 flex-wrap">
+                          <div className="flex-1 min-w-48">
+                            <label className="text-xs font-medium mb-1 block text-text-secondary">
+                              Vibe (optional)
+                            </label>
+                            <Input
+                              value={genVibe}
+                              onChange={(e) => setGenVibe(e.target.value)}
+                              placeholder={selectedTemplate?.category === 'reddit'
+                                ? 'e.g. family drama, workplace conflict...'
+                                : 'e.g. dark comedy, revenge...'}
+                              className="bg-[rgba(15,23,42,0.6)] border-[#334155] text-text-primary"
+                            />
+                          </div>
                           <div>
-                            <h3 className={`font-semibold ${isSelected ? 'text-primary' : 'text-text-primary'} transition-colors`}>
-                              {template.displayName}
-                            </h3>
-                            <p className="text-xs text-text-muted">{template.duration} · ~{template.wordCount} words</p>
+                            <label className="text-xs font-medium mb-1 block text-text-secondary">
+                              Count
+                            </label>
+                            <Select
+                              value={genCount.toString()}
+                              onValueChange={(v) => setGenCount(Number(v))}
+                            >
+                              <SelectTrigger className="w-20 bg-[rgba(15,23,42,0.6)] border-[#334155]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-[rgba(15,23,42,0.95)] border-[#1e293b]">
+                                {[1, 2, 3, 5].map((n) => (
+                                  <SelectItem key={n} value={n.toString()}>
+                                    {n}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button
+                            onClick={async () => {
+                              setGenLoading(true)
+                              try {
+                                const results = await api.dreamscapes.generate({
+                                  count: genCount,
+                                  vibe: genVibe,
+                                  intensity: genIntensity,
+                                  seedPrompt: selectedTemplate?.seedPrompt,
+                                  templateId: selectedTemplate?.id,
+                                })
+                                setGenResults(results)
+                                showToast(`Generated ${results.length} ideas!`)
+                              } catch (error) {
+                                showToast('Failed to generate ideas')
+                                console.error(error)
+                              } finally {
+                                setGenLoading(false)
+                              }
+                            }}
+                            disabled={genLoading}
+                            className="bg-primary hover:bg-primary-light text-white"
+                          >
+                            {genLoading ? 'Generating...' : 'Generate'}
+                          </Button>
+                        </div>
+
+                        {genLoading && (
+                          <div className="grid gap-2">
+                            {Array.from({ length: genCount }).map((_, i) => (
+                              <Skeleton key={i} className="h-20 w-full" />
+                            ))}
+                          </div>
+                        )}
+
+                        {genResults.length > 0 && !genLoading && (
+                          <div className="grid gap-2 max-h-72 overflow-y-auto">
+                            {genResults.map((d) => (
+                              <div
+                                key={d.id}
+                                className="p-3 rounded-lg flex gap-3 group bg-[rgba(15,23,42,0.6)] border border-[#1e293b]"
+                              >
+                                <p className="text-sm flex-1 text-text-secondary">{d.chunks[0]?.text}</p>
+                                <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => handleUseGeneratedIdea(d)}
+                                    className="px-2 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-light"
+                                  >
+                                    Use
+                                  </button>
+                                  <button
+                                    onClick={() => dismissGeneratedIdea(d.id)}
+                                    className="px-2 py-1 rounded text-xs text-text-muted hover:text-text-primary"
+                                  >
+                                    Dismiss
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </ThemedCard>
+                    )}
+                  </div>
+
+                  {/* Seed Text Input */}
+                  <div className="space-y-4 mb-6">
+                    {chunks.map((chunk, index) => (
+                      <ThemedCard key={chunk.id}>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-sm font-medium text-text-secondary">
+                            {chunks.length > 1 ? `Part ${index + 1}` : 'Your idea'}
+                          </label>
+                          {chunks.length > 1 && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeChunk(chunk.id)}
+                              className="h-6 text-xs text-text-muted hover:text-text-primary"
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                        <Textarea
+                          value={chunk.text}
+                          onChange={(e) => updateChunk(chunk.id, 'text', e.target.value)}
+                          placeholder="Enter your story seed... (e.g., 'A woman refuses to attend her sister's wedding because...')"
+                          className="min-h-[120px] bg-[rgba(15,23,42,0.5)] border-[#1e293b] text-text-primary placeholder:text-text-muted"
+                        />
+                      </ThemedCard>
+                    ))}
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addChunk}
+                      className="w-full bg-transparent border-[#1e293b] text-text-secondary hover:text-text-primary"
+                    >
+                      <PlusIcon className="w-4 h-4 mr-2" />
+                      Add Another Part
+                    </Button>
+                  </div>
+
+                  {/* Admin Prompt Editor */}
+                  {isAdmin && selectedTemplate && (
+                    <div className="mb-4">
+                      <button
+                        onClick={() => {
+                          if (!showPromptEditor) {
+                            const dreamscape = {
+                              id: currentDreamscape?.id || uid(),
+                              title: chunks[0].text.slice(0, 50) || 'Untitled',
+                              chunks,
+                              createdAt: currentDreamscape?.createdAt || new Date().toISOString(),
+                              updatedAt: new Date().toISOString(),
+                            }
+                            const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, dreamscape, selectedStyleVariant)
+                            setEditedSystemPrompt(systemPrompt)
+                            setEditedUserPrompt(userPrompt)
+                          }
+                          setShowPromptEditor(!showPromptEditor)
+                        }}
+                        className="flex items-center gap-2 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors mb-2"
+                      >
+                        {showPromptEditor ? <ChevronUpIcon className="w-3.5 h-3.5" /> : <ChevronDownIcon className="w-3.5 h-3.5" />}
+                        Edit Prompt (Admin)
+                      </button>
+
+                      {showPromptEditor && (
+                        <div className="space-y-3 p-3 rounded-lg bg-[rgba(15,23,42,0.4)] border border-amber-500/20">
+                          <div>
+                            <label className="text-xs font-medium text-amber-400 mb-1 block">System Prompt</label>
+                            <textarea
+                              value={editedSystemPrompt}
+                              onChange={(e) => setEditedSystemPrompt(e.target.value)}
+                              className="w-full px-3 py-2 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500 resize-y"
+                              rows={8}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-amber-400 mb-1 block">User Prompt</label>
+                            <textarea
+                              value={editedUserPrompt}
+                              onChange={(e) => setEditedUserPrompt(e.target.value)}
+                              className="w-full px-3 py-2 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500 resize-y"
+                              rows={6}
+                            />
                           </div>
                         </div>
-                      </div>
-                      <p className="text-sm text-text-secondary line-clamp-2">{template.description}</p>
-                    </ThemedCard>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Template Preview + Style Variant Picker */}
-            {selectedTemplate && (
-              <ThemedCard className="mb-6 border-primary/30 bg-primary/5">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">{selectedTemplate.icon}</span>
-                    <div>
-                      <h3 className="text-lg font-semibold text-text-primary">{selectedTemplate.displayName}</h3>
-                      <p className="text-sm text-text-muted">{selectedTemplate.description}</p>
+                      )}
                     </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSelectedTemplate(null)
-                      setSelectedStyleVariant(undefined)
-                    }}
-                    className="text-text-muted hover:text-text-primary transition-colors"
-                  >
-                    <XIcon className="w-5 h-5" />
-                  </button>
+                  )}
                 </div>
+              )}
 
-                {/* Style Variant Picker */}
-                {selectedTemplate.styleVariants && selectedTemplate.styleVariants.length > 0 && (
-                  <div className="mb-4">
-                    <label className="text-xs font-medium text-text-secondary mb-2 block">Style</label>
-                    <div className="flex gap-2 flex-wrap">
-                      {selectedTemplate.styleVariants.map((variant) => {
-                        const isActive = selectedStyleVariant === variant.id
+              {/* === CHOOSE FORMAT TAB === */}
+              {setupTab === 'format' && (
+                <div>
+                  {/* Category Tabs */}
+                  <div className="flex gap-2 mb-5 overflow-x-auto pb-2">
+                    {[
+                      { id: 'reddit' as const, icon: '🗨️', label: 'Reddit Stories' },
+                      { id: 'short-form' as const, icon: '📱', label: 'Short Videos' },
+                      { id: 'long-form' as const, icon: '🎥', label: 'Long Videos' },
+                      { id: 'video-production' as const, icon: '🎬', label: 'Video Production' },
+                      { id: 'audio-production' as const, icon: '🎙️', label: 'Audio Production' },
+                      { id: 'marketing' as const, icon: '💼', label: 'Marketing' },
+                    ].filter((cat) => settings.powerUserMode || isHeroCategory(cat.id)).map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          setSelectedCategory(cat.id)
+                          setSelectedTemplate(null)
+                          setSelectedStyleVariant(undefined)
+                        }}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all shrink-0"
+                        style={{
+                          background: selectedCategory === cat.id ? '#6366f1' : 'rgba(30,41,59,0.5)',
+                          color: selectedCategory === cat.id ? '#fff' : '#94a3b8',
+                          border: selectedCategory === cat.id ? '1px solid #818cf8' : '1px solid #334155',
+                        }}
+                      >
+                        <span className="text-lg">{cat.icon}</span>
+                        <span>{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Template Grid */}
+                  {selectedCategory && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-5 max-h-[40vh] overflow-y-auto pr-2">
+                      {getTemplatesByCategory(selectedCategory, !settings.powerUserMode).map((template) => {
+                        const isSelected = selectedTemplate?.id === template.id
                         return (
-                          <button
-                            key={variant.id}
-                            onClick={() => setSelectedStyleVariant(variant.id)}
-                            className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-left"
-                            style={{
-                              background: isActive ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
-                              color: isActive ? '#a5b4fc' : '#94a3b8',
-                              border: isActive ? '1px solid rgba(99,102,241,0.4)' : '1px solid #334155',
+                          <ThemedCard
+                            key={template.id}
+                            onClick={() => {
+                              setSelectedTemplate(template)
+                              setSelectedStyleVariant(getDefaultStyleVariant(template))
                             }}
+                            className={`cursor-pointer transition-all ${
+                              isSelected
+                                ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
+                                : 'hover:border-primary/50 hover:bg-primary/5'
+                            }`}
                           >
-                            <span className="block font-semibold">{variant.name}</span>
-                            <span className="block text-xs mt-0.5 opacity-70">{variant.description}</span>
-                          </button>
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <span className="text-3xl">{template.icon}</span>
+                                <div>
+                                  <h3 className={`font-semibold ${isSelected ? 'text-primary' : 'text-text-primary'} transition-colors`}>
+                                    {template.displayName}
+                                  </h3>
+                                  <p className="text-xs text-text-muted">{template.duration} · ~{template.wordCount} words</p>
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-sm text-text-secondary line-clamp-2">{template.description}</p>
+                          </ThemedCard>
                         )
                       })}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Template Settings Summary */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4 p-4 rounded-lg bg-surface-secondary/50">
-                  <div>
-                    <span className="text-text-muted">Duration:</span>
-                    <p className="text-text-primary font-medium">{selectedTemplate.duration}</p>
-                  </div>
-                  <div>
-                    <span className="text-text-muted">Word Count:</span>
-                    <p className="text-text-primary font-medium">~{selectedTemplate.wordCount}</p>
-                  </div>
-                  <div>
-                    <span className="text-text-muted">Tone:</span>
-                    <p className="text-text-primary font-medium capitalize">{selectedTemplate.settings.tone}</p>
-                  </div>
-                  <div>
-                    <span className="text-text-muted">
-                      {selectedTemplate.subreddit ? 'Subreddit:' : 'Platforms:'}
-                    </span>
-                    <p className="text-text-primary font-medium">
-                      {selectedTemplate.subreddit
-                        ? `r/${selectedTemplate.subreddit}`
-                        : selectedTemplate.platforms.length > 1
-                          ? 'Multi-platform'
-                          : selectedTemplate.platforms[0]}
-                    </p>
+                  {/* Style Variant Picker (shown when template selected) */}
+                  {selectedTemplate && selectedTemplate.styleVariants && selectedTemplate.styleVariants.length > 0 && (
+                    <ThemedCard className="mb-5 border-primary/30 bg-primary/5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{selectedTemplate.icon}</span>
+                          <div>
+                            <h3 className="font-semibold text-text-primary">{selectedTemplate.displayName}</h3>
+                            <p className="text-xs text-text-muted">{selectedTemplate.description}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedTemplate(null)
+                            setSelectedStyleVariant(undefined)
+                          }}
+                          className="text-text-muted hover:text-text-primary transition-colors"
+                        >
+                          <XIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <label className="text-xs font-medium text-text-secondary mb-2 block">Style</label>
+                      <div className="flex gap-2 flex-wrap">
+                        {selectedTemplate.styleVariants.map((variant) => {
+                          const isActive = selectedStyleVariant === variant.id
+                          return (
+                            <button
+                              key={variant.id}
+                              onClick={() => setSelectedStyleVariant(variant.id)}
+                              className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-left"
+                              style={{
+                                background: isActive ? 'rgba(99,102,241,0.2)' : 'rgba(30,41,59,0.5)',
+                                color: isActive ? '#a5b4fc' : '#94a3b8',
+                                border: isActive ? '1px solid rgba(99,102,241,0.4)' : '1px solid #334155',
+                              }}
+                            >
+                              <span className="block font-semibold">{variant.name}</span>
+                              <span className="block text-xs mt-0.5 opacity-70">{variant.description}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </ThemedCard>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Status Bar + Generate Button (always visible) */}
+            <div className="mt-4 p-4 rounded-xl bg-[rgba(15,23,42,0.6)] border border-[#1e293b]">
+              <div className="flex items-center gap-4 mb-3">
+                {/* Seed Status */}
+                <div className="flex-1 flex items-center gap-2 min-w-0">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${canProceed ? 'bg-green-400' : 'bg-[#334155]'}`} />
+                  <span className="text-xs font-medium text-text-secondary shrink-0">Idea:</span>
+                  {canProceed ? (
+                    <button
+                      onClick={() => setSetupTab('idea')}
+                      className="text-xs text-text-primary truncate hover:text-primary transition-colors"
+                    >
+                      {chunks[0].text.slice(0, 60)}{chunks[0].text.length > 60 ? '...' : ''}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSetupTab('idea')}
+                      className="text-xs text-text-muted hover:text-text-primary transition-colors"
+                    >
+                      Not entered yet
+                    </button>
+                  )}
+                </div>
+
+                {/* Template Status */}
+                <div className="flex-1 flex items-center gap-2 min-w-0">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${selectedTemplate ? 'bg-green-400' : 'bg-[#334155]'}`} />
+                  <span className="text-xs font-medium text-text-secondary shrink-0">Format:</span>
+                  {selectedTemplate ? (
+                    <button
+                      onClick={() => setSetupTab('format')}
+                      className="text-xs text-text-primary truncate hover:text-primary transition-colors"
+                    >
+                      {selectedTemplate.icon} {selectedTemplate.displayName}
+                      {selectedStyleVariant && selectedTemplate.styleVariants
+                        ? ` — ${selectedTemplate.styleVariants.find((v) => v.id === selectedStyleVariant)?.name}`
+                        : ''}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSetupTab('format')}
+                      className="text-xs text-text-muted hover:text-text-primary transition-colors"
+                    >
+                      Not selected yet
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Generate Button */}
+              <Button
+                onClick={() => selectedTemplate && handleGenerateFromTemplate(selectedTemplate)}
+                disabled={generating || !canProceed || !selectedTemplate}
+                size="lg"
+                className="w-full bg-primary hover:bg-primary-light text-white disabled:opacity-50"
+              >
+                {generating ? 'Generating...' : !canProceed && !selectedTemplate ? 'Enter an idea & pick a format to generate' : !canProceed ? 'Enter your idea to generate' : !selectedTemplate ? 'Pick a format to generate' : 'Generate Story'}
+              </Button>
+
+              {generating && (
+                <div className="mt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
+                    <p className="text-sm text-text-muted">Generating your story...</p>
                   </div>
                 </div>
-              </ThemedCard>
-            )}
-
-            {/* Navigation */}
-            <div className="flex justify-end">
-              <Button
-                onClick={() => {
-                  if (selectedTemplate) setStep(1)
-                  else showToast('Please select a template first')
-                }}
-                disabled={!selectedTemplate}
-                className="bg-primary hover:bg-primary-light text-white"
-              >
-                Next: Add Your Seed
-              </Button>
+              )}
             </div>
           </div>
         )}
@@ -1427,272 +1696,8 @@ Write the next part, continuing from where the story left off.`
         )}
       </div>
 
-      {/* STEP B: Seed (Normal) / Platform & Style (Power User) */}
+      {/* STEP B: Platform & Style (Power User Only) */}
       <div style={{ display: step === 1 ? 'block' : 'none' }}>
-        {/* Normal User Mode: Seed Input (template already selected in Step A) */}
-        {!settings.powerUserMode && (
-          <div>
-            {/* Template Badge — reminder of what's selected */}
-            {selectedTemplate && (
-              <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
-                <span className="text-2xl">{selectedTemplate.icon}</span>
-                <div className="flex-1">
-                  <span className="font-medium text-text-primary">{selectedTemplate.displayName}</span>
-                  {selectedStyleVariant && selectedTemplate.styleVariants && (
-                    <span className="text-xs text-primary ml-2">
-                      — {selectedTemplate.styleVariants.find((v) => v.id === selectedStyleVariant)?.name}
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => setStep(0)}
-                  className="text-xs text-text-muted hover:text-text-primary transition-colors"
-                >
-                  Change
-                </button>
-              </div>
-            )}
-
-            <h2 className="text-lg font-semibold mb-1 text-text-primary">Your Story Seed</h2>
-            <p className="text-sm mb-5 text-text-muted">
-              Write your idea, or generate {selectedTemplate?.displayName || 'template'}-optimized seeds
-            </p>
-
-            {/* Generate Ideas Panel (uses template seedPrompt) */}
-            <div className="mb-4">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowGenPanel(!showGenPanel)}
-                className="bg-transparent border-primary/30 text-primary-muted mb-3"
-              >
-                <SparklesIcon className="w-4 h-4 mr-2" />
-                Generate Ideas {selectedTemplate?.seedPrompt ? `for ${selectedTemplate.displayName}` : ''}
-              </Button>
-
-              {showGenPanel && (
-                <ThemedCard className="mb-4 bg-primary/5 border-primary/20">
-                  <div className="flex items-end gap-3 mb-3 flex-wrap">
-                    <div className="flex-1 min-w-48">
-                      <label className="text-xs font-medium mb-1 block text-text-secondary">
-                        Vibe (optional)
-                      </label>
-                      <Input
-                        value={genVibe}
-                        onChange={(e) => setGenVibe(e.target.value)}
-                        placeholder={selectedTemplate?.category === 'reddit'
-                          ? 'e.g. family drama, workplace conflict...'
-                          : 'e.g. dark comedy, revenge...'}
-                        className="bg-[rgba(15,23,42,0.6)] border-[#334155] text-text-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium mb-1 block text-text-secondary">
-                        Count
-                      </label>
-                      <Select
-                        value={genCount.toString()}
-                        onValueChange={(v) => setGenCount(Number(v))}
-                      >
-                        <SelectTrigger className="w-20 bg-[rgba(15,23,42,0.6)] border-[#334155]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[rgba(15,23,42,0.95)] border-[#1e293b]">
-                          {[1, 2, 3, 5].map((n) => (
-                            <SelectItem key={n} value={n.toString()}>
-                              {n}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button
-                      onClick={async () => {
-                        setGenLoading(true)
-                        try {
-                          const results = await api.dreamscapes.generate({
-                            count: genCount,
-                            vibe: genVibe,
-                            intensity: genIntensity,
-                            seedPrompt: selectedTemplate?.seedPrompt,
-                            templateId: selectedTemplate?.id,
-                          })
-                          setGenResults(results)
-                          showToast(`Generated ${results.length} ideas!`)
-                        } catch (error) {
-                          showToast('Failed to generate ideas')
-                          console.error(error)
-                        } finally {
-                          setGenLoading(false)
-                        }
-                      }}
-                      disabled={genLoading}
-                      className="bg-primary hover:bg-primary-light text-white"
-                    >
-                      {genLoading ? 'Generating...' : 'Generate'}
-                    </Button>
-                  </div>
-
-                  {genLoading && (
-                    <div className="grid gap-2">
-                      {Array.from({ length: genCount }).map((_, i) => (
-                        <Skeleton key={i} className="h-20 w-full" />
-                      ))}
-                    </div>
-                  )}
-
-                  {genResults.length > 0 && !genLoading && (
-                    <div className="grid gap-2 max-h-72 overflow-y-auto">
-                      {genResults.map((d) => (
-                        <div
-                          key={d.id}
-                          className="p-3 rounded-lg flex gap-3 group bg-[rgba(15,23,42,0.6)] border border-[#1e293b]"
-                        >
-                          <p className="text-sm flex-1 text-text-secondary">{d.chunks[0]?.text}</p>
-                          <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => handleUseGeneratedIdea(d)}
-                              className="px-2 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-light"
-                            >
-                              Use
-                            </button>
-                            <button
-                              onClick={() => dismissGeneratedIdea(d.id)}
-                              className="px-2 py-1 rounded text-xs text-text-muted hover:text-text-primary"
-                            >
-                              Dismiss
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </ThemedCard>
-              )}
-            </div>
-
-            {/* Seed Text Input */}
-            <div className="space-y-4 mb-6">
-              {chunks.map((chunk, index) => (
-                <ThemedCard key={chunk.id}>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-text-secondary">
-                      {chunks.length > 1 ? `Part ${index + 1}` : 'Your idea'}
-                    </label>
-                    {chunks.length > 1 && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeChunk(chunk.id)}
-                        className="h-6 text-xs text-text-muted hover:text-text-primary"
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                  <Textarea
-                    value={chunk.text}
-                    onChange={(e) => updateChunk(chunk.id, 'text', e.target.value)}
-                    placeholder="Enter your story seed... (e.g., 'A woman refuses to attend her sister's wedding because...')"
-                    className="min-h-[120px] bg-[rgba(15,23,42,0.5)] border-[#1e293b] text-text-primary placeholder:text-text-muted"
-                  />
-                </ThemedCard>
-              ))}
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addChunk}
-                className="w-full bg-transparent border-[#1e293b] text-text-secondary hover:text-text-primary"
-              >
-                <PlusIcon className="w-4 h-4 mr-2" />
-                Add Another Part
-              </Button>
-            </div>
-
-            {/* Admin Prompt Editor */}
-            {isAdmin && selectedTemplate && (
-              <div className="mb-4">
-                <button
-                  onClick={() => {
-                    if (!showPromptEditor) {
-                      const dreamscape = {
-                        id: currentDreamscape?.id || uid(),
-                        title: chunks[0].text.slice(0, 50) || 'Untitled',
-                        chunks,
-                        createdAt: currentDreamscape?.createdAt || new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                      }
-                      const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, dreamscape, selectedStyleVariant)
-                      setEditedSystemPrompt(systemPrompt)
-                      setEditedUserPrompt(userPrompt)
-                    }
-                    setShowPromptEditor(!showPromptEditor)
-                  }}
-                  className="flex items-center gap-2 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors mb-2"
-                >
-                  {showPromptEditor ? <ChevronUpIcon className="w-3.5 h-3.5" /> : <ChevronDownIcon className="w-3.5 h-3.5" />}
-                  Edit Prompt (Admin)
-                </button>
-
-                {showPromptEditor && (
-                  <div className="space-y-3 p-3 rounded-lg bg-[rgba(15,23,42,0.4)] border border-amber-500/20">
-                    <div>
-                      <label className="text-xs font-medium text-amber-400 mb-1 block">System Prompt</label>
-                      <textarea
-                        value={editedSystemPrompt}
-                        onChange={(e) => setEditedSystemPrompt(e.target.value)}
-                        className="w-full px-3 py-2 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500 resize-y"
-                        rows={8}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-amber-400 mb-1 block">User Prompt</label>
-                      <textarea
-                        value={editedUserPrompt}
-                        onChange={(e) => setEditedUserPrompt(e.target.value)}
-                        className="w-full px-3 py-2 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500 resize-y"
-                        rows={6}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Generate Button */}
-            <Button
-              onClick={() => selectedTemplate && handleGenerateFromTemplate(selectedTemplate)}
-              disabled={generating || !canProceed || !selectedTemplate}
-              size="lg"
-              className="w-full bg-primary hover:bg-primary-light text-white mb-4"
-            >
-              {generating ? 'Generating...' : 'Generate Story'}
-            </Button>
-
-            {generating && (
-              <ThemedCard className="mb-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
-                  <p className="text-sm text-text-muted">Generating your story...</p>
-                </div>
-                <Skeleton className="h-32" />
-              </ThemedCard>
-            )}
-
-            {/* Navigation */}
-            <div className="flex justify-between mt-4">
-              <Button
-                variant="outline"
-                onClick={() => setStep(0)}
-                className="bg-transparent border-[#1e293b] text-text-secondary"
-              >
-                ← Back to Template
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* Power User Mode: Original Preset UI */}
         {settings.powerUserMode && (
           <>
@@ -2027,11 +2032,11 @@ Write the next part, continuing from where the story left off.`
       </div>
       )}
 
-      {/* STEP D: Rate & Save (Step 2 in normal mode, Step 3 in power user mode) */}
+      {/* STEP D: Rate & Save (Step 1 in normal mode, Step 3 in power user mode) */}
       <div
         style={{
           display:
-            ((!settings.powerUserMode && step === 2) || (settings.powerUserMode && step === 3))
+            ((!settings.powerUserMode && step === 1) || (settings.powerUserMode && step === 3))
               ? 'block'
               : 'none',
         }}
