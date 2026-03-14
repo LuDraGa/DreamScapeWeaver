@@ -35,7 +35,7 @@ const FEEDBACK_CHIPS = [
 import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
-import type { Dreamscape, OutputVariant, DialState, IntensityValues, Template, TemplateCategory, Platform, OutputFormat } from '@/lib/types'
+import type { Dreamscape, OutputVariant, DialState, IntensityValues, Template, TemplateCategory, Platform, OutputFormat, AIReviewResult } from '@/lib/types'
 import { LabeledSlider } from '@/components/design-system/labeled-slider'
 import { CopyButton } from '@/components/design-system/copy-button'
 import { PromptInspector } from '@/components/dev-tools/prompt-inspector'
@@ -189,6 +189,12 @@ export default function CreatePage() {
   const [showPromptEditor, setShowPromptEditor] = useState(false)
   const [editedSystemPrompt, setEditedSystemPrompt] = useState('')
   const [editedUserPrompt, setEditedUserPrompt] = useState('')
+
+  // AI Review state (admin-only)
+  const [aiReview, setAiReview] = useState<AIReviewResult | null>(null)
+  const [reviewLoading, setReviewLoading] = useState(false)
+  const [reviewExpanded, setReviewExpanded] = useState(false)
+  const [reviewError, setReviewError] = useState('')
 
   // UI state
   const [toast, setToast] = useState('')
@@ -563,6 +569,52 @@ Write the next part, continuing from where the story left off.`
       feedback: overrides.feedback ?? feedback[variantIndex],
       notes: overrides.notes ?? notes[variantIndex],
       createdAt: base.createdAt || new Date().toISOString(),
+    }
+  }
+
+  // AI Review handler (admin-only)
+  const handleAIReview = async () => {
+    const output = generatedOutputs[activeVariant]
+    if (!output) return
+
+    setReviewLoading(true)
+    setReviewError('')
+    setAiReview(null)
+    try {
+      // Get the prompt that was used — reconstruct from template or use overrides
+      let systemPrompt = ''
+      let userPrompt = ''
+
+      if (selectedTemplate) {
+        const { systemPrompt: sp, userPrompt: up } = buildPromptFromTemplate(
+          selectedTemplate,
+          currentDreamscape || { id: '', title: '', chunks, createdAt: '', updatedAt: '' },
+          selectedStyleVariant,
+        )
+        systemPrompt = (editedSystemPrompt || sp)
+        userPrompt = (editedUserPrompt || up)
+      } else {
+        systemPrompt = editedSystemPrompt || 'Default generation prompt (no template)'
+        userPrompt = editedUserPrompt || chunks.map((c) => c.text).join('\n\n')
+      }
+
+      const dreamscapeText = chunks.map((c) => c.text).join('\n\n')
+
+      const review = await api.outputs.review({
+        dreamscapeText,
+        systemPrompt,
+        userPrompt,
+        outputText: output.text,
+        templateName: selectedTemplate?.displayName,
+      })
+
+      setAiReview(review)
+      setReviewExpanded(true)
+    } catch (error) {
+      setReviewError(error instanceof Error ? error.message : 'Failed to run AI review')
+      console.error('AI Review error:', error)
+    } finally {
+      setReviewLoading(false)
     }
   }
 
@@ -2089,7 +2141,7 @@ Write the next part, continuing from where the story left off.`
           {generatedOutputs.map((output, idx) => (
             <button
               key={idx}
-              onClick={() => { setActiveVariant(idx); setInspectorFocus('default') }}
+              onClick={() => { setActiveVariant(idx); setInspectorFocus('default'); setAiReview(null); setReviewError('') }}
               className="flex-1 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
               style={{
                 background: activeVariant === idx ? '#6366f1' : 'transparent',
@@ -2281,6 +2333,177 @@ Write the next part, continuing from where the story left off.`
             </Button>
           </ThemedCard>
         </div>
+
+        {/* AI Review (Admin-only) */}
+        {isAdmin && (
+        <ThemedCard className="mb-4 border-[#1e293b] bg-[rgba(99,102,241,0.03)]">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-text-primary">AI Review</span>
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/20 text-primary">ADMIN</span>
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-purple-500/20 text-purple-400">GPT-5.4</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {aiReview && (
+                <button
+                  onClick={() => setReviewExpanded(!reviewExpanded)}
+                  className="text-xs text-text-muted hover:text-text-primary transition-colors"
+                >
+                  {reviewExpanded ? 'Collapse' : 'Expand'}
+                </button>
+              )}
+              <Button
+                size="sm"
+                onClick={handleAIReview}
+                disabled={reviewLoading || !generatedOutputs[activeVariant]}
+                className="bg-primary hover:bg-primary-light text-white text-xs disabled:opacity-50"
+              >
+                <SparklesIcon className="w-3.5 h-3.5 mr-1.5" />
+                {reviewLoading ? 'Reviewing...' : aiReview ? 'Re-review' : 'Run Review'}
+              </Button>
+            </div>
+          </div>
+
+          {reviewError && (
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400 mb-3">
+              {reviewError}
+            </div>
+          )}
+
+          {reviewLoading && (
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          )}
+
+          {aiReview && !reviewLoading && (
+            <div className="space-y-4">
+              {/* Overall Grade Banner */}
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-[rgba(15,23,42,0.4)]">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold"
+                  style={{
+                    background: aiReview.overallGrade <= 'B'
+                      ? 'rgba(34,197,94,0.15)'
+                      : aiReview.overallGrade === 'C'
+                        ? 'rgba(234,179,8,0.15)'
+                        : 'rgba(239,68,68,0.15)',
+                    color: aiReview.overallGrade <= 'B'
+                      ? '#4ade80'
+                      : aiReview.overallGrade === 'C'
+                        ? '#eab308'
+                        : '#f87171',
+                  }}
+                >
+                  {aiReview.overallGrade}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-text-primary">{aiReview.verdict}</p>
+                  <div className="flex gap-1 mt-2 flex-wrap">
+                    {aiReview.rubricScores.map((rs) => (
+                      <span
+                        key={rs.rubric}
+                        className="px-2 py-0.5 rounded text-[10px] font-mono"
+                        style={{
+                          background: rs.score >= 8
+                            ? 'rgba(34,197,94,0.12)'
+                            : rs.score >= 5
+                              ? 'rgba(234,179,8,0.12)'
+                              : 'rgba(239,68,68,0.12)',
+                          color: rs.score >= 8 ? '#4ade80' : rs.score >= 5 ? '#eab308' : '#f87171',
+                        }}
+                      >
+                        {rs.rubric}: {rs.score}/10
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Crisp Summary — Always Visible */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Weaknesses */}
+                <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                  <h5 className="text-xs font-medium text-red-400 mb-2">Weaknesses to Fix</h5>
+                  <ul className="space-y-1">
+                    {aiReview.weaknesses.map((w, i) => (
+                      <li key={i} className="text-xs text-text-secondary flex gap-1.5">
+                        <span className="text-red-400 shrink-0">-</span>
+                        <span>{w}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* Strengths */}
+                <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/10">
+                  <h5 className="text-xs font-medium text-green-400 mb-2">Strengths to Preserve</h5>
+                  <ul className="space-y-1">
+                    {aiReview.strengths.map((s, i) => (
+                      <li key={i} className="text-xs text-text-secondary flex gap-1.5">
+                        <span className="text-green-400 shrink-0">+</span>
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Prompt Suggestions */}
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <h5 className="text-xs font-medium text-primary mb-2">Prompt Suggestions</h5>
+                <ul className="space-y-1.5">
+                  {aiReview.promptSuggestions.map((s, i) => (
+                    <li key={i} className="text-xs text-text-secondary flex gap-1.5">
+                      <span className="text-primary shrink-0">*</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Additional Notes */}
+              {aiReview.additionalNotes.length > 0 && (
+                <div className="p-3 rounded-lg bg-[rgba(15,23,42,0.3)]">
+                  <h5 className="text-xs font-medium text-text-muted mb-2">Additional Notes</h5>
+                  <ul className="space-y-1">
+                    {aiReview.additionalNotes.map((n, i) => (
+                      <li key={i} className="text-xs text-text-muted">{n}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Detailed Analysis — Expandable */}
+              {reviewExpanded && (
+                <div className="border-t border-[#1e293b] pt-4">
+                  <h5 className="text-xs font-medium text-text-secondary mb-3">Detailed Rubric Analysis</h5>
+                  <div className="space-y-3">
+                    {aiReview.rubricAnalyses.map((ra) => (
+                      <div key={ra.rubric} className="p-3 rounded-lg bg-[rgba(15,23,42,0.3)]">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-medium text-text-primary">{ra.rubric}</span>
+                          <span
+                            className="text-xs font-mono font-medium"
+                            style={{
+                              color: ra.score >= 8 ? '#4ade80' : ra.score >= 5 ? '#eab308' : '#f87171',
+                            }}
+                          >
+                            {ra.score}/10
+                          </span>
+                        </div>
+                        <p className="text-xs text-text-secondary leading-relaxed">{ra.analysis}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </ThemedCard>
+        )}
 
         {/* Rating */}
         <ThemedCard className="mb-4 bg-[rgba(15,23,42,0.3)] border-[#1e293b]">

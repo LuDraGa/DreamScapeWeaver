@@ -32,9 +32,9 @@ export function getLangfuse(): Langfuse {
  */
 export function startLangfuseGeneration(
   name: string,
-  input: unknown,
+  messages: unknown,
   modelParameters?: Record<string, string | number | boolean | string[] | null>,
-  options?: { userId?: string, metadata?: Record<string, unknown> }
+  options?: { userId?: string, metadata?: Record<string, unknown>, model?: string }
 ) {
   const langfuse = getLangfuse()
 
@@ -46,8 +46,8 @@ export function startLangfuseGeneration(
 
   const generation = trace.generation({
     name: `${name}/openai`,
-    model: 'gpt-4o-2024-08-06',
-    input,
+    model: options?.model ?? 'unknown',
+    input: messages,
     modelParameters,
   })
 

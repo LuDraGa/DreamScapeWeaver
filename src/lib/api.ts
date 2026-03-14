@@ -5,6 +5,8 @@ import type {
   GenerateOutputsParams,
   Dreamscape,
   OutputVariant,
+  ReviewOutputParams,
+  AIReviewResult,
 } from '@/lib/types'
 
 /**
@@ -60,6 +62,22 @@ async function generateOutputs(params: GenerateOutputsParams): Promise<OutputVar
   return data.outputs
 }
 
+async function reviewOutput(params: ReviewOutputParams): Promise<AIReviewResult> {
+  const response = await fetch('/api/outputs/review', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  })
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.error || 'Failed to review output')
+  }
+
+  const data = await response.json()
+  return data.review
+}
+
 export const api = {
   dreamscapes: {
     generate: generateDreamscapes,
@@ -67,5 +85,6 @@ export const api = {
   },
   outputs: {
     generate: generateOutputs,
+    review: reviewOutput,
   },
 }

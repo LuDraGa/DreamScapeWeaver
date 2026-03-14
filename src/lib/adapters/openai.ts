@@ -247,11 +247,11 @@ ${params.vibe ? `Match this vibe: ${params.vibe}` : 'Generate diverse, creative 
     ]
 
     const lt = startLangfuseGeneration('seed-generation', messages, { temperature: 0.9 }, {
-      metadata: { count: params.count, vibe: params.vibe },
+      model: 'gpt-5-mini', metadata: { count: params.count, vibe: params.vibe },
     })
 
     const completion = await openai.beta.chat.completions.parse({
-      model: 'gpt-4o-2024-08-06',
+      model: 'gpt-5-mini',
       messages,
       response_format: zodResponseFormat(DreamscapesResponseSchema, 'dreamscapes'),
       temperature: 0.9,
@@ -315,10 +315,10 @@ export async function enhanceDreamscape(
         { role: 'user' as const, content: `Combine these story ideas:\n\n${combined}` },
       ]
 
-      const lt = startLangfuseGeneration('enhancement-stitch', stitchMessages, { temperature: 0.8 })
+      const lt = startLangfuseGeneration('enhancement-stitch', stitchMessages, { temperature: 0.8 }, { model: 'gpt-5-mini' })
 
       const completion = await openai.beta.chat.completions.parse({
-        model: 'gpt-4o-2024-08-06',
+        model: 'gpt-5-mini',
         messages: stitchMessages,
         response_format: zodResponseFormat(StitchedSeedResponseSchema, 'stitched_seed'),
         temperature: 0.8,
@@ -407,11 +407,11 @@ IMPORTANT: Keep it brief - just enhance the seed (2-4 sentences), don't expand i
           `enhancement-${params.goalPreset}`,
           chunkMessages,
           { temperature: 0.7 },
-          { metadata: { goalPreset: params.goalPreset, chunkId: chunk.id } }
+          { model: 'gpt-5-mini', metadata: { goalPreset: params.goalPreset, chunkId: chunk.id } }
         )
 
         const completion = await openai.beta.chat.completions.parse({
-          model: 'gpt-4o-2024-08-06',
+          model: 'gpt-5-mini',
           messages: chunkMessages,
           response_format: zodResponseFormat(EnhancedChunkSchema, 'enhanced_chunk'),
           temperature: 0.7,
@@ -459,11 +459,11 @@ async function generateVariant(
   ]
 
   const lt = startLangfuseGeneration('output-generation', messages, { temperature: 0.7 }, {
-    metadata: { variantTitle: title, platform: dialState.platform },
+    model: 'gpt-5-mini', metadata: { variantTitle: title, platform: dialState.platform },
   })
 
   const completion = await openai.beta.chat.completions.parse({
-    model: 'gpt-4o-2024-08-06',
+    model: 'gpt-5-mini',
     messages,
     response_format: zodResponseFormat(StoryOutputSchema, 'story_output'),
     temperature: 0.7,

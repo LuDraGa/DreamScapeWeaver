@@ -1,53 +1,41 @@
-# Planning: Combined Setup Step (Tabbed Seed + Template)
+# Planning: AI Review System (Admin-Only) + Model Upgrade
 
 ## Problem
-Current flow forces template-first for normal users, but users approach from different directions:
-1. Template-first: "I want to write for r/nosleep"
-2. Idea-first: "I have this idea about a creepy neighbor"
-3. Ready-made: "Here's a story I wrote, format it for Reddit"
-4. Library: "Use as Seed" pre-loads seed, needs template selection
+Admins need a way to evaluate generated story quality against rubrics to understand prompt weaknesses and strengths. Currently, the Rate & Save step only has manual rating (stars + chips) — no automated quality analysis.
+
+Additionally, models need upgrading: gpt-4o → gpt-5-mini everywhere, gpt-5.4 for the new review system.
 
 ## Solution
-Merge Step 0 (Template) and Step 1 (Seed) into a **single combined step with two tabs**:
-- Tab 1: "Your Idea" — seed textarea + AI seed generation
-- Tab 2: "Choose Format" — template gallery + style variant picker
-- Status bar at bottom showing both states + Generate button
 
-## Key Behaviors
-- User can interact with either tab first (no forced order)
-- "Generate Seeds" works without template (generic seeds) but shows nudge: "Select a format for better seeds"
-- "Generate Seeds" with template selected uses template's seedPrompt
-- "Generate Story" button enables when BOTH seed text exists AND template is selected
-- From Library "Use as Seed": lands on combined step with seed pre-filled, format tab highlighted
-- Status bar always visible showing: seed status + template status
+### 1. AI Review System
+Admin-only feature on Rate & Save step. Sends dreamscape + prompt + output to GPT-5.4 for structured quality review.
 
-## Normal User Flow (After)
-- Step 0: Combined Setup (tabbed: Your Idea | Choose Format) + status bar + Generate
-- Step 1: Rate & Save (unchanged)
+**Reviewer Role**: Expert editorial reviewer + prompt engineer — grades on rubrics, identifies weaknesses for prompt tuning, highlights strengths to preserve.
 
-## Power User Flow (unchanged)
-- Step 0: Dreamscape
-- Step 1: Platform & Style
-- Step 2: Generate
-- Step 3: Rate & Save
+**Output Format**:
+- Part A: Descriptive rubric-by-rubric analysis with evidence quotes (for deep reading)
+- Part B: Crisp summary — scores, weaknesses, strengths, suggested prompt mods, overall grade
 
-## Implementation Plan
-1. Add `setupTab` state: `'idea' | 'format'` (default: 'idea')
-2. Refactor Step 0 normal user UI:
-   - Tab bar at top: [Your Idea] | [Choose Format]
-   - Tab content swaps in place
-   - "Your Idea" tab: seed textarea + generate seeds button + generated results
-   - "Choose Format" tab: category tabs → template grid → style variant picker
-3. Add status bar at bottom of Step 0:
-   - Left: seed status indicator (filled/empty with preview)
-   - Right: template status indicator (selected/not with name)
-   - Center: Generate Story button (enabled when both ready)
-4. Remove Step 1 (Seed) for normal users — merged into Step 0
-5. Update step labels: Normal users get `Setup → Rate & Save` (2 steps)
-6. Update Library "Use as Seed" to set setupTab to 'format' (seed pre-filled, nudge to pick format)
-7. Nudge on "Generate Seeds" when no template: show inline message
-8. Move admin prompt editor into collapsible within combined step
+### 2. Model Upgrade
+- Replace `gpt-4o-2024-08-06` → `gpt-5-mini` in openai.ts (all existing generation functions)
+- Use `gpt-5.4` for the review system (best model for analytical review)
+
+## Files to Create
+- `src/app/api/outputs/review/route.ts` — API route
+- `src/lib/adapters/openai-review.ts` — Review adapter with GPT-5.4
 
 ## Files to Modify
-- `src/app/app/create/page.tsx` — main refactor
-- `execution_docs/_active/execution.md` — tracking
+- `src/app/app/create/page.tsx` — Add AI Review card to Rate & Save step
+- `src/lib/api.ts` — Add `api.outputs.review()` wrapper
+- `src/lib/types.ts` — Add review types
+- `src/lib/adapters/openai.ts` — Model upgrade gpt-4o → gpt-5-mini
+
+## Rubric Dimensions
+1. Hook Effectiveness
+2. Narrative Authenticity
+3. Structural Cohesion
+4. Pacing & Flow
+5. Twist/Surprise Factor
+6. Emotional Resonance
+7. Platform Fit
+8. Prompt Adherence

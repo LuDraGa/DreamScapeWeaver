@@ -288,6 +288,34 @@ export interface GenerationEvent {
   createdAt: string
 }
 
+// AI Review (Admin-only quality analysis)
+export interface AIReviewRubricScore {
+  rubric: string
+  score: number // 1-10
+  analysis: string // Detailed assessment with evidence
+}
+
+export interface AIReviewResult {
+  // Part A: Descriptive analysis
+  rubricAnalyses: AIReviewRubricScore[]
+  // Part B: Crisp summary
+  overallGrade: string // A-F
+  verdict: string // One-line summary
+  rubricScores: Array<{ rubric: string; score: number }>
+  weaknesses: string[] // Top issues to fix via prompt enhancement
+  strengths: string[] // Top qualities to preserve
+  promptSuggestions: string[] // Specific actionable prompt modifications
+  additionalNotes: string[] // Anything else useful for admin reviewer
+}
+
+export interface ReviewOutputParams {
+  dreamscapeText: string
+  systemPrompt: string
+  userPrompt: string
+  outputText: string
+  templateName?: string
+}
+
 // Settings
 export interface AppSettings {
   defaultPreset: string
