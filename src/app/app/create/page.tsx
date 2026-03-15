@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { usePromptInspector } from '@/hooks/usePromptInspector'
 import { useAppStore } from '@/store/app-store'
 import { ThemedCard } from '@/components/design-system/themed-card'
@@ -35,7 +35,7 @@ const FEEDBACK_CHIPS = [
 import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
-import type { Dreamscape, OutputVariant, DialState, IntensityValues, Template, TemplateCategory, Platform, OutputFormat, AIReviewResult } from '@/lib/types'
+import type { Dreamscape, OutputVariant, DialState, IntensityValues, Template, TemplateCategory, Platform, OutputFormat, AIReviewResult, ReviewOutputParams } from '@/lib/types'
 import { LabeledSlider } from '@/components/design-system/labeled-slider'
 import { CopyButton } from '@/components/design-system/copy-button'
 import { PromptInspector } from '@/components/dev-tools/prompt-inspector'
@@ -201,6 +201,43 @@ export default function CreatePage() {
 
   // Prompt Inspector state (Developer Mode)
   const [inspectorOpen, setInspectorOpen] = useState(false)
+
+  // Build review params for prompt inspector preview
+  const reviewParamsForInspector = useMemo<ReviewOutputParams | null>(() => {
+    const output = generatedOutputs[activeVariant]
+    if (!output || chunks.length === 0) return null
+
+    let systemPrompt = ''
+    let userPrompt = ''
+    if (selectedTemplate) {
+      const { systemPrompt: sp, userPrompt: up } = buildPromptFromTemplate(
+        selectedTemplate,
+        currentDreamscape || { id: '', title: '', chunks, createdAt: '', updatedAt: '' },
+        selectedStyleVariant,
+      )
+      systemPrompt = editedSystemPrompt || sp
+      userPrompt = editedUserPrompt || up
+    } else {
+      systemPrompt = editedSystemPrompt || 'Default generation prompt (no template)'
+      userPrompt = editedUserPrompt || chunks.map((c) => c.text).join('\n\n')
+    }
+
+    return {
+      dreamscapeText: chunks.map((c) => c.text).join('\n\n'),
+      systemPrompt,
+      userPrompt,
+      outputText: output.text,
+      templateName: selectedTemplate?.displayName,
+      templateCategory: selectedTemplate?.category,
+      templatePlatforms: selectedTemplate?.platforms,
+      selfCheckRubric: selectedTemplate?.selfCheckRubric,
+      styleVariantUsed: selectedStyleVariant
+        ? selectedTemplate?.styleVariants?.find((v) => v.id === selectedStyleVariant)?.name
+        : selectedTemplate?.styleVariants?.[0]?.name,
+      wordCountTarget: selectedTemplate?.wordCount,
+    }
+  }, [generatedOutputs, activeVariant, chunks, selectedTemplate, currentDreamscape, selectedStyleVariant, editedSystemPrompt, editedUserPrompt])
+
   const {
     promptData: inspectorPromptData,
     setPromptData: setInspectorPromptData,
@@ -224,6 +261,7 @@ export default function CreatePage() {
     activeVariant,
     splitGuidance,
     continueGuidance,
+    reviewParams: reviewParamsForInspector,
   })
 
   const showToast = (msg: string) => {
@@ -577,6 +615,7 @@ Write the next part, continuing from where the story left off.`
     const output = generatedOutputs[activeVariant]
     if (!output) return
 
+    setInspectorFocus('review')
     setReviewLoading(true)
     setReviewError('')
     setAiReview(null)
@@ -606,6 +645,13 @@ Write the next part, continuing from where the story left off.`
         userPrompt,
         outputText: output.text,
         templateName: selectedTemplate?.displayName,
+        templateCategory: selectedTemplate?.category,
+        templatePlatforms: selectedTemplate?.platforms,
+        selfCheckRubric: selectedTemplate?.selfCheckRubric,
+        styleVariantUsed: selectedStyleVariant
+          ? selectedTemplate?.styleVariants?.find((v) => v.id === selectedStyleVariant)?.name
+          : selectedTemplate?.styleVariants?.[0]?.name,
+        wordCountTarget: selectedTemplate?.wordCount,
       })
 
       setAiReview(review)
@@ -2345,12 +2391,43 @@ Write the next part, continuing from where the story left off.`
             </div>
             <div className="flex items-center gap-2">
               {aiReview && (
-                <button
-                  onClick={() => setReviewExpanded(!reviewExpanded)}
-                  className="text-xs text-text-muted hover:text-text-primary transition-colors"
-                >
-                  {reviewExpanded ? 'Collapse' : 'Expand'}
-                </button>
+                <>
+                  <CopyButton
+                    text={(() => {
+                      const r = aiReview
+                      const lines = [
+                        `Overall: ${r.overallGrade} — ${r.verdict}`,
+                        '',
+                        'Rubric Scores:',
+                        ...r.rubricScores.map((rs) => `  ${rs.rubric}: ${rs.score}/10`),
+                        '',
+                        'Weaknesses:',
+                        ...r.weaknesses.map((w) => `  - ${w}`),
+                        '',
+                        'Strengths:',
+                        ...r.strengths.map((s) => `  + ${s}`),
+                        '',
+                        'Prompt Suggestions:',
+                        ...r.promptSuggestions.map((s) => `  * ${s}`),
+                        ...(r.additionalNotes.length > 0 ? ['', 'Notes:', ...r.additionalNotes.map((n) => `  ${n}`)] : []),
+                        '',
+                        'Detailed Analysis:',
+                        ...r.rubricAnalyses.map((ra) => `  [${ra.score}/10] ${ra.rubric}: ${ra.analysis}`),
+                      ]
+                      return lines.join('\n')
+                    })()}
+                  />
+                  <button
+                    onClick={() => setReviewExpanded(!reviewExpanded)}
+                    className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary transition-colors"
+                  >
+                    {reviewExpanded ? (
+                      <><ChevronUpIcon className="w-3 h-3" /> Collapse</>
+                    ) : (
+                      <><ChevronDownIcon className="w-3 h-3" /> Expand</>
+                    )}
+                  </button>
+                </>
               )}
               <Button
                 size="sm"
@@ -2423,7 +2500,10 @@ Write the next part, continuing from where the story left off.`
                 </div>
               </div>
 
-              {/* Crisp Summary — Always Visible */}
+              {/* Full Review Body — Collapsible */}
+              {reviewExpanded && (
+              <>
+              {/* Crisp Summary */}
               <div className="grid grid-cols-2 gap-3">
                 {/* Weaknesses */}
                 <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/10">
@@ -2476,29 +2556,29 @@ Write the next part, continuing from where the story left off.`
                 </div>
               )}
 
-              {/* Detailed Analysis — Expandable */}
-              {reviewExpanded && (
-                <div className="border-t border-[#1e293b] pt-4">
-                  <h5 className="text-xs font-medium text-text-secondary mb-3">Detailed Rubric Analysis</h5>
-                  <div className="space-y-3">
-                    {aiReview.rubricAnalyses.map((ra) => (
-                      <div key={ra.rubric} className="p-3 rounded-lg bg-[rgba(15,23,42,0.3)]">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-medium text-text-primary">{ra.rubric}</span>
-                          <span
-                            className="text-xs font-mono font-medium"
-                            style={{
-                              color: ra.score >= 8 ? '#4ade80' : ra.score >= 5 ? '#eab308' : '#f87171',
-                            }}
-                          >
-                            {ra.score}/10
-                          </span>
-                        </div>
-                        <p className="text-xs text-text-secondary leading-relaxed">{ra.analysis}</p>
+              {/* Detailed Rubric Analysis */}
+              <div className="border-t border-[#1e293b] pt-4">
+                <h5 className="text-xs font-medium text-text-secondary mb-3">Detailed Rubric Analysis</h5>
+                <div className="space-y-3">
+                  {aiReview.rubricAnalyses.map((ra) => (
+                    <div key={ra.rubric} className="p-3 rounded-lg bg-[rgba(15,23,42,0.3)]">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-medium text-text-primary">{ra.rubric}</span>
+                        <span
+                          className="text-xs font-mono font-medium"
+                          style={{
+                            color: ra.score >= 8 ? '#4ade80' : ra.score >= 5 ? '#eab308' : '#f87171',
+                          }}
+                        >
+                          {ra.score}/10
+                        </span>
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-xs text-text-secondary leading-relaxed">{ra.analysis}</p>
+                    </div>
+                  ))}
                 </div>
+              </div>
+              </>
               )}
             </div>
           )}

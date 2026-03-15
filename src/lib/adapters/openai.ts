@@ -246,7 +246,7 @@ ${params.vibe ? `Match this vibe: ${params.vibe}` : 'Generate diverse, creative 
       { role: 'user' as const, content: userPrompt },
     ]
 
-    const lt = startLangfuseGeneration('seed-generation', messages, { temperature: 0.9 }, {
+    const lt = startLangfuseGeneration('seed-generation', messages, {}, {
       model: 'gpt-5-mini', metadata: { count: params.count, vibe: params.vibe },
     })
 
@@ -254,7 +254,6 @@ ${params.vibe ? `Match this vibe: ${params.vibe}` : 'Generate diverse, creative 
       model: 'gpt-5-mini',
       messages,
       response_format: zodResponseFormat(DreamscapesResponseSchema, 'dreamscapes'),
-      temperature: 0.9,
     })
 
     await lt.end(completion)
@@ -315,13 +314,12 @@ export async function enhanceDreamscape(
         { role: 'user' as const, content: `Combine these story ideas:\n\n${combined}` },
       ]
 
-      const lt = startLangfuseGeneration('enhancement-stitch', stitchMessages, { temperature: 0.8 }, { model: 'gpt-5-mini' })
+      const lt = startLangfuseGeneration('enhancement-stitch', stitchMessages, {}, { model: 'gpt-5-mini' })
 
       const completion = await openai.beta.chat.completions.parse({
         model: 'gpt-5-mini',
         messages: stitchMessages,
         response_format: zodResponseFormat(StitchedSeedResponseSchema, 'stitched_seed'),
-        temperature: 0.8,
       })
 
       await lt.end(completion)
@@ -414,7 +412,6 @@ IMPORTANT: Keep it brief - just enhance the seed (2-4 sentences), don't expand i
           model: 'gpt-5-mini',
           messages: chunkMessages,
           response_format: zodResponseFormat(EnhancedChunkSchema, 'enhanced_chunk'),
-          temperature: 0.7,
         })
 
         await lt.end(completion)
@@ -458,7 +455,7 @@ async function generateVariant(
     { role: 'user' as const, content: userPrompt },
   ]
 
-  const lt = startLangfuseGeneration('output-generation', messages, { temperature: 0.7 }, {
+  const lt = startLangfuseGeneration('output-generation', messages, {}, {
     model: 'gpt-5-mini', metadata: { variantTitle: title, platform: dialState.platform },
   })
 
@@ -466,7 +463,6 @@ async function generateVariant(
     model: 'gpt-5-mini',
     messages,
     response_format: zodResponseFormat(StoryOutputSchema, 'story_output'),
-    temperature: 0.7,
   })
 
   await lt.end(completion)

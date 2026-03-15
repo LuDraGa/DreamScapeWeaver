@@ -2,16 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { reviewAdapter } from '@/lib/adapters/openai-review'
 import { env } from '@/lib/env'
 import { createClient } from '@/lib/supabase/server'
+import { hasCreditsForAction, debitCredits } from '@/lib/billing/credits'
 import type { ReviewOutputParams } from '@/lib/types'
 
 /**
  * POST /api/outputs/review
  * AI-powered quality review of generated output (admin-only)
  * Uses GPT-5.4 for the most capable analytical review
+ * Costs 2,500 credits per review
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth + admin check
+    // Auth + admin check + credit check
+    let userId: string | null = null
     if (env.features.enableAuth) {
       const supabase = await createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -21,6 +24,7 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         )
       }
+      userId = user.id
 
       // Check admin/dev role
       const { data: profile } = await supabase
@@ -35,6 +39,15 @@ export async function POST(request: NextRequest) {
           { status: 403 }
         )
       }
+
+      // Credit pre-check
+      const check = await hasCreditsForAction(userId, 'review')
+      if (!check.hasCredits) {
+        return NextResponse.json(
+          { error: 'Insufficient credits', code: 'insufficient_credits', required: check.required, balance: check.balance },
+          { status: 402 }
+        )
+      }
     }
 
     const params: ReviewOutputParams = await request.json()
@@ -47,6 +60,18 @@ export async function POST(request: NextRequest) {
     }
 
     const review = await reviewAdapter.reviewOutput(params)
+
+    // Debit credits after successful review
+    if (userId) {
+      const result = await debitCredits({
+        userId,
+        actionType: 'review',
+        model: 'gpt-5.4',
+      })
+      if (!result.success) {
+        console.error('Credit debit failed after review:', result.error)
+      }
+    }
 
     return NextResponse.json({ review })
   } catch (error) {

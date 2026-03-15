@@ -407,6 +407,54 @@ function BillingPage() {
             </ThemedCard>
           )}
 
+          {/* Credit Costs Per Action */}
+          <ThemedCard>
+            <h3 className="text-sm font-medium text-text-secondary mb-3">Credit costs per action</h3>
+            <div className="space-y-0">
+              {[
+                { action: 'Seed Generation', cost: 500, model: 'gpt-5-mini', icon: '🌱' },
+                { action: 'Enhancement', cost: 400, model: 'gpt-5-mini', icon: '✨' },
+                { action: 'Story Generation', cost: 1150, model: 'gpt-5-mini', icon: '📝' },
+                { action: 'Split into Parts', cost: 1150, model: 'gpt-5-mini', icon: '✂️', note: 'Uses story generation' },
+                { action: 'Continue Story', cost: 1150, model: 'gpt-5-mini', icon: '➡️', note: 'Uses story generation' },
+                { action: 'Part Transform', cost: 300, model: 'gpt-5-mini', icon: '🔄', tag: 'Coming soon' },
+                { action: 'AI Review', cost: 2500, model: 'gpt-5.4', icon: '🔍', tag: 'Admin' },
+              ].map((item) => (
+                <div
+                  key={item.action}
+                  className="flex items-center justify-between py-2.5 border-b last:border-0"
+                  style={{ borderColor: 'rgba(30,41,59,0.5)' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm w-6 text-center">{item.icon}</span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-text-primary">{item.action}</span>
+                        {item.tag && (
+                          <span
+                            className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                            style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}
+                          >
+                            {item.tag}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-text-muted">{('note' in item && item.note) ? item.note : item.model}</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-text-primary">{formatCredits(item.cost)}</span>
+                </div>
+              ))}
+            </div>
+            <div
+              className="mt-3 px-3 py-2 rounded-lg text-xs text-text-muted"
+              style={{ background: 'rgba(15,23,42,0.4)' }}
+            >
+              A full workflow (seed + generate) costs ~{formatCredits(1650)} credits.
+              With a review: ~{formatCredits(4150)} credits.
+            </div>
+          </ThemedCard>
+
           {/* Transaction History */}
           <ThemedCard>
             <div className="flex items-center gap-2 mb-4">

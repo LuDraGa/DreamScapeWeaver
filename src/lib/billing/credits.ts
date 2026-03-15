@@ -67,7 +67,7 @@ export async function debitCredits(params: {
     p_user_id: params.userId,
     p_amount: amount,
     p_action_type: params.actionType,
-    p_model: params.model ?? 'gpt-4o',
+    p_model: params.model ?? 'gpt-5-mini',
     p_prompt_tokens: params.promptTokens ?? null,
     p_completion_tokens: params.completionTokens ?? null,
     p_output_variant_id: params.outputVariantId ?? null,
@@ -129,6 +129,7 @@ function actionTypeToCostKey(actionType: GenerationActionType): keyof ReturnType
     enhance: 'enhancement',
     output: 'output_generation',
     transform: 'part_transform',
+    review: 'ai_review',
   }
   return map[actionType]
 }

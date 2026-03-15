@@ -188,6 +188,7 @@ export interface BillingConfig {
     enhancement: number
     output_generation: number
     part_transform: number
+    ai_review: number
   }
   credit_rules: {
     debit_order: string[]
@@ -230,7 +231,7 @@ export interface TopupPackConfig {
 export type SubscriptionStatus = 'active' | 'cancelled' | 'past_due'
 export type CreditLedgerType = 'subscription_grant' | 'topup_purchase' | 'generation_usage' | 'expiry_sweep' | 'signup_bonus'
 export type CreditBucket = 'subscription' | 'topup'
-export type GenerationActionType = 'seed' | 'enhance' | 'output' | 'transform'
+export type GenerationActionType = 'seed' | 'enhance' | 'output' | 'transform' | 'review'
 
 export interface Subscription {
   id: string
@@ -314,6 +315,11 @@ export interface ReviewOutputParams {
   userPrompt: string
   outputText: string
   templateName?: string
+  templateCategory?: string
+  templatePlatforms?: string[]
+  selfCheckRubric?: string[]
+  styleVariantUsed?: string
+  wordCountTarget?: number
 }
 
 // Settings
