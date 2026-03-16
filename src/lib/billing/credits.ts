@@ -128,6 +128,7 @@ function actionTypeToCostKey(actionType: GenerationActionType): keyof ReturnType
     seed: 'seed_generation',
     enhance: 'enhancement',
     output: 'output_generation',
+    character: 'character_generation',
     transform: 'part_transform',
     review: 'ai_review',
   }

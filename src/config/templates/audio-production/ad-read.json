@@ -6,19 +6,17 @@
   "description": "Sponsorship read with talking points and disclaimers for podcast/radio",
   "duration": "30-60s",
   "wordCount": 150,
-  "platforms": ["podcast", "radio", "youtube"],
+  "platforms": [
+    "podcast",
+    "radio",
+    "youtube"
+  ],
   "settings": {
     "tone": "mixed",
-    "genres": ["commercial", "conversational"],
-    "intensity": {
-      "stakes": 3,
-      "darkness": 1,
-      "pace": 5,
-      "twist": 2,
-      "realism": 9,
-      "catharsis": 4,
-      "moralClarity": 8
-    },
+    "genres": [
+      "commercial",
+      "conversational"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,16 @@
     "user": "Create an ad read script that ties into this story theme:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Product: [Generic - make it contextually relevant]\n- 30-60 second read\n- Natural transition from content\n- Conversational, not salesy\n- Include:\n  * Hook tied to episode theme\n  * Product benefit (1-2 key points)\n  * Promo code/link\n  * Legal disclaimer if needed\n- 150 words maximum\n- Sound like the host, not a commercial\n\nWrite the ad read now:"
   },
   "compatibility": {
-    "perfectMatch": ["any"],
-    "goodFit": ["any"],
+    "perfectMatch": [
+      "any"
+    ],
+    "goodFit": [
+      "any"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["any"]
+    "dreamscapeTypes": [
+      "any"
+    ]
   },
   "exampleOutput": "Speaking of internet issues...\n\nYou know what I use to make sure my WiFi is actually secure? ExpressVPN.\n\nLook, after this whole Greg situation, I'm a lot more paranoid about who's on my network. ExpressVPN encrypts your connection so even if someone IS snooping, they can't see what you're doing.\n\nPlus it works on your phone, laptop, even your router - which, trust me, matters.\n\nRight now they're running a special - three months free when you sign up for a year. Go to expressvpn.com/[YOURSHOW] and use code [YOURSHOW].\n\nThat's expressvpn.com/[YOURSHOW].\n\nOkay, back to the story..."
 }

@@ -6,20 +6,16 @@
   "description": "First-person horror stories told as 'true' experiences with unresolved dread",
   "duration": "10-12min read",
   "wordCount": 1500,
-  "platforms": ["reddit"],
+  "platforms": [
+    "reddit"
+  ],
   "subreddit": "nosleep",
   "settings": {
     "tone": "narrative",
-    "genres": ["horror", "thriller"],
-    "intensity": {
-      "stakes": 9,
-      "darkness": 10,
-      "pace": 5,
-      "twist": 8,
-      "realism": 7,
-      "catharsis": 2,
-      "moralClarity": 3
-    },
+    "genres": [
+      "horror",
+      "thriller"
+    ],
     "avoidPhrases": [
       "little did I know",
       "that's when things got interesting",
@@ -31,8 +27,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for r/nosleep horror content. Generate realistic horror premises grounded in everyday settings — apartments, workplaces, family homes, roads, hospitals, hotels. The horror comes from something WRONG in a normal place. Focus on creeping dread, not jump scares. NO obvious supernatural setups (no 'I found a haunted doll'). The seed should describe a mundane situation where one detail is deeply unsettling.",
-    "user": "Generate {count} unique r/nosleep story seeds. Each seed should be:\n- A realistic horror premise grounded in an everyday setting\n- 2-3 sentences describing a normal situation with one deeply wrong detail\n- The horror should be IMPLIED, not stated outright\n- The reader should feel uneasy just reading the seed\n\nExamples of GOOD seed topics: noticing your apartment layout doesn't match the floor plan, finding security camera footage of yourself sleeping in poses you don't remember, a new coworker who knows details about your life they shouldn't.\n\nExamples of BAD seed topics: haunted dolls, zombie outbreaks, demon summoning, anything with 'ancient curse.'\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in r/nosleep horror content. You design unsettling premises grounded in everyday settings where one specific detail is deeply, inexplicably wrong. Your seeds create creeping dread through implication — the horror lives in what ISN'T explained.\n</role>\n\n<context>\nr/nosleep is a subreddit for first-person horror stories told as true accounts. The best posts start in completely mundane settings — apartments, offices, roads, hospitals — and slowly reveal something profoundly wrong. The horror comes from atmosphere and implication, not monsters or gore. Readers are sophisticated and reject obvious supernatural setups. The scariest posts make readers check their locks before bed.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: a mundane situation with one specific detail that is deeply unsettling\n- The horror must be IMPLIED, not stated outright — the reader fills in the terrifying part\n- Grounded in everyday settings: apartments, workplaces, roads, hospitals, hotels, homes\n- NO obvious supernatural setups (\"I found a haunted doll\", \"I moved into a cursed house\")\n- NO zombies, demons, ancient curses, or monster reveals\n- NO jump scares — focus on creeping dread and wrongness\n- Each seed must be distinct in setting and type of horror\n</constraints>\n\n<expectation>\nA great nosleep seed makes you feel uneasy just reading it. The mundane setting feels normal until that one detail — and then you can't unsee the wrongness. The horror is in the gap between what's stated and what's implied. A writer should read the seed and immediately feel the atmosphere: the specific dread of something being wrong in a place that should be safe.\n</expectation>",
+    "user": "<task>\nGenerate {count} unique r/nosleep story seeds. Each seed must ground horror in a mundane setting through one deeply unsettling detail.\n</task>\n\n<examples>\nGOOD seeds (mundane setting, implied horror, specific wrongness):\n- \"A woman notices her apartment's floor plan doesn't match the building's layout. There's an extra room behind her bedroom wall that doesn't appear on any blueprint. She can hear humming through the plaster.\"\n- \"A night security guard reviews camera footage and sees himself walking through the building at 3am. He was asleep in his car during that time. The figure on camera is wearing tomorrow's clothes.\"\n- \"A man moves into a new house and finds the previous owner's journal. The last 30 entries are identical: the same day described in perfect detail. His first day in the house matches them exactly.\"\n\nBAD seeds (obvious supernatural, generic, jump-scare):\n- \"I found a haunted doll in my attic\" (cliché supernatural setup)\n- \"Something scary happened to me\" (too vague — WHAT happened? WHERE?)\n- \"A demon appears in a mirror\" (stated horror, no implication)\n</examples>"
   },
   "styleVariants": [
     {
@@ -69,10 +65,27 @@
     "user": "Create a 1000-2000 word r/nosleep story based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Normal situation (establish reality with specific, mundane details)\n2. First sign (something off, easily rationalized)\n3. Second sign (pattern emerging, harder to dismiss)\n4. Escalation (the wrongness becomes active)\n5. Horror revealed (the terrifying implication)\n6. Unresolved ending (situation ongoing, no comfort)\n\nRULES:\n- Everything is TRUE — never break the illusion\n- First-person, present or recent past tense\n- Build atmosphere through specific, realistic details\n- Create dread through implication, not gore\n- Include mundane details that make the horror feel real\n- Do NOT over-explain — the unknown is scarier\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
   },
   "compatibility": {
-    "perfectMatch": ["horror", "creepy", "terrifying", "haunted", "stalker", "disappeared"],
-    "goodFit": ["strange", "unexplained", "eerie", "disturbing", "unsettling"],
+    "perfectMatch": [
+      "horror",
+      "creepy",
+      "terrifying",
+      "haunted",
+      "stalker",
+      "disappeared"
+    ],
+    "goodFit": [
+      "strange",
+      "unexplained",
+      "eerie",
+      "disturbing",
+      "unsettling"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["horror", "supernatural", "thriller"]
+    "dreamscapeTypes": [
+      "horror",
+      "supernatural",
+      "thriller"
+    ]
   },
   "exampleOutput": "[Note: This would be a full 1500-word story. For brevity, showing structure only]\n\nI need to write this down while I still remember everything clearly. Something's wrong with my apartment, and I don't know who else to tell.\n\nIt started three weeks ago when I moved in...\n\n[MUNDANE DETAILS establish normalcy]\n[FIRST STRANGE OCCURRENCE - easily dismissed]\n[PATTERN EMERGES - can't be coincidence]\n[ESCALATION - things get actively threatening]\n[REVELATION - horrifying explanation or implication]\n[UNRESOLVED - situation ongoing, reader left disturbed]\n\nI'm writing this from a hotel room. I can't go back there. But here's the thing that really scares me - I just got a text from my landlord. Someone reported a noise complaint... from MY apartment.\n\nI'm not there.\n\nNo one should be there.\n\n[END - no resolution, maximum dread]"
 }

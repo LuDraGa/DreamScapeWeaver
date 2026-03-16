@@ -6,19 +6,17 @@
   "description": "Numbered shot list with camera specs, angles, and movements",
   "duration": "Production doc",
   "wordCount": 600,
-  "platforms": ["youtube", "tiktok", "instagram-reels"],
+  "platforms": [
+    "youtube",
+    "tiktok",
+    "instagram-reels"
+  ],
   "settings": {
     "tone": "script",
-    "genres": ["production", "technical"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 5,
-      "pace": 7,
-      "twist": 5,
-      "realism": 9,
-      "catharsis": 5,
-      "moralClarity": 7
-    },
+    "genres": [
+      "production",
+      "technical"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,23 @@
     "user": "Create a detailed shot list based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Number each shot sequentially\n- Include:\n  * Shot type (CU, MCU, MS, WS, etc.)\n  * Camera angle (eye-level, low, high, dutch)\n  * Camera movement (static, pan, tilt, dolly, handheld)\n  * Subject/action\n  * Notes on lighting or composition\n- Group by sequence/scene\n- 15-30 shots total\n- 600 words maximum\n\nFormat:\nSEQ 001 - OPENING\nShot 1: CU - Router blinking lights, static, overhead angle\nShot 2: MS - Protagonist at desk, frustrated, handheld\n\nWrite the shot list now:"
   },
   "compatibility": {
-    "perfectMatch": ["visual", "action", "movement", "scene"],
-    "goodFit": ["story", "narrative", "sequence"],
+    "perfectMatch": [
+      "visual",
+      "action",
+      "movement",
+      "scene"
+    ],
+    "goodFit": [
+      "story",
+      "narrative",
+      "sequence"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["narrative", "visual", "action"]
+    "dreamscapeTypes": [
+      "narrative",
+      "visual",
+      "action"
+    ]
   },
   "exampleOutput": "SEQ 001 - DISCOVERY\nShot 1: CU - Router, blinking lights, static overhead\nShot 2: MS - Protagonist at computer, frustration building, handheld\nShot 3: POV - Computer screen showing device list, static\nShot 4: ECU - Protagonist's eyes widening, rack focus\n\nSEQ 002 - CONFRONTATION\nShot 5: WS - Establishing neighbor's house, static\nShot 6: MS - Two-shot doorway conversation, static\nShot 7: CU - Greg's calm expression, static eye-level"
 }

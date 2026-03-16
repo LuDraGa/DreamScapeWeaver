@@ -6,19 +6,17 @@
   "description": "Visual effects shots with technical specs and references",
   "duration": "Production doc",
   "wordCount": 500,
-  "platforms": ["film", "youtube", "commercial"],
+  "platforms": [
+    "film",
+    "youtube",
+    "commercial"
+  ],
   "settings": {
     "tone": "script",
-    "genres": ["production", "technical"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 5,
-      "pace": 6,
-      "twist": 6,
-      "realism": 6,
-      "catharsis": 5,
-      "moralClarity": 7
-    },
+    "genres": [
+      "production",
+      "technical"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,22 @@
     "user": "Create VFX requirements based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- List all VFX shots needed\n- For each shot include:\n  * Shot description\n  * VFX type (screen replacement, compositing, enhancement, etc.)\n  * Technical requirements\n  * Reference images or style\n  * Integration notes\n- Complexity rating (simple/medium/complex)\n- Delivery format specs\n- 500 words maximum\n\nBe practical - only include VFX that enhances the story.\n\nWrite the VFX requirements now:"
   },
   "compatibility": {
-    "perfectMatch": ["technology", "screens", "effects", "enhancement"],
-    "goodFit": ["story", "visual", "technical"],
+    "perfectMatch": [
+      "technology",
+      "screens",
+      "effects",
+      "enhancement"
+    ],
+    "goodFit": [
+      "story",
+      "visual",
+      "technical"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["tech-heavy", "visual"]
+    "dreamscapeTypes": [
+      "tech-heavy",
+      "visual"
+    ]
   },
   "exampleOutput": "VFX-001: ROUTER SCREEN INSERT\nType: Screen replacement\nShot: CU of computer showing WiFi admin page\nRequirements:\n- Design convincing router admin UI\n- Show 27+ device names scrolling\n- Subtle screen glow on face\n- Match monitor refresh rate\nComplexity: Simple\nFormat: 4K ProRes, alpha channel\n\nVFX-002: BASEMENT MONITOR ARRAY\nType: Screen compositing (6 screens)\nShot: Wide of Greg's surveillance setup\nRequirements:\n- Multiple live feeds\n- Evidence documents on 2 screens\n- Spreadsheets with transaction data\n- Subtle parallax between screens\nComplexity: Medium\n\nVFX-003: EVIDENCE OVERLAY\nType: Motion graphics\nShot: Key moments highlight HOA transactions\nRequirements:\n- Highlight key numbers\n- Subtle tracking markers\nComplexity: Simple"
 }

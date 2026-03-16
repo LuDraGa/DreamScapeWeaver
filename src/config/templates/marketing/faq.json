@@ -6,19 +6,17 @@
   "description": "Common questions and answers for objection handling and SEO",
   "duration": "Website page",
   "wordCount": 500,
-  "platforms": ["website", "support", "sales"],
+  "platforms": [
+    "website",
+    "support",
+    "sales"
+  ],
   "settings": {
     "tone": "mixed",
-    "genres": ["support", "sales"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 1,
-      "pace": 5,
-      "twist": 2,
-      "realism": 10,
-      "catharsis": 6,
-      "moralClarity": 9
-    },
+    "genres": [
+      "support",
+      "sales"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,19 @@
     "user": "Create FAQ content using this story context:\n\n{dreamscape}\n\nREQUIREMENTS:\n- 10-12 Q&A pairs\n- Address common objections\n- Mix of:\n  * Technical questions\n  * Pricing/value questions\n  * Trust/security questions\n  * Comparison questions\n- Conversational answers\n- Build confidence\n- SEO-friendly phrasing\n- 500 words maximum\n\nWrite the FAQ now:"
   },
   "compatibility": {
-    "perfectMatch": ["questions", "concerns", "doubts", "objections"],
-    "goodFit": ["any"],
+    "perfectMatch": [
+      "questions",
+      "concerns",
+      "doubts",
+      "objections"
+    ],
+    "goodFit": [
+      "any"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["product-focused"]
+    "dreamscapeTypes": [
+      "product-focused"
+    ]
   },
   "exampleOutput": "**How do I know if someone's stealing my WiFi?**\nIf your internet is slower than usual, devices are disconnecting, or you see unfamiliar device names in your router admin page, someone might be using your network without permission. NetworkGuard Pro scans automatically and shows you every connected device.\n\n**Will this slow down my internet?**\nNope. NetworkGuard Pro monitors in the background using minimal bandwidth—less than streaming a single song.\n\n**What if I don't know my router password?**\nNo problem. Our setup wizard helps you find or reset it in under 2 minutes.\n\n**Can I use this if I'm not technical?**\nAbsolutely. If you can use your phone, you can use NetworkGuard Pro. One-click actions, no technical knowledge required.\n\n**How much does it cost?**\n$4.99/month or $49/year (save 17%). Includes unlimited devices and 24/7 monitoring.\n\n**What if I find unauthorized devices?**\nYou can block them instantly with one click. Most users see immediate speed improvements.\n\n**Is my data private?**\nYes. We don't store your network data. Everything stays on your device.\n\n**What routers does it work with?**\nAll major brands: Netgear, Linksys, TP-Link, Asus, Eero, Google WiFi, etc.\n\n**Do I need to install anything on my router?**\nNo. Just install the app on your phone or computer.\n\n**What if I'm not satisfied?**\n30-day money-back guarantee. No questions asked."
 }

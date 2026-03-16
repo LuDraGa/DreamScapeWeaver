@@ -6,19 +6,16 @@
   "description": "Personal narrative storytelling with emotional depth and detail",
   "duration": "10-15min",
   "wordCount": 2200,
-  "platforms": ["youtube"],
+  "platforms": [
+    "youtube"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["personal", "drama", "life-experience"],
-    "intensity": {
-      "stakes": 7,
-      "darkness": 5,
-      "pace": 5,
-      "twist": 6,
-      "realism": 8,
-      "catharsis": 8,
-      "moralClarity": 5
-    },
+    "genres": [
+      "personal",
+      "drama",
+      "life-experience"
+    ],
     "avoidPhrases": [
       "long story short",
       "to make a long story short",
@@ -31,8 +28,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for YouTube story time content. Generate seeds about compelling personal experiences — life-changing encounters, workplace drama, family revelations, travel disasters, relationship turning points, near-misses. The story must have EMOTIONAL DEPTH and enough complexity for 10-15 minutes of narration. NO fictional premises — these should feel like real experiences someone would share on camera. Focus on stories with clear escalation and emotional payoff.",
-    "user": "Generate {count} unique YouTube story time seeds. Each seed should be:\n- A compelling personal experience with clear emotional arc\n- 3-4 sentences describing the situation, escalation, and emotional stakes\n- Complex enough for 10-15 minutes of detailed narration\n- Have a clear turning point or revelation\n\nExamples of GOOD seeds: discovering a family secret at a reunion, a work trip that went catastrophically wrong, the day you realized your best friend wasn't who you thought, a stranger's act of kindness that changed your perspective.\n\nExamples of BAD seeds: anything requiring specialized knowledge (medical/legal), celebrity encounters, anything that sounds like fiction.\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in YouTube story time content. You design compelling personal experience premises with enough emotional depth and complexity for 10-15 minutes of narration. Your seeds capture life-changing encounters, family revelations, workplace drama, and relationship turning points that feel genuinely lived.\n</role>\n\n<context>\nYouTube story time is a format where creators narrate personal experiences in 10-15 minute videos. The best performing videos have clear emotional arcs with multiple escalation beats — enough complexity to sustain viewer attention across sections. Seeds need to feel like real experiences someone would share on camera, with specific characters, settings, and turning points. The audience expects authenticity, emotional depth, and a satisfying (or haunting) resolution.\n</context>\n\n<constraints>\n- Each seed: 3-4 sentences maximum (longer than other templates — needs more setup for 10-15min)\n- Must include: specific characters (ages, roles, relationships), a clear setting, escalating tension, and a turning point\n- Must have enough narrative complexity for detailed scene-setting, dialogue, and emotional beats\n- Grounded in real-life experiences: family events, work situations, travel, relationships, encounters with strangers\n- NO fictional premises — must feel like something that actually happened to a real person\n- NO stories requiring specialized knowledge (medical, legal, technical)\n- NO celebrity encounters or unlikely coincidences\n- Each seed must be distinct in setting, relationship type, and emotional arc\n</constraints>\n\n<expectation>\nA great story time seed has the weight of a real experience. Reading it, you can see the full arc: the normal setup, the moment things shift, the escalation, and the resolution that changes the narrator. It must be complex enough that a writer can fill 10-15 minutes with genuine detail — specific scenes, real dialogue, internal reactions. A viewer should hear the seed and think \"I need to hear the whole story.\"\n</expectation>",
+    "user": "<task>\nGenerate {count} unique YouTube story time seeds. Each seed must present a compelling personal experience with enough depth for 10-15 minutes of narration.\n</task>\n\n<examples>\nGOOD seeds (specific, emotional arc, complex enough for 10-15min):\n- \"At her aunt's funeral, a 26-year-old woman discovers a second family she never knew about — her father's other children, who live two towns over and have been told the same cover story. Her father, sitting in the front row, doesn't know they've met. The reception is in 20 minutes.\"\n- \"A 30-year-old man takes a work trip to his company's satellite office and is paired with a mentor who turns out to be his college roommate's ex-girlfriend — the one his roommate said died in a car accident 8 years ago. She's using a different name and asks him not to tell anyone.\"\n- \"A teacher (34F) discovers that the parent who's been the most involved in her classroom — attending every event, volunteering weekly — is the same woman she bullied relentlessly in high school. The woman has never mentioned it. Their children are best friends.\"\n\nBAD seeds (too thin, too specialized, not personal):\n- \"Something happened at work\" (too vague — no characters, no specifics)\n- \"A doctor discovers a rare disease\" (specialized knowledge, not personal narrative)\n- \"A celebrity encounter at a restaurant\" (unrealistic, not personal experience)\n</examples>"
   },
   "styleVariants": [
     {
@@ -69,10 +66,31 @@
     "user": "Create a 10-15 minute YouTube story time script based on this experience:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nIMPORTANT - HANDLING MULTIPLE FRAGMENTS:\nIf the experience above contains multiple [Fragment] sections:\n- Weave ALL fragments into ONE cohesive, chronological narrative\n- Connect fragments smoothly with transitions and context\n- Fill in logical gaps between fragments to create flow\n- Treat fragments as key story beats, not separate stories\n- If the complete story exceeds 2500 words, create a PART 1 that ends on a cliffhanger\n\nSTRUCTURE:\n1. [INTRO] Hook with the most compelling moment or question\n2. [SETUP] Build context slowly (who, when, where)\n3. [RISING ACTION] First signs, tension building\n4. [ESCALATION] Stakes rise, new information\n5. [CLIMAX] The turning point\n6. [RESOLUTION] Aftermath, meaning, emotional landing\n\nRULES:\n- ~2200 words total\n- First-person, conversational tone\n- Detailed scene-setting and sensory details\n- Authentic dialogue (how people actually talk)\n- Include internal thoughts and reactions\n- Chapter timestamps for key moments\n- Build tension through pacing, not exposition\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the full story script with timestamps and narrative markers:"
   },
   "compatibility": {
-    "perfectMatch": ["happened", "experience", "time when", "remember", "story", "day", "moment"],
-    "goodFit": ["felt", "realized", "decided", "noticed", "thought", "situation", "encounter"],
+    "perfectMatch": [
+      "happened",
+      "experience",
+      "time when",
+      "remember",
+      "story",
+      "day",
+      "moment"
+    ],
+    "goodFit": [
+      "felt",
+      "realized",
+      "decided",
+      "noticed",
+      "thought",
+      "situation",
+      "encounter"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["personal-narrative", "experience", "memoir", "anecdote"]
+    "dreamscapeTypes": [
+      "personal-narrative",
+      "experience",
+      "memoir",
+      "anecdote"
+    ]
   },
   "exampleOutput": "[INTRO - 0:00]\nI still remember the exact moment I knew something was wrong.\n\nIt was a Tuesday. Normal Tuesday. Coffee, commute, cubicle. Nothing about that morning suggested my entire life was about to change.\n\nBut that's how it always works, right? The big moments never announce themselves.\n\n[SETUP - 1:20]\nSo some context. This was back in 2019. I was working at a mid-size marketing agency...\n\n[RISING ACTION - 3:30]\nThe first sign was the email. Sent to the wrong distribution list...\n\n[CLIMAX - 8:00]\nThat's when my manager pulled me into the glass office...\n\n[RESOLUTION - 12:00]\nLooking back, I'm glad it happened. Not because it was easy — it wasn't. But because...\n\n[Note: Full script would be ~2200 words with complete scenes, dialogue, and emotional beats throughout each section]"
 }

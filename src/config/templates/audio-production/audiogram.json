@@ -6,19 +6,17 @@
   "description": "Shareable audio snippets with text overlay for social media promotion",
   "duration": "15-60s clips",
   "wordCount": 100,
-  "platforms": ["instagram", "twitter", "tiktok"],
+  "platforms": [
+    "instagram",
+    "twitter",
+    "tiktok"
+  ],
   "settings": {
     "tone": "mixed",
-    "genres": ["social", "promotional"],
-    "intensity": {
-      "stakes": 7,
-      "darkness": 5,
-      "pace": 8,
-      "twist": 7,
-      "realism": 8,
-      "catharsis": 6,
-      "moralClarity": 7
-    },
+    "genres": [
+      "social",
+      "promotional"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,21 @@
     "user": "Create audiogram quotes based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Extract 5-8 shareable moments\n- Each 15-60 seconds when spoken\n- Self-contained (makes sense without context)\n- Hook-worthy (makes people want full episode)\n- Mix of:\n  * Plot reveals\n  * Funny moments\n  * \"Wait, what?\" moments\n  * Thought-provoking quotes\n- Include timestamp from episode\n- Note visual text overlay\n- 100 words total\n\nWrite the audiogram quotes now:"
   },
   "compatibility": {
-    "perfectMatch": ["quote", "hook", "reveal", "moment"],
-    "goodFit": ["story", "twist", "surprise"],
+    "perfectMatch": [
+      "quote",
+      "hook",
+      "reveal",
+      "moment"
+    ],
+    "goodFit": [
+      "story",
+      "twist",
+      "surprise"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["shareable moments"]
+    "dreamscapeTypes": [
+      "shareable moments"
+    ]
   },
   "exampleOutput": "CLIP 1: THE HOOK [00:15-00:35]\n\"27 devices on my WiFi. I own 8. Device names like 'SIGINT-NODE-7' and 'OVERWATCHTABLET.' This isn't someone's iPhone accidentally connecting.\"\nOverlay: \"27 DEVICES 👀\"\n\nCLIP 2: THE REVEAL [15:45-16:15]\n\"He opens the door wearing a cardigan and reading glasses, looking like everyone's grandfather. I ask about the WiFi. He doesn't even flinch. Just says, 'Come in. I'll make coffee. We should talk.'\"\nOverlay: \"TOO CALM 😨\"\n\nCLIP 3: THE TWIST [18:30-19:00]\n\"His basement looks like a mission control room. Six monitors. A whiteboard with our HOA president's name in red marker. Post-it notes everywhere. And Greg just... sits down and says, 'I'm retired CIA.'\"\nOverlay: \"RETIRED CIA?!\"\n\nCLIP 4: THE DILEMMA [35:15-35:45]\n\"He hands me $600 cash. 'For the bandwidth.' Then slides a folder across the table. 'The next meeting is Thursday.' What would you do?\"\nOverlay: \"WHAT WOULD YOU DO?\""
 }

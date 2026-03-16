@@ -6,19 +6,16 @@
   "description": "Investigative deep-dive with multiple perspectives and research",
   "duration": "15-20min",
   "wordCount": 3000,
-  "platforms": ["youtube"],
+  "platforms": [
+    "youtube"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["documentary", "investigation", "true-story"],
-    "intensity": {
-      "stakes": 8,
-      "darkness": 6,
-      "pace": 5,
-      "twist": 7,
-      "realism": 10,
-      "catharsis": 7,
-      "moralClarity": 6
-    },
+    "genres": [
+      "documentary",
+      "investigation",
+      "true-story"
+    ],
     "avoidPhrases": [
       "allegedly",
       "sources say",
@@ -34,10 +31,33 @@
     "user": "Create a 15-20 minute YouTube documentary script based on this topic:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Cold open with the most compelling question or moment\n- Present the central mystery, controversy, or question\n- Multiple perspectives or sources (name them as Source A, Expert B, etc.)\n- Chronological narrative OR thematic structure\n- Strategic information reveals (don't give everything away upfront)\n- Evidence-based claims (cite documents, interviews, data)\n- Add [COLD OPEN], [ACT 1], [ACT 2], [ACT 3], [CONCLUSION] markers\n- Chapter timestamps for major sections\n- Balanced perspective (acknowledge counterarguments)\n- ~3000 words total\n- Authoritative but accessible tone\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the full documentary script with timestamps, act markers, and source attributions."
   },
   "compatibility": {
-    "perfectMatch": ["investigation", "mystery", "truth", "case", "evidence", "discovered", "revealed", "uncovered"],
-    "goodFit": ["conspiracy", "scandal", "controversy", "secret", "hidden", "unknown", "research", "study"],
+    "perfectMatch": [
+      "investigation",
+      "mystery",
+      "truth",
+      "case",
+      "evidence",
+      "discovered",
+      "revealed",
+      "uncovered"
+    ],
+    "goodFit": [
+      "conspiracy",
+      "scandal",
+      "controversy",
+      "secret",
+      "hidden",
+      "unknown",
+      "research",
+      "study"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["investigative", "true-story", "historical", "analytical"]
+    "dreamscapeTypes": [
+      "investigative",
+      "true-story",
+      "historical",
+      "analytical"
+    ]
   },
   "exampleOutput": "[COLD OPEN - 0:00]\nOn March 15th, 2023, a routine office evacuation drill would uncover something nobody expected...\n\n[ACT 1: THE DISCOVERY - 2:00]\nAccording to our primary source...\n\n[Note: Full example output for preview only]"
 }

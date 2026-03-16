@@ -6,19 +6,17 @@
   "description": "Frame-by-frame visual descriptions for storyboarding key moments",
   "duration": "Production doc",
   "wordCount": 500,
-  "platforms": ["youtube", "film", "commercial"],
+  "platforms": [
+    "youtube",
+    "film",
+    "commercial"
+  ],
   "settings": {
     "tone": "script",
-    "genres": ["production", "visual"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 5,
-      "pace": 7,
-      "twist": 5,
-      "realism": 8,
-      "catharsis": 5,
-      "moralClarity": 7
-    },
+    "genres": [
+      "production",
+      "visual"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,22 @@
     "user": "Create storyboard descriptions based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Describe 8-12 key frames\n- For each frame include:\n  * Visual composition\n  * Character positions/actions\n  * Camera angle\n  * Important details\n  * Emotional beat\n- Focus on pivotal story moments\n- Clear enough for artist to draw\n- 500 words maximum\n\nFormat:\nFRAME 1: [Description]\nAction: [What's happening]\nAngle: [Camera position]\n\nWrite the storyboard now:"
   },
   "compatibility": {
-    "perfectMatch": ["visual", "action", "moment", "scene"],
-    "goodFit": ["story", "narrative", "sequence"],
+    "perfectMatch": [
+      "visual",
+      "action",
+      "moment",
+      "scene"
+    ],
+    "goodFit": [
+      "story",
+      "narrative",
+      "sequence"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["narrative", "visual"]
+    "dreamscapeTypes": [
+      "narrative",
+      "visual"
+    ]
   },
   "exampleOutput": "FRAME 1:\nComposition: Close-up of router with blinking lights dominating foreground, protagonist's frustrated face in soft focus background\nAction: Protagonist staring at router, hand reaching for it\nAngle: Low angle, slight Dutch tilt for unease\nEmotion: Growing suspicion\n\nFRAME 2:\nComposition: POV shot of computer screen filled with unfamiliar device names\nAction: Mouse cursor hovering over \"SIGINT-NODE-7\"\nAngle: Straight-on screen view\nEmotion: Confusion turning to alarm"
 }

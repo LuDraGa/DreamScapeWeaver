@@ -6,19 +6,17 @@
   "description": "Stories with surprising endings that make viewers rewatch immediately",
   "duration": "30-60s",
   "wordCount": 120,
-  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "platforms": [
+    "tiktok",
+    "instagram-reels",
+    "youtube-shorts"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["drama", "twist"],
-    "intensity": {
-      "stakes": 6,
-      "darkness": 5,
-      "pace": 8,
-      "twist": 10,
-      "realism": 6,
-      "catharsis": 7,
-      "moralClarity": 5
-    },
+    "genres": [
+      "drama",
+      "twist"
+    ],
     "avoidPhrases": [
       "little did I know",
       "plot twist",
@@ -30,8 +28,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for twist-ending short-form content. Generate seeds where a seemingly obvious narrative gets completely reframed by a reveal. The twist must be EARNED — not random. Seeds should set up a clear assumption the audience will make, then shatter it. NO sci-fi, no supernatural, no dream-sequence copouts. Real situations, real twists.",
-    "user": "Generate {count} unique twist-ending story seeds for short-form video. Each seed should be:\n- A setup that leads the audience to one obvious conclusion\n- 2-3 sentences describing the scenario and hinting at the misdirection\n- The twist should reframe the ENTIRE story, not just add a surprise\n- Grounded in real relationships and situations\n\nExamples of GOOD twists: the person being followed is actually a worried parent, the 'cheating' partner is planning a surprise, the villain of the story turns out to be the narrator.\n\nExamples of BAD twists: it was all a dream, aliens, time travel, random coincidence.\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in twist-ending short-form content. You design misdirection narratives where a seemingly obvious story gets completely reframed by a reveal. Every seed you create has a built-in false assumption that the audience WILL make — and a truth that shatters it.\n</role>\n\n<context>\nTwist-ending short-form videos are among the most shared content on TikTok, Reels, and Shorts. The format requires setting up a convincing false narrative in under 30 seconds, then reframing everything with a single reveal. The twist must be EARNED — planted clues that are invisible on first watch but obvious on rewatch. This rewatchability is what drives algorithmic promotion.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: the false narrative setup AND hint at the true story underneath\n- The twist must REFRAME the entire story, not just add a surprise ending\n- Must be achievable in under 60 seconds of narration\n- Grounded in real relationships and situations\n- NO sci-fi, supernatural, dream sequences, or \"it was all a dream\" copouts\n- NO random coincidences — the twist must be logically earned\n- Each seed must be distinct in misdirection type and emotional tone\n</constraints>\n\n<expectation>\nA great twist seed makes you see two complete stories in the same premise — the one the audience assumes and the one that's actually happening. The false narrative must be convincing enough that no one questions it, and the reveal must be satisfying enough that viewers immediately hit replay. A writer should read the seed and immediately know where to plant the clues.\n</expectation>",
+    "user": "<task>\nGenerate {count} unique twist-ending story seeds for short-form video. Each seed must set up a convincing false narrative with an earned reveal.\n</task>\n\n<examples>\nGOOD seeds (clear misdirection, earned twist, rewatchable):\n- \"A woman follows her husband to a strange house every Tuesday night. She's preparing to confront him about an affair. The house is actually a grief counseling group — he's been going since his best friend died and hasn't told her because he doesn't want to burden her.\"\n- \"A teenager finds his mom crying in the kitchen at 2am with a suitcase packed. He assumes she's leaving their family. She's actually preparing to surprise his dad at the airport — he's coming home early from deployment.\"\n- \"A man watches his neighbor dig a hole in the backyard at midnight. He calls the police. The neighbor was burying a time capsule for his daughter's 18th birthday — she has a terminal diagnosis.\"\n\nBAD seeds (unearned, random, copout):\n- \"It was all a dream\" (copout — no real twist)\n- \"Aliens were behind it all along\" (supernatural, not grounded)\n- \"The twist is that there's no twist\" (meta, not satisfying)\n</examples>"
   },
   "styleVariants": [
     {
@@ -67,10 +65,24 @@
     "user": "Create a 30-60 second twist-ending short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Setup (establish the false narrative convincingly)\n2. Misdirection (lead audience to the wrong conclusion)\n3. Planted clues (details that take on new meaning after the twist)\n4. The twist (one moment that reframes everything)\n5. Landing (optional — one more line for impact)\n\nRULES:\n- 120 words maximum\n- First-person, casual narrative tone\n- The twist must be EARNED, not random\n- Plant at least 1 clue that's only visible on rewatch\n- Short sentences build to the reveal\n- The twist should change the MEANING of the setup\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
-    "perfectMatch": ["twist", "surprise", "unexpected", "turns out", "actually"],
-    "goodFit": ["reveal", "secret", "hidden", "didn't expect", "discovery"],
+    "perfectMatch": [
+      "twist",
+      "surprise",
+      "unexpected",
+      "turns out",
+      "actually"
+    ],
+    "goodFit": [
+      "reveal",
+      "secret",
+      "hidden",
+      "didn't expect",
+      "discovery"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["any"]
+    "dreamscapeTypes": [
+      "any"
+    ]
   },
   "exampleOutput": "My wife has been acting strange lately.\n\nLeaving early. Coming home late. Hiding her phone.\n\nI followed her yesterday.\n\nShe went to a house I didn't recognize.\n\nI knocked on the door.\n\nShe answered... in scrubs?\n\nTurns out she's been secretly volunteering at a nursing home.\n\nHelping the resident who has no family.\n\nThe same one who raised her before she was adopted.\n\nI thought she was cheating.\n\nShe was just visiting her biological mother."
 }

@@ -6,30 +6,44 @@
   "description": "Narration script with pacing, emphasis, and timing notes for voice talent",
   "duration": "3-10min",
   "wordCount": 700,
-  "platforms": ["youtube", "documentary", "explainer"],
+  "platforms": [
+    "youtube",
+    "documentary",
+    "explainer"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["narration", "documentary"],
-    "intensity": {
-      "stakes": 6,
-      "darkness": 5,
-      "pace": 7,
-      "twist": 6,
-      "realism": 8,
-      "catharsis": 6,
-      "moralClarity": 7
-    },
-    "avoidPhrases": ["little did I know", "plot twist", "you won't believe"]
+    "genres": [
+      "narration",
+      "documentary"
+    ],
+    "avoidPhrases": [
+      "little did I know",
+      "plot twist",
+      "you won't believe"
+    ]
   },
   "promptTemplate": {
     "system": "You are a scriptwriter creating documentary-style voiceover scripts with natural pacing and emphasis markers.",
     "user": "Create a voiceover script based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Clear narrative flow\n- Mark emphasis with [EMPHASIS]\n- Mark pauses with [...]\n- Include timing notes [00:15]\n- Natural, conversational tone\n- Build tension through pacing\n- Leave room for visuals/B-roll\n- 700 words for ~5 minute VO\n- Avoid clichés: {avoidPhrases}\n\nFormat with timing and direction:\n[00:00] It started with the WiFi. [pause] Always does.\n\nWrite the script now:"
   },
   "compatibility": {
-    "perfectMatch": ["story", "narrative", "journey", "discovery"],
-    "goodFit": ["experience", "event", "mystery"],
+    "perfectMatch": [
+      "story",
+      "narrative",
+      "journey",
+      "discovery"
+    ],
+    "goodFit": [
+      "experience",
+      "event",
+      "mystery"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["narrative", "documentary-style"]
+    "dreamscapeTypes": [
+      "narrative",
+      "documentary-style"
+    ]
   },
   "exampleOutput": "[00:00]\nIt started with the WiFi. [pause] Always does.\n\n[00:05]\nI work from home. My [EMPHASIS] entire job depends on a stable connection. And for weeks... mine wasn't.\n\n[00:15]\nDropped calls during client presentations. Buffering. Lag. The usual suspects... except nothing was usual about this.\n\n[00:25]\n[pause for B-roll: frustrated at desk]\n\nMy husband suggested checking the router. Twenty-seven devices. [pause] We own eight.\n\n[00:35]\nThe names didn't help. \"SIGINT-NODE-7.\" [pause] \"OVERWATCHTABLET.\" [pause] This wasn't someone's iPhone accidentally connecting.\n\n[00:50]\nSo I did what any reasonable person would do. [pause for effect] I knocked on Greg's door."
 }

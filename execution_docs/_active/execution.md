@@ -1,63 +1,59 @@
 # StoryWeaver - Active Execution
 
-## Task: AI Review System (Admin-Only) + Model Upgrade
+## Task: Remove Intensity Dials + Enhance Generic Seed Prompt
 
-**Session**: 2026-03-14
-**Context**: Add GPT-5.4-powered quality review on Rate & Save (admin-only), upgrade all generation models to gpt-5-mini.
+**Session**: 2026-03-16
+**Context**: Remove all intensity dials (unused complexity), rewrite generic seed generation prompt with XML framework, wire template context into seed gen for both modes.
 
 ## Execution Status
 
 ### ✅ Completed Tasks
 
-- [x] Add review types to types.ts (`AIReviewResult`, `AIReviewRubricScore`, `ReviewOutputParams`)
-- [x] Create openai-review.ts adapter (GPT-5.4, XML prompt framework, Zod structured output)
-- [x] Create API route `/api/outputs/review` with admin role check
-- [x] Add `api.outputs.review()` client wrapper in api.ts
-- [x] Add AI Review card to Rate & Save step (admin-only, between split/continue and rating)
-- [x] Upgrade `gpt-4o-2024-08-06` → `gpt-5-mini` in openai.ts (4 occurrences)
-- [x] Rename archived doc: `2026-03-13-181b7ce-template-flow-style-variants-quality-pipeline.md`
-- [x] Build passes
+- [x] Step 1: Types + config foundation — removed `IntensityValues`, `Dial` type, `intensity` from `DialState`, `Preset`, `Template.settings`, `GenerateDreamscapesParams`, `EnhanceDreamscapeParams`. Added `templateContext` to `GenerateDreamscapesParams`.
+- [x] Step 2: Deleted `dials.json`, removed `DIALS` export from config.ts, removed `getDial()`
+- [x] Step 3: Removed `settings.intensity` from all 48 template JSON files
+- [x] Step 4: Core logic — removed `buildIntensityPrompt()`, `adjustIntensity()` from openai.ts, stripped intensity from `buildSystemPrompt()`, cleaned prompt-builders.ts, mock.ts
+- [x] Step 5: API routes — removed intensity from dreamscapes/generate route, added templateContext
+- [x] Step 6: UI + state — removed `randomizeIntensity`, `genIntensity`, `showGenAdvanced`, `randomizeDialIntensity`, intensity sliders UI, `DIALS` import from create page. Removed intensity from app-store.ts.
+- [x] Step 7: Generic seed prompt rewrite — `buildGenericSeedPrompt()` with full XML framework (`<role>`, `<context>`, `<template_context>`, `<constraints>`, `<expectation>`, `<examples>`). Template context injected when template selected but no seedPrompt.
+- [x] Step 8: Power user wiring — `handleGenerateDreamscapes` now passes `selectedTemplate?.seedPrompt`, `templateId`, and `templateContext`
+- [x] Step 9: usePromptInspector.ts — removed `genIntensity` param and all intensity references
+- [x] Step 10: Docs — updated PROMPT_FRAMEWORK.md (seed prompts now use XML), CLAUDE.md (removed dials references, updated key concepts)
+- [x] Step 11: Build verification — passes clean
 
-### ⏳ Pending Tasks
+### ✅ Completed (B2)
 
-- [ ] Commit
+- [x] Upgrade 11 hero template seedPrompts to XML structure (manually crafted per template)
 
 ## Changes Made
 
 ### Files Modified
-- `src/lib/types.ts` — Added `AIReviewResult`, `AIReviewRubricScore`, `ReviewOutputParams` types
-- `src/lib/api.ts` — Added `api.outputs.review()` client wrapper
-- `src/lib/adapters/openai.ts` — Model upgrade: `gpt-4o-2024-08-06` → `gpt-5-mini` (all 4 generation calls)
-- `src/app/app/create/page.tsx` — AI Review card on Rate & Save (admin-only), review state vars, handler, variant-switch reset
-
-### Files Created
-- `src/lib/adapters/openai-review.ts` — Review adapter with GPT-5.4, XML prompt framework, Zod schema
-- `src/app/api/outputs/review/route.ts` — POST endpoint with admin auth check
+- `src/lib/types.ts` — removed IntensityValues, Dial; stripped intensity from DialState, Preset, Template.settings, GenerateDreamscapesParams, EnhanceDreamscapeParams; added templateContext
+- `src/lib/config.ts` — removed DIALS export, Dial import, getDial()
+- `src/config/presets.json` — removed intensity from all 5 presets
+- 48 template JSON files — removed settings.intensity
+- `src/lib/adapters/openai.ts` — removed buildIntensityPrompt, adjustIntensity; added buildGenericSeedPrompt with XML framework; stripped intensity from buildSystemPrompt and enhanceDreamscape
+- `src/lib/adapters/mock.ts` — removed intensity from enhance prompt call
+- `src/lib/prompt-builders.ts` — removed all intensity references and DIALS import
+- `src/app/api/dreamscapes/generate/route.ts` — removed intensity, added templateContext
+- `src/app/app/create/page.tsx` — removed all intensity state/UI/imports, wired seedPrompt+templateContext into both generate flows
+- `src/hooks/usePromptInspector.ts` — removed genIntensity param and all intensity references
+- `src/store/app-store.ts` — removed intensity from initial dialState
+- `docs/PROMPT_FRAMEWORK.md` — updated seed generation section (XML structure)
+- `CLAUDE.md` — removed dials references, updated key concepts
 
 ### Files Deleted
-- None
+- `src/config/dials.json`
 
 ## Implementation Notes
 
-### Key Technical Details
-- **Review model**: GPT-5.4 (best model for analytical review)
-- **Generation model**: gpt-5-mini (upgraded from gpt-4o-2024-08-06)
-- **Temperature**: 0.3 for review (consistent analytical output), unchanged for generation
-- **Admin check**: Server-side role check in API route + client-side `canAccessDevTools(role)` for UI visibility
-- **Prompt framework**: Full XML tag structure (`<role>`, `<context>`, `<constraints>`, `<expectation>`) per PROMPT_FRAMEWORK.md
-- **Reviewer role**: Expert editorial reviewer + prompt engineer — reviews content AND traces quality back to prompt causes
-- **Review context**: Receives dreamscape text, system prompt, user prompt, and output — full generation pipeline visibility
-- **Structured output**: Zod schema enforces consistent format with rubric analyses + crisp summary
-- **8 rubrics**: Hook Effectiveness, Narrative Authenticity, Structural Cohesion, Pacing & Flow, Twist/Surprise Factor, Emotional Resonance, Platform Fit, Prompt Adherence
-- **UI**: Collapsible card with always-visible summary (grade + scores + weaknesses + strengths + prompt suggestions) and expandable detailed analysis
-- **State reset**: Review clears when switching variants
+### Generic Seed Prompt (buildGenericSeedPrompt)
+- Full XML structure: `<role>`, `<context>`, `<constraints>`, `<expectation>` in system prompt
+- `<task>`, `<format>`, `<examples>` in user prompt
+- When template is selected but has no seedPrompt, `<template_context>` block is injected with template name, category, and description
+- Good/bad examples included (3 each with explanations)
+- Vibe inserted into `<task>` when provided
 
-## Developer Actions Required
-- [x] Build succeeds
-- [ ] Test with admin role: AI Review button visible, review runs and displays
-- [ ] Test with non-admin role: AI Review card not visible
-- [ ] Verify gpt-5-mini model works for existing generation flows
-
----
-
-*This document tracks active implementation progress*
+### Template Context Flow
+- Normal mode: template's seedPrompt OR generic with templateContext → already worked, now also passes templateContext
+- Power user mode: now also passes selectedTemplate?.seedPrompt and templateContext (was missing before)

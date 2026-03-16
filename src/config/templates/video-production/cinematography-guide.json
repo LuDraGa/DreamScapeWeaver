@@ -6,19 +6,17 @@
   "description": "Visual direction guide with lighting, color grading, and composition notes",
   "duration": "Production doc",
   "wordCount": 700,
-  "platforms": ["youtube", "film", "commercial"],
+  "platforms": [
+    "youtube",
+    "film",
+    "commercial"
+  ],
   "settings": {
     "tone": "script",
-    "genres": ["production", "visual"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 6,
-      "pace": 6,
-      "twist": 5,
-      "realism": 8,
-      "catharsis": 6,
-      "moralClarity": 7
-    },
+    "genres": [
+      "production",
+      "visual"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,22 @@
     "user": "Create a cinematography guide based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Color palette (primary and accent colors)\n- Lighting approach for key scenes\n- Camera movement philosophy\n- Lens choices and why\n- Composition guidelines\n- Reference films/photographers if helpful\n- Mood and atmosphere notes\n- 700 words maximum\n\nFormat by section:\nCOLOR PALETTE\nLIGHTING\nCAMERA MOVEMENT\nLENS CHOICES\nCOMPOSITION\n\nWrite the guide now:"
   },
   "compatibility": {
-    "perfectMatch": ["visual", "atmosphere", "mood", "tone"],
-    "goodFit": ["story", "narrative", "emotional"],
+    "perfectMatch": [
+      "visual",
+      "atmosphere",
+      "mood",
+      "tone"
+    ],
+    "goodFit": [
+      "story",
+      "narrative",
+      "emotional"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["narrative", "atmospheric"]
+    "dreamscapeTypes": [
+      "narrative",
+      "atmospheric"
+    ]
   },
   "exampleOutput": "COLOR PALETTE:\n- Cool blues for tech/isolation scenes (router, monitors)\n- Warm yellows for revelation moments (basement discovery)\n- Desaturated for building tension\n\nLIGHTING:\n- Natural window light for home office (realistic, relatable)\n- Harsh overhead fluorescent in basement (reveals, surveillance)\n- Soft key light for close-ups (emotional beats)\n\nCAMERA MOVEMENT:\n- Handheld for discovery/urgency (finding devices)\n- Locked off for reveals (basement equipment)\n- Slow push-ins for tension building"
 }

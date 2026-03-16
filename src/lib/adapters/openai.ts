@@ -8,12 +8,11 @@ import type {
   GenerateOutputsParams,
   Dreamscape,
   OutputVariant,
-  IntensityValues,
   DialState,
 } from '@/lib/types'
 import { uid } from '@/lib/utils'
 import { env } from '@/lib/env'
-import { buildEnhancementPrompt } from '@/lib/prompt-builders'
+import { buildEnhancementPrompt, buildGenericSeedPrompt } from '@/lib/prompt-builders'
 import { startLangfuseGeneration } from '@/lib/billing/langfuse'
 
 /**
@@ -59,70 +58,6 @@ const StoryOutputSchema = z.object({
 // ========================================
 
 /**
- * Convert intensity dial values to descriptive text for prompts
- */
-function buildIntensityPrompt(intensity: IntensityValues): string {
-  const getLevel = (value: number): string => {
-    if (value <= 3) return 'low'
-    if (value <= 7) return 'medium'
-    return 'high'
-  }
-
-  const stakesDesc = {
-    low: 'minimal stakes with everyday consequences',
-    medium: 'moderate stakes with meaningful personal impact',
-    high: 'extremely high stakes with life-changing or catastrophic consequences',
-  }[getLevel(intensity.stakes)]
-
-  const darknessDesc = {
-    low: 'light and upbeat tone with minimal negativity',
-    medium: 'balanced tone with some darker elements',
-    high: 'dark, intense, and morally complex tone',
-  }[getLevel(intensity.darkness)]
-
-  const paceDesc = {
-    low: 'slow-burn, contemplative pacing',
-    medium: 'steady, measured pacing',
-    high: 'fast-paced and urgent, events unfold rapidly',
-  }[getLevel(intensity.pace)]
-
-  const twistDesc = {
-    low: 'straightforward and predictable',
-    medium: 'some unexpected developments',
-    high: 'shocking twists and revelations',
-  }[getLevel(intensity.twist)]
-
-  const realismDesc = {
-    low: 'heightened reality, dramatic and stylized',
-    medium: 'plausible with some dramatic license',
-    high: 'deeply realistic with mundane details and authenticity',
-  }[getLevel(intensity.realism)]
-
-  const catharsisDesc = {
-    low: 'unresolved, ambiguous ending',
-    medium: 'partial resolution with mixed feelings',
-    high: 'deeply satisfying emotional release and resolution',
-  }[getLevel(intensity.catharsis)]
-
-  const moralDesc = {
-    low: 'morally ambiguous, complex ethical landscape',
-    medium: 'nuanced moral questions',
-    high: 'clear moral framework with definitive right and wrong',
-  }[getLevel(intensity.moralClarity)]
-
-  return `
-INTENSITY SETTINGS:
-- Stakes: ${stakesDesc}
-- Tone/Darkness: ${darknessDesc}
-- Pacing: ${paceDesc}
-- Twist Factor: ${twistDesc}
-- Realism: ${realismDesc}
-- Emotional Catharsis: ${catharsisDesc}
-- Moral Clarity: ${moralDesc}
-`
-}
-
-/**
  * Build comprehensive system prompt from dial state
  */
 function buildSystemPrompt(dialState: DialState): string {
@@ -159,8 +94,6 @@ OUTPUT FORMAT: ${formatSpecs[dialState.outputFormat]}
 
 TONE: ${toneGuidance[dialState.tone]}
 
-${buildIntensityPrompt(dialState.intensity)}
-
 CONSTRAINTS:
 - Target word count: ~${dialState.wordCount} words (±10% is acceptable)
 ${dialState.genres && dialState.genres.length > 0 ? `- Genres: ${dialState.genres.join(', ')}` : ''}
@@ -173,40 +106,6 @@ COHESION: ${dialState.cohesionStrictness >= 7 ? 'Stay very close to the seed pre
 `
 
   return prompt
-}
-
-/**
- * Adjust intensity values for variants
- */
-function adjustIntensity(
-  dialState: DialState,
-  type: 'intense' | 'believable'
-): DialState {
-  const clamp = (val: number) => Math.max(1, Math.min(10, val))
-
-  if (type === 'intense') {
-    return {
-      ...dialState,
-      intensity: {
-        ...dialState.intensity,
-        stakes: clamp(dialState.intensity.stakes + 2),
-        darkness: clamp(dialState.intensity.darkness + 1),
-        pace: clamp(dialState.intensity.pace + 2),
-        twist: clamp(dialState.intensity.twist + 1),
-      },
-    }
-  } else {
-    // believable
-    return {
-      ...dialState,
-      intensity: {
-        ...dialState.intensity,
-        realism: clamp(dialState.intensity.realism + 2),
-        twist: clamp(dialState.intensity.twist - 2),
-        darkness: clamp(dialState.intensity.darkness - 1),
-      },
-    }
-  }
 }
 
 // ========================================
@@ -222,23 +121,22 @@ export async function generateDreamscapes(
   params: GenerateDreamscapesParams
 ): Promise<Dreamscape[]> {
   try {
-    // Template-aware seed generation: use template's seedPrompt if provided
     let systemPrompt: string
     let userPrompt: string
 
     if (params.seedPrompt) {
+      // Template has its own seed prompt — use it directly
       systemPrompt = params.seedPrompt.system
       userPrompt = params.seedPrompt.user.replace('{count}', String(params.count))
     } else {
-      systemPrompt = `You are a creative story idea generator. Generate compelling, original story premises that:
-- Are 1-2 sentences long
-- Have clear conflict or intrigue
-- Include a twist or unexpected element
-- Are specific and concrete (not abstract)
-- Feel fresh and engaging
-
-${params.vibe ? `Match this vibe: ${params.vibe}` : 'Generate diverse, creative premises across different genres and tones'}`
-      userPrompt = `Generate ${params.count} unique story seed ideas.`
+      // Generic seed prompt with XML framework (+ optional template context)
+      const prompts = buildGenericSeedPrompt({
+        count: params.count,
+        vibe: params.vibe,
+        templateContext: params.templateContext,
+      })
+      systemPrompt = prompts.system
+      userPrompt = prompts.user
     }
 
     const messages = [
@@ -294,7 +192,6 @@ export async function enhanceDreamscape(
       chunks: params.chunks,
       goalPreset: params.goalPreset,
       customGoal: params.customGoal,
-      intensity: params.intensity,
       avoidPhrases: params.avoidPhrases,
     })
 
@@ -447,20 +344,59 @@ async function generateVariant(
   seed: string,
   systemPromptOverride?: string,
   userPromptOverride?: string,
-): Promise<OutputVariant> {
-  const systemPrompt = systemPromptOverride || buildSystemPrompt(dialState)
+  characterSystemPrompt?: string,
+  characterUserPrompt?: string,
+): Promise<OutputVariant & { characterProfile?: string }> {
+  let characterProfile: string | undefined
+
+  // CoT two-call flow: build character first, then write story as that character
+  if (characterSystemPrompt && characterUserPrompt) {
+    const charMessages = [
+      { role: 'system' as const, content: characterSystemPrompt },
+      { role: 'user' as const, content: characterUserPrompt },
+    ]
+
+    const charLt = startLangfuseGeneration('character-generation', charMessages, {}, {
+      model: 'gpt-5-mini', metadata: { variantTitle: title, step: 'character' },
+    })
+
+    const charCompletion = await openai.chat.completions.create({
+      model: 'gpt-5-mini',
+      messages: charMessages,
+    })
+
+    // Adapt ChatCompletion to the Langfuse end() shape (expects parsed, not content)
+    await charLt.end({
+      choices: [{ message: { parsed: charCompletion.choices[0].message.content } }],
+      usage: charCompletion.usage,
+    })
+
+    characterProfile = charCompletion.choices[0].message.content ?? undefined
+    if (!characterProfile) {
+      throw new Error('Failed to generate character profile')
+    }
+  }
+
+  // Build story generation prompt — inject character profile if present
+  let systemPrompt = systemPromptOverride || buildSystemPrompt(dialState)
+  if (characterProfile) {
+    systemPrompt = systemPrompt.replace('{character}', characterProfile)
+  }
   const userPrompt = userPromptOverride || `Write a complete story based on this seed:\n\n${seed}`
   const messages = [
     { role: 'system' as const, content: systemPrompt },
     { role: 'user' as const, content: userPrompt },
   ]
 
+  // CoT uses gpt-5.4 for story generation, standard uses gpt-5-mini
+  const storyModel = characterProfile ? 'gpt-5.4' : 'gpt-5-mini'
+
   const lt = startLangfuseGeneration('output-generation', messages, {}, {
-    model: 'gpt-5-mini', metadata: { variantTitle: title, platform: dialState.platform },
+    model: storyModel, metadata: { variantTitle: title, platform: dialState.platform, cot: !!characterProfile },
   })
 
   const completion = await openai.beta.chat.completions.parse({
-    model: 'gpt-5-mini',
+    model: storyModel,
     messages,
     response_format: zodResponseFormat(StoryOutputSchema, 'story_output'),
   })
@@ -479,25 +415,30 @@ async function generateVariant(
     text: result.text,
     dialState,
     createdAt: new Date().toISOString(),
+    characterProfile,
   }
 }
 
 /**
- * Generate a single story output with dial parameters
+ * Generate a single story output with dial parameters.
+ * When characterSystemPrompt/characterUserPrompt are provided (CoT template),
+ * runs a two-call flow: character generation (gpt-5-mini) → story generation (gpt-5.4).
  */
 export async function generateOutputs(
   params: GenerateOutputsParams
-): Promise<OutputVariant[]> {
+): Promise<(OutputVariant & { characterProfile?: string })[]> {
   try {
     const seed = params.dreamscape.chunks.map((c) => c.text).join('\n\n')
 
-    // Generate single variant
+    // Generate single variant (with optional CoT character step)
     const variant = await generateVariant(
       params.dialState.presetId || 'Story',
       params.dialState,
       seed,
       params.systemPromptOverride,
       params.userPromptOverride,
+      params.characterSystemPrompt,
+      params.characterUserPrompt,
     )
 
     return [variant]

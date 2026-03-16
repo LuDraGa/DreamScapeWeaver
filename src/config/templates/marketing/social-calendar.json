@@ -6,19 +6,18 @@
   "description": "Content calendar with post ideas, themes, and scheduling strategy",
   "duration": "30-day plan",
   "wordCount": 800,
-  "platforms": ["instagram", "twitter", "linkedin", "tiktok"],
+  "platforms": [
+    "instagram",
+    "twitter",
+    "linkedin",
+    "tiktok"
+  ],
   "settings": {
     "tone": "mixed",
-    "genres": ["marketing", "social-media"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 2,
-      "pace": 6,
-      "twist": 4,
-      "realism": 8,
-      "catharsis": 6,
-      "moralClarity": 8
-    },
+    "genres": [
+      "marketing",
+      "social-media"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +25,21 @@
     "user": "Create a 30-day social calendar using this story theme:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Content pillars (3-4 themes)\n- Post ideas for each week\n- Platform-specific adaptations\n- Mix of content types (story/education/engagement/promo)\n- Hashtag strategy\n- Engagement prompts\n- Campaign arc over 30 days\n- 800 words maximum\n\nWrite the calendar now:"
   },
   "compatibility": {
-    "perfectMatch": ["theme", "story", "campaign", "narrative"],
-    "goodFit": ["topic", "subject", "angle"],
+    "perfectMatch": [
+      "theme",
+      "story",
+      "campaign",
+      "narrative"
+    ],
+    "goodFit": [
+      "topic",
+      "subject",
+      "angle"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["thematic"]
+    "dreamscapeTypes": [
+      "thematic"
+    ]
   },
   "exampleOutput": "**CONTENT PILLARS:**\n1. Security Awareness (Mondays)\n2. Customer Stories (Wednesdays)\n3. Tips & Tricks (Fridays)\n4. Product Features (Tuesdays/Thursdays)\n\n**WEEK 1: DISCOVERY THEME**\nMon: \"How many devices are on YOUR network?\" [Poll]\nTue: Product intro - Network scanning feature\nWed: Customer story - \"Found 19 unauthorized devices\"\nThu: Carousel - 5 signs someone's stealing your WiFi\nFri: Tip - How to check router admin page\n\n**WEEK 2: PROBLEM AGITATION**\nMon: \"This is what slow WiFi is actually costing you\" [Video]\nTue: Feature spotlight - Real-time monitoring\nWed: Case study - Remote worker doubles speeds\nThu: Infographic - Bandwidth drain stats\nFri: Quick tip - Setting up alerts\n\n**WEEK 3: SOLUTION FOCUS**\nMon: \"One click to remove unauthorized users\" [Demo]\nTue: Feature - One-click blocking\nWed: Testimonial video\nThu: Before/After screenshot comparison\nFri: Tutorial - Complete setup in 2 minutes\n\n**WEEK 4: CONVERSION PUSH**\n[Launch special offer, urgency messaging]\n\n**HASHTAG STRATEGY:**\n#NetworkSecurity #WiFiSafety #HomeSecurity #RemoteWork\n#TechTips #CyberSecurity #SmartHome"
 }

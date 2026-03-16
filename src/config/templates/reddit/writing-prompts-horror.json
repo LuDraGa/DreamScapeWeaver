@@ -6,21 +6,17 @@
   "description": "Horror stories with psychological dread and disturbing twists",
   "duration": "4-6min read",
   "wordCount": 600,
-  "platforms": ["reddit"],
+  "platforms": [
+    "reddit"
+  ],
   "subreddit": "WritingPrompts",
   "genre": "horror",
   "settings": {
     "tone": "narrative",
-    "genres": ["horror", "thriller"],
-    "intensity": {
-      "stakes": 8,
-      "darkness": 9,
-      "pace": 6,
-      "twist": 9,
-      "realism": 5,
-      "catharsis": 3,
-      "moralClarity": 3
-    },
+    "genres": [
+      "horror",
+      "thriller"
+    ],
     "avoidPhrases": [
       "little did I know",
       "that's when things got interesting",
@@ -34,10 +30,26 @@
     "user": "Create a 600-word horror story for r/WritingPrompts based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with SUBTLE WRONGNESS (something slightly off)\n- Build PSYCHOLOGICAL DREAD (mind over gore)\n- Include DISTURBING REVELATION (recontextualizes everything)\n- End with LINGERING HORROR (no clean resolution)\n- Can use third-person OR first-person narrative\n- 600 words maximum\n- Focus on atmosphere over jump scares\n- Make horror feel inevitable, not random\n- Format: [NORMAL SITUATION] → [CREEPING WRONGNESS] → [ESCALATION] → [REVELATION] → [DISTURBING IMPLICATION]\n\nOptimize for:\n- Psychological impact (disturb, don't just shock)\n- Atmosphere (build dread slowly)\n- Memorable twist (they'll think about it later)\n\nHORROR CONVENTIONS:\n- Suggest more than you show\n- Make mundane things feel wrong\n- Earn your scares through buildup\n- Leave some questions unanswered\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
   },
   "compatibility": {
-    "perfectMatch": ["horror", "creepy", "terrifying", "monster", "nightmare", "haunted"],
-    "goodFit": ["dark", "sinister", "eerie", "disturbing", "unexplained", "mysterious"],
+    "perfectMatch": [
+      "horror",
+      "creepy",
+      "terrifying",
+      "monster",
+      "nightmare",
+      "haunted"
+    ],
+    "goodFit": [
+      "dark",
+      "sinister",
+      "eerie",
+      "disturbing",
+      "unexplained",
+      "mysterious"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["any"]
+    "dreamscapeTypes": [
+      "any"
+    ]
   },
   "exampleOutput": "[Note: This would be a full 600-word story. Showing concept only]\n\nThe child's drawings were perfectly normal.\n\nThat's what made them so disturbing.\n\nDr. Chen had been a child psychologist for twenty years. She'd seen drawings of family violence, abuse, trauma. Those made sense. You could help those children.\n\nBut Emily's drawings were just... houses. Trees. Stick figure families.\n\nAll of them smiling.\n\nEvery single one.\n\n[SUBTLE HORROR: Drawings are TOO perfect, TOO happy]\n[INVESTIGATION: Dr. Chen digs into Emily's background]\n[ESCALATION: Discovers disturbing pattern]\n[TWIST: The drawings are messages, not memories]\n[ENDING: Horrifying implication about Emily's true nature]\n\n[Complete story emphasizing psychological horror, atmospheric dread, disturbing twist]"
 }

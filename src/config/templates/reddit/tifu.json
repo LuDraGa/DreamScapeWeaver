@@ -6,20 +6,16 @@
   "description": "Today I F***ed Up - Funny failure stories with escalating chaos",
   "duration": "3-4min read",
   "wordCount": 500,
-  "platforms": ["reddit"],
+  "platforms": [
+    "reddit"
+  ],
   "subreddit": "tifu",
   "settings": {
     "tone": "narrative",
-    "genres": ["comedy", "embarrassment"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 3,
-      "pace": 7,
-      "twist": 6,
-      "realism": 8,
-      "catharsis": 7,
-      "moralClarity": 7
-    },
+    "genres": [
+      "comedy",
+      "embarrassment"
+    ],
     "avoidPhrases": [
       "little did I know",
       "that's when things got interesting",
@@ -31,8 +27,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for r/TIFU (Today I F***ed Up) content. Generate realistic, relatable mistake scenarios where a small error snowballs into an embarrassing disaster. Seeds must be grounded in everyday life — cooking failures, social blunders, workplace mistakes, misunderstandings, tech fails. NO fantasy or sci-fi. Every seed should make the reader think 'I could totally do that.'",
-    "user": "Generate {count} unique r/TIFU story seeds. Each seed should be:\n- A realistic mistake that escalates hilariously (could happen to anyone)\n- 2-3 sentences describing the initial mistake and the escalation\n- Include a specific, relatable context (workplace, date, family event, etc.)\n- The mistake should be SMALL but the consequences absurd\n\nExamples of GOOD seed topics: accidentally replying-all with a rant about the boss, confusing salt for sugar while cooking for in-laws, wearing the wrong outfit to a formal event, sending a text to the wrong person.\n\nExamples of BAD seed topics: hacking a computer system, time travel accidents, anything involving celebrities.\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in r/TIFU (Today I F***ed Up) content. You design realistic, relatable mistake scenarios where a small, innocent error snowballs into an embarrassing disaster. Your seeds make people laugh out loud and think \"I could totally do that.\"\n</role>\n\n<context>\nr/TIFU is a subreddit where people share their most embarrassing mistakes. The best posts feature small, everyday errors that escalate hilariously through a chain of bad luck and poor decisions. The humor comes from relatability and escalation — readers see themselves in the mistake. Seeds must set up both the initial blunder AND hint at the absurd consequence.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: the initial small mistake AND the escalated consequence\n- The mistake must be SMALL and relatable — something anyone could do\n- The consequence must be disproportionately absurd or embarrassing\n- Grounded in everyday settings: workplace, kitchen, dates, family events, social situations\n- NO fantasy, sci-fi, or movie-plot scenarios\n- NO mistakes requiring specialized knowledge or unusual circumstances\n- Each seed must be distinct in setting and escalation type\n</constraints>\n\n<expectation>\nA great TIFU seed makes you cringe-laugh just reading the premise. The initial mistake is so mundane and relatable that the reader thinks \"I've almost done that.\" The escalation is logical step by step but absurd in totality — each attempt to fix it makes things worse. A writer should read the seed and immediately see the 3-beat escalation: mistake → attempted fix → disaster.\n</expectation>",
+    "user": "<task>\nGenerate {count} unique r/TIFU story seeds. Each seed must feature a small, relatable mistake that snowballs into an embarrassing disaster.\n</task>\n\n<examples>\nGOOD seeds (small mistake, absurd escalation, relatable):\n- \"A guy accidentally replies-all to a company-wide email with a rant about his boss's coffee breath. His boss is cc'd. The company has 200 employees.\"\n- \"A woman mistakes her boyfriend's mother's ashes urn for a decorative cookie jar at Thanksgiving dinner. She opens it at the table.\"\n- \"A man sends a voice memo meant for his wife complaining about dinner to the group chat with his wife's entire family. They're all in the next room.\"\n\nBAD seeds (unrealistic, not relatable, no escalation):\n- \"Someone makes a mistake at work\" (too vague — WHAT mistake? WHAT happens?)\n- \"A hacker accidentally deletes a database\" (too specialized, not relatable)\n- \"A person trips and falls\" (no escalation potential)\n</examples>"
   },
   "styleVariants": [
     {
@@ -69,10 +65,26 @@
     "user": "Create a 400-700 word r/TIFU post based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. TIFU opening line (the hook)\n2. Context (brief setup — who, where, situation)\n3. The initial mistake (small, relatable)\n4. Escalation beats (2-3 steps of things getting worse)\n5. The disaster (peak absurdity)\n6. Aftermath (consequences, other people's reactions)\n7. TL;DR (one sentence)\n\nRULES:\n- Write in self-deprecating, humorous first-person tone\n- Show ESCALATION — each step makes it worse\n- Include specific, embarrassing details\n- Use casual language, contractions, natural humor\n- Make it relatable but absurd\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
   },
   "compatibility": {
-    "perfectMatch": ["mistake", "messed up", "embarrassing", "failed", "went wrong"],
-    "goodFit": ["accident", "oops", "disaster", "awkward", "regret"],
+    "perfectMatch": [
+      "mistake",
+      "messed up",
+      "embarrassing",
+      "failed",
+      "went wrong"
+    ],
+    "goodFit": [
+      "accident",
+      "oops",
+      "disaster",
+      "awkward",
+      "regret"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["mistake", "failure", "accident"]
+    "dreamscapeTypes": [
+      "mistake",
+      "failure",
+      "accident"
+    ]
   },
   "exampleOutput": "TIFU by trying to impress my girlfriend with a fancy homemade dinner.\n\nSo I'm not a great cook, but I found this recipe for beef Wellington that looked doable. How hard could it be?\n\nVery hard, turns out.\n\nFirst mistake: I didn't defrost the puff pastry. I microwaved it. It turned into paste.\n\nSecond mistake: I confused tablespoons with teaspoons for the mustard. The beef was COATED in mustard.\n\nThird mistake: I forgot to turn off the oven's self-cleaning mode from earlier. It was at 900°F.\n\nThe beef Wellington looked like a charcoal brick. Smoke detector went off. My girlfriend arrived right as I was fanning the smoke alarm with a towel, wearing oven mitts, with mustard somehow on my face.\n\nShe took one look at the burnt disaster on my counter and said, \"Should we order pizza?\"\n\nWe did.\n\nBut wait, it gets better. Turns out I'd accidentally used her dog's beef treats instead of actual beef. I grabbed the wrong package from the freezer.\n\nSo I didn't just fail at beef Wellington. I made DOG FOOD Wellington.\n\nShe still brings it up at parties.\n\nTL;DR: Tried to cook fancy dinner, made dog food instead, set off smoke alarm, ordered pizza."
 }

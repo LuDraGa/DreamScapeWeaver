@@ -6,21 +6,17 @@
   "description": "Fantasy stories with magic, mythical creatures, and epic adventures",
   "duration": "5-7min read",
   "wordCount": 700,
-  "platforms": ["reddit"],
+  "platforms": [
+    "reddit"
+  ],
   "subreddit": "WritingPrompts",
   "genre": "fantasy",
   "settings": {
     "tone": "narrative",
-    "genres": ["fantasy", "adventure"],
-    "intensity": {
-      "stakes": 7,
-      "darkness": 4,
-      "pace": 6,
-      "twist": 6,
-      "realism": 3,
-      "catharsis": 8,
-      "moralClarity": 7
-    },
+    "genres": [
+      "fantasy",
+      "adventure"
+    ],
     "avoidPhrases": [
       "little did I know",
       "that's when things got interesting",
@@ -34,10 +30,26 @@
     "user": "Create a 700-word fantasy story for r/WritingPrompts based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Establish MAGICAL WORLD/SYSTEM quickly (show don't tell)\n- Center on COMPELLING CHARACTER with clear motivation\n- Include WONDER or AWE moment (magic should feel magical)\n- Build to TRIUMPHANT or BITTERSWEET RESOLUTION\n- Can use third-person OR first-person narrative\n- 700 words maximum\n- Balance world-building with story pacing\n- Make magic have rules/costs (internal consistency)\n- Format: [WORLD INTRO] → [CHARACTER QUEST] → [CHALLENGE/OBSTACLE] → [CLIMAX] → [RESOLUTION]\n\nOptimize for:\n- Sense of wonder (make readers want this world to be real)\n- Emotional investment (care about the character)\n- Satisfying payoff (earned victory or meaningful loss)\n\nFANTASY CONVENTIONS:\n- Magic should have rules and costs\n- Show world-building through action, not exposition\n- Earn your deus ex machina or avoid it\n- Give victories weight through sacrifice\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
   },
   "compatibility": {
-    "perfectMatch": ["magic", "wizard", "dragon", "quest", "kingdom", "enchanted"],
-    "goodFit": ["adventure", "hero", "journey", "mythical", "legend", "spell"],
+    "perfectMatch": [
+      "magic",
+      "wizard",
+      "dragon",
+      "quest",
+      "kingdom",
+      "enchanted"
+    ],
+    "goodFit": [
+      "adventure",
+      "hero",
+      "journey",
+      "mythical",
+      "legend",
+      "spell"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["any"]
+    "dreamscapeTypes": [
+      "any"
+    ]
   },
   "exampleOutput": "[Note: This would be a full 700-word story. Showing concept only]\n\nThe dragon wasn't supposed to be here.\n\nMara had checked the migration charts twice. Dragons didn't come to the Lowlands. Not anymore. Not since the Pact.\n\nBut there it was, circling her village, scales reflecting moonlight like obsidian mirrors.\n\nAnd it was crying.\n\n[CONFLICT: Dragon is in distress, village in danger]\n[MAGIC SYSTEM: Mara's ability to understand dragon speech]\n[CHALLENGE: Must help dragon despite villagers' fear]\n[TWIST: Dragon's tears are creating a magical phenomenon]\n[RESOLUTION: Unexpected alliance, village transformed]\n\n[Complete story with magic, wonder, character growth, satisfying arc]"
 }

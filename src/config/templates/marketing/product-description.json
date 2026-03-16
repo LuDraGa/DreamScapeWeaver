@@ -6,19 +6,17 @@
   "description": "Feature-benefit focused product copy with SEO optimization",
   "duration": "Product page",
   "wordCount": 300,
-  "platforms": ["ecommerce", "shopify", "amazon"],
+  "platforms": [
+    "ecommerce",
+    "shopify",
+    "amazon"
+  ],
   "settings": {
     "tone": "mixed",
-    "genres": ["marketing", "product"],
-    "intensity": {
-      "stakes": 6,
-      "darkness": 1,
-      "pace": 6,
-      "twist": 3,
-      "realism": 9,
-      "catharsis": 6,
-      "moralClarity": 9
-    },
+    "genres": [
+      "marketing",
+      "product"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,21 @@
     "user": "Create product copy using this story as inspiration:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Opening hook (problem or desire)\n- Key features (3-5 bullets)\n- Benefits (what features mean for customer)\n- Use case examples\n- Specs/technical details\n- Who it's for\n- SEO keywords naturally integrated\n- 300 words maximum\n\nWrite the product description now:"
   },
   "compatibility": {
-    "perfectMatch": ["product", "solution", "tool", "service"],
-    "goodFit": ["problem", "need", "benefit"],
+    "perfectMatch": [
+      "product",
+      "solution",
+      "tool",
+      "service"
+    ],
+    "goodFit": [
+      "problem",
+      "need",
+      "benefit"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["product-focused"]
+    "dreamscapeTypes": [
+      "product-focused"
+    ]
   },
   "exampleOutput": "**Never Wonder Who's On Your Network Again**\n\nTired of slow internet and wondering why? NetworkGuard Pro shows you every device connected to your WiFi—and helps you take control.\n\n**KEY FEATURES:**\n✓ Real-time device monitoring - See all 27 devices, not just your 8\n✓ Automatic threat detection - Flags suspicious device names instantly\n✓ One-click blocking - Remove unauthorized users in seconds\n✓ Bandwidth analytics - Know who's hogging your connection\n✓ Mobile app + desktop dashboard - Monitor from anywhere\n\n**PERFECT FOR:**\n- Remote workers protecting their home office\n- Parents managing family device usage\n- Anyone sharing WiFi in multi-unit buildings\n- Small businesses securing their network\n\n**SPECS:**\nCompatible with all major routers • iOS & Android apps • 24/7 monitoring • Instant alerts • 30-day money-back guarantee\n\n**WHAT YOU GET:**\n- NetworkGuard Pro software license\n- Mobile app access\n- 24/7 customer support\n- Free updates for life"
 }

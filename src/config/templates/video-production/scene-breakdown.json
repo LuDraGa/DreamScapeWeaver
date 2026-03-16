@@ -6,19 +6,17 @@
   "description": "Detailed scene-by-scene breakdown with locations, actions, and emotional beats",
   "duration": "Production doc",
   "wordCount": 800,
-  "platforms": ["youtube", "tiktok", "instagram-reels"],
+  "platforms": [
+    "youtube",
+    "tiktok",
+    "instagram-reels"
+  ],
   "settings": {
     "tone": "script",
-    "genres": ["production", "technical"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 5,
-      "pace": 7,
-      "twist": 5,
-      "realism": 8,
-      "catharsis": 5,
-      "moralClarity": 7
-    },
+    "genres": [
+      "production",
+      "technical"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,24 @@
     "user": "Create a detailed scene breakdown based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Break into 4-8 distinct scenes\n- For each scene include:\n  * Scene number and location (INT/EXT)\n  * Time of day\n  * Key action/events\n  * Emotional tone\n  * Visual elements needed\n  * Transition to next scene\n- Focus on visual storytelling\n- Include production notes for challenging scenes\n- 800 words maximum\n\nFormat:\nSCENE 1 - INT. LOCATION - DAY\n[Description]\nEmotional tone: [mood]\nVisual elements: [details]\n\nWrite the scene breakdown now:"
   },
   "compatibility": {
-    "perfectMatch": ["story", "narrative", "conflict", "character"],
-    "goodFit": ["event", "situation", "moment", "experience"],
+    "perfectMatch": [
+      "story",
+      "narrative",
+      "conflict",
+      "character"
+    ],
+    "goodFit": [
+      "event",
+      "situation",
+      "moment",
+      "experience"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["narrative", "story", "conflict"]
+    "dreamscapeTypes": [
+      "narrative",
+      "story",
+      "conflict"
+    ]
   },
   "exampleOutput": "SCENE 1 - INT. HOME OFFICE - DAY\nProtagonist discovers router showing 27 unknown devices. Close-up on screen, blinking lights. Rising frustration.\nEmotional tone: Confusion turning to anger\nVisual elements: Computer screen, router, WiFi admin page\n\nSCENE 2 - EXT. NEIGHBOR'S HOUSE - DAY\nProtagonist knocks on door. Greg answers, calm and unsurprised.\nEmotional tone: Tension, curiosity\nVisual elements: Suburban house, doorway conversation\nTransition: Cut to basement reveal"
 }

@@ -1,5 +1,5 @@
-import type { Preset, DialState, DreamscapeChunk, IntensityValues } from './types'
-import { DIALS } from './config'
+import type { Preset, DialState, DreamscapeChunk } from './types'
+import seedGenPrompt from '@/config/prompts/seed-generation.json'
 
 export interface PromptMessage {
   role: 'system' | 'user' | 'assistant'
@@ -17,7 +17,6 @@ export function buildPresetPrompt({
   preset,
   platform,
   format,
-  intensity,
   genres,
   tone,
   wordCount,
@@ -25,7 +24,6 @@ export function buildPresetPrompt({
   preset: Preset
   platform: string
   format: string
-  intensity: IntensityValues
   genres: string[]
   tone: string
   wordCount: number
@@ -41,11 +39,6 @@ Word Count: ~${wordCount} words
 Tone: ${tone}
 Genres: ${genres.length > 0 ? genres.join(', ') : 'Not specified'}
 
-Intensity settings (from advanced options):
-${Object.entries(intensity)
-  .map(([k, v]) => `  ${DIALS[k as keyof typeof DIALS].label}: ${v}/10`)
-  .join('\n')}
-
 This prompt will be used when you click "Generate" in Step 1.`
 
   return {
@@ -59,7 +52,6 @@ This prompt will be used when you click "Generate" in Step 1.`
           preset: preset.name,
           platform,
           format,
-          intensity,
           genres,
           tone,
           wordCount,
@@ -70,47 +62,94 @@ This prompt will be used when you click "Generate" in Step 1.`
   }
 }
 
-export function buildDreamscapePrompt({
+/**
+ * Build the seed generation prompt — shared by both the API (openai.ts) and
+ * the prompt inspector so they always show the same thing.
+ *
+ * Priority:
+ * 1. Template's own seedPrompt (if present)
+ * 2. Generic XML prompt (with optional templateContext for tailoring)
+ */
+export function buildSeedPrompt({
   count,
   vibe,
-  intensity,
+  seedPrompt,
+  templateContext,
 }: {
   count: number
   vibe: string
-  intensity: IntensityValues
+  seedPrompt?: { system: string; user: string }
+  templateContext?: { displayName: string; category: string; description: string }
 }): PromptData {
-  const systemPrompt = `You are a creative story generator.`
+  let systemPrompt: string
+  let userPrompt: string
 
-  const userPrompt = `Generate ${count} unique story seeds${vibe ? ` with a ${vibe} vibe` : ''}.
-
-Intensity settings:
-${Object.entries(intensity)
-  .map(([k, v]) => `  ${DIALS[k as keyof typeof DIALS].label}: ${v}/10`)
-  .join('\n')}
-
-Return engaging story seeds.`
+  if (seedPrompt) {
+    // Template has its own seed prompt — use it directly
+    systemPrompt = seedPrompt.system
+    userPrompt = seedPrompt.user.replace('{count}', String(count))
+  } else {
+    // Generic XML prompt
+    const { system, user } = buildGenericSeedPrompt({ count, vibe, templateContext })
+    systemPrompt = system
+    userPrompt = user
+  }
 
   return {
     step: 'Dreamscape Generation (Step A)',
     messages: [
       { role: 'system', content: systemPrompt, variables: {} },
-      { role: 'user', content: userPrompt, variables: { count, vibe, intensity } },
+      { role: 'user', content: userPrompt, variables: { count, vibe } },
     ],
     fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
   }
+}
+
+/**
+ * Build the generic (no-template) seed generation prompt using XML framework.
+ * Reads from src/config/prompts/seed-generation.json and resolves placeholders.
+ *
+ * Placeholders:
+ *   {templateContext} — conditional block injected when a template is selected
+ *   {count}           — number of seeds to generate
+ *   {vibe}            — optional vibe/direction instruction
+ */
+export function buildGenericSeedPrompt({
+  count,
+  vibe,
+  templateContext,
+}: {
+  count: number
+  vibe?: string
+  templateContext?: { displayName: string; category: string; description: string }
+}): { system: string; user: string } {
+  const templateContextBlock = templateContext
+    ? `\n<template_context>\nYou are generating seeds specifically for: ${templateContext.displayName} (${templateContext.category})\nTemplate description: ${templateContext.description}\nTailor every seed to fit this content type — the tone, structure, and subject matter should match what this template produces.\n</template_context>`
+    : ''
+
+  const vibeBlock = vibe
+    ? `\n\nMatch this vibe/direction: "${vibe}"`
+    : ''
+
+  const system = seedGenPrompt.system
+    .replace('{templateContext}', templateContextBlock)
+
+  const user = seedGenPrompt.user
+    .replace('{count}', String(count))
+    .replace('{vibe}', vibeBlock)
+
+  return { system, user }
 }
 
 export function buildEnhancementPrompt({
   chunks,
   goalPreset,
   customGoal,
-  intensity,
   avoidPhrases,
 }: {
   chunks: DreamscapeChunk[]
   goalPreset: string
   customGoal?: string
-  intensity: IntensityValues
   avoidPhrases: string[]
 }): PromptData {
   const systemPrompt = `You are a story enhancement specialist.`
@@ -129,12 +168,7 @@ export function buildEnhancementPrompt({
 Story chunks to enhance:
 ${chunks.map((c, i) => `Chunk ${i + 1}:\n${c.text}`).join('\n\n---\n\n')}
 
-Avoid these phrases: ${avoidPhrases.join(', ')}
-
-Apply intensity settings:
-${Object.entries(intensity)
-  .map(([k, v]) => `  ${DIALS[k as keyof typeof DIALS].label}: ${v}/10`)
-  .join('\n')}`
+Avoid these phrases: ${avoidPhrases.join(', ')}`
 
   return {
     step: 'Enhance (Step 2)',
@@ -143,7 +177,7 @@ ${Object.entries(intensity)
       {
         role: 'user',
         content: userPrompt,
-        variables: { goalPreset, chunkCount: chunks.length, intensity, avoidPhrases },
+        variables: { goalPreset, chunkCount: chunks.length, avoidPhrases },
       },
     ],
     fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
@@ -152,7 +186,6 @@ ${Object.entries(intensity)
 
 export function buildOutputPrompt({
   dreamscape,
-  intensity,
   platform,
   format,
   wordCount,
@@ -161,7 +194,6 @@ export function buildOutputPrompt({
   avoidPhrases,
 }: {
   dreamscape: { id: string; chunks: DreamscapeChunk[] }
-  intensity: IntensityValues
   platform: string
   format: string
   wordCount: number
@@ -180,11 +212,6 @@ Genre(s): ${genres.join(', ')}
 Tone: ${tone}
 Word count: ~${wordCount} words
 
-Intensity settings:
-${Object.entries(intensity)
-  .map(([k, v]) => `  ${DIALS[k as keyof typeof DIALS].label}: ${v}/10`)
-  .join('\n')}
-
 Avoid these phrases: ${avoidPhrases.join(', ')}
 
 Generate 3 variants:
@@ -201,7 +228,6 @@ Generate 3 variants:
         content: userPrompt,
         variables: {
           dreamscape: dreamscape.id,
-          intensity,
           platform,
           format,
           wordCount,

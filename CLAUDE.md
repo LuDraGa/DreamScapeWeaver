@@ -5,10 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Quick Reference
 
 - **[docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md)**: ⭐ **ALWAYS READ FIRST** - Significant architectural decisions (feature flags in Settings, no URL params, code style, etc.)
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: File structure, key concepts (Dreamscapes, Intensity Dials, Presets), data model, mock API layer
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: File structure, key concepts (Dreamscapes, Templates, Presets), data model, mock API layer
 - **[docs/WORKFLOWS.md](docs/WORKFLOWS.md)**: CreatePage 4-step flow, LibraryPage, SettingsPage, data flow diagrams
 - **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)**: Colors, typography, spacing, component patterns, animations
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**: Running the app, code style, common tasks, testing, migration to production
+- **[docs/PROMPT_FRAMEWORK.md](docs/PROMPT_FRAMEWORK.md)**: Prompt engineering framework — XML tag structure, system/user prompt split, CoT for enhancement only, template authoring guide
 - **[docs/FUTURE_GROWTH.md](docs/FUTURE_GROWTH.md)**: Deferred architecture — Projects feature DB upgrade, analytics feedback loop, generation_events table, billing, audit trail. Read before adding new features to avoid re-designing what's already been thought through.
 - **[execution_docs/_active/](execution_docs/_active/)**: Active planning and execution tracking
 
@@ -124,7 +125,7 @@ src/
 │   ├── studio/                       # Studio-specific components
 │   └── ui/                           # Radix-based primitives (Button, Card, etc.)
 ├── config/
-│   ├── presets.json / dials.json / platforms.json / ...
+│   ├── presets.json / platforms.json / ...
 │   └── templates/                    # ~50 templates across 6 categories
 │       ├── reddit/                   # aitah, tifu, nosleep, petty-revenge, writing-prompts
 │       ├── short-form/               # TikTok/Reels story types
@@ -166,13 +167,11 @@ execution_docs/
 
 **Dreamscapes**: Story seeds with multiple chunks that can be enhanced or stitched together.
 
-**Intensity Dials**: 7-dimensional control (stakes, darkness, pace, twist, realism, catharsis, moral clarity).
-
-**Presets**: Pre-configured dial + platform + format combinations (Reddit AITAH, Petty Revenge, etc.).
+**Presets**: Pre-configured platform + format + tone combinations (Reddit AITAH, Petty Revenge, etc.). Power user mode only.
 
 **Enhancement Goals**: Transformations (vivid, conflict, believable, stitch, less-ai).
 
-**Multi-Variant Generation**: Generates 3 variants per prompt (Balanced, More Intense, More Believable).
+**Style Variants**: Named creative directions per template (e.g., Controversial, Emotional, Unhinged for AITAH).
 
 See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for detailed explanations.
 
@@ -197,14 +196,6 @@ const goalPrompts = { humor: `System prompt for humor enhancement...` }
 ```bash
 # Add JSON file to appropriate category:
 src/config/templates/{category}/{template-name}.json
-```
-
-### Adding a Dial
-```typescript
-// 1. Edit src/config/dials.json
-// 2. Update IntensityValues type in src/lib/types.ts
-// 3. Update buildIntensityPrompt() in src/lib/adapters/openai.ts
-// 4. Add to all preset intensity objects in presets.json
 ```
 
 See **[docs/DEVELOPMENT.md § Common Development Tasks](docs/DEVELOPMENT.md#common-development-tasks)** for detailed examples.

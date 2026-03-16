@@ -6,19 +6,17 @@
   "description": "Inspiring transformation stories that motivate viewers to overcome obstacles",
   "duration": "45-60s",
   "wordCount": 150,
-  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "platforms": [
+    "tiktok",
+    "instagram-reels",
+    "youtube-shorts"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["motivational", "inspiration"],
-    "intensity": {
-      "stakes": 7,
-      "darkness": 5,
-      "pace": 7,
-      "twist": 5,
-      "realism": 8,
-      "catharsis": 9,
-      "moralClarity": 8
-    },
+    "genres": [
+      "motivational",
+      "inspiration"
+    ],
     "avoidPhrases": [
       "little did I know",
       "wait for it",
@@ -33,10 +31,26 @@
     "user": "Create a 45-60 second motivational short-form video script based on this story seed:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with the STRUGGLE (relatable low point)\n- Show the TURNING POINT (decision to change)\n- Build to TRIUMPH (overcoming the obstacle)\n- End with powerful, quotable insight\n- Write in passionate, authentic narrative tone\n- 150 words maximum\n- Use first-person POV\n- Include emotional beats and pauses\n- Format: [STRUGGLE] → [DECISION] → [TRANSFORMATION] → [TRIUMPH]\n\nOptimize for:\n- Emotional resonance (make them feel something)\n- Shareability (inspire them to share with others)\n- Saves (valuable enough to revisit)\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
-    "perfectMatch": ["overcome", "struggle", "succeeded", "proved them wrong", "made it"],
-    "goodFit": ["challenge", "difficult", "hard work", "journey", "transformation"],
+    "perfectMatch": [
+      "overcome",
+      "struggle",
+      "succeeded",
+      "proved them wrong",
+      "made it"
+    ],
+    "goodFit": [
+      "challenge",
+      "difficult",
+      "hard work",
+      "journey",
+      "transformation"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["triumph", "transformation", "overcoming"]
+    "dreamscapeTypes": [
+      "triumph",
+      "transformation",
+      "overcoming"
+    ]
   },
   "exampleOutput": "Everyone said I'd never make it.\n\n\"You're not smart enough.\"\n\"You don't have what it takes.\"\n\"Just give up.\"\n\nI failed my first exam. Then the second. Then the third.\n\nBut I didn't quit.\n\nI studied when everyone else partied. I asked questions when everyone else stayed quiet. I practiced when everyone else slept.\n\nTwo years later?\n\nI'm graduating top of my class.\n\nThe same people who doubted me are now asking for advice.\n\nYour doubters aren't your destiny. Your discipline is."
 }

@@ -6,19 +6,16 @@
   "description": "Educational deep-dive videos that break down complex topics clearly",
   "duration": "8-12min",
   "wordCount": 1800,
-  "platforms": ["youtube"],
+  "platforms": [
+    "youtube"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["educational", "science", "technology"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 2,
-      "pace": 6,
-      "twist": 4,
-      "realism": 9,
-      "catharsis": 6,
-      "moralClarity": 7
-    },
+    "genres": [
+      "educational",
+      "science",
+      "technology"
+    ],
     "avoidPhrases": [
       "mind-blowing",
       "you won't believe",
@@ -35,10 +32,33 @@
     "user": "Create an 8-12 minute YouTube explainer script based on this concept:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Start with a hook (first 15 seconds must grab attention)\n- Use the 'Problem → Explanation → Solution/Insight' structure\n- Include 3-4 clear sections with chapter timestamps\n- Use analogies and real-world examples\n- Conversational, accessible tone\n- Add [INTRO], [SECTION 1], [SECTION 2], etc. markers\n- End with key takeaways and subtle call-to-action\n- ~1800 words total\n- Avoid jargon unless explained\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the full script with timestamps and section markers."
   },
   "compatibility": {
-    "perfectMatch": ["how", "why", "science", "technology", "explain", "works", "process", "system"],
-    "goodFit": ["concept", "idea", "theory", "discovery", "innovation", "research", "study", "learn"],
+    "perfectMatch": [
+      "how",
+      "why",
+      "science",
+      "technology",
+      "explain",
+      "works",
+      "process",
+      "system"
+    ],
+    "goodFit": [
+      "concept",
+      "idea",
+      "theory",
+      "discovery",
+      "innovation",
+      "research",
+      "study",
+      "learn"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["educational", "explanatory", "technical", "scientific"]
+    "dreamscapeTypes": [
+      "educational",
+      "explanatory",
+      "technical",
+      "scientific"
+    ]
   },
   "exampleOutput": "[INTRO - 0:00]\nEver wondered how your phone knows exactly where you are? Not just your city, but your exact position down to a few meters?\n\n[SECTION 1: The Problem - 0:45]\nBefore GPS, navigation meant paper maps...\n\n[Note: Full example output for preview only]"
 }

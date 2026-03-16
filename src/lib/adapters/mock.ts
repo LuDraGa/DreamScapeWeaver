@@ -107,7 +107,6 @@ export const mockAdapter = {
       chunks: params.chunks,
       goalPreset: params.goalPreset,
       customGoal: params.customGoal,
-      intensity: params.intensity,
       avoidPhrases: params.avoidPhrases,
     })
 

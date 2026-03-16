@@ -1,9 +1,9 @@
 {
-  "id": "reddit-aitah",
-  "displayName": "r/AITAH",
+  "id": "reddit-aitah-b",
+  "displayName": "r/AITAH (B)",
   "category": "reddit",
   "icon": "🤔",
-  "description": "Am I the A**hole? - Moral dilemma stories that spark debate",
+  "description": "Direct version — writes the post without explicit character development",
   "duration": "3-5min read",
   "wordCount": 600,
   "platforms": [
@@ -22,7 +22,7 @@
       "unbeknownst to me",
       "this will probably get buried",
       "obligatory mobile formatting",
-      "a]wave of",
+      "a wave of",
       "I could feel my heart",
       "the room fell silent",
       "needless to say"
@@ -63,8 +63,8 @@
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'I (28F) have been with my husband (31M) for 4 years. His mother has never liked me, but we've kept things civil.'\n→ [2-3 paragraphs of background — relationship history, building tension, specific incidents]\n→ 'Last Saturday at [specific event], [the incident happened]. I [the controversial action].'\n→ [Aftermath — who's upset, who's taking sides, specific reactions]\n→ 'My husband says [one perspective]. His mother is telling the whole family [opposite perspective]. My best friend says [third viewpoint].'\n→ 'I feel [genuine uncertainty]. Part of me thinks [self-doubt]. But also [self-justification]. AITAH?'\n\nKey beats: ground in specifics, show multiple perspectives, end with real uncertainty.",
   "promptTemplate": {
-    "system": "You are an expert writer for r/AITAH (Am I The A**hole). You write morally ambiguous conflict stories that generate massive debate. Your posts are indistinguishable from real Reddit posts — they use casual first-person voice, include specific ages and relationship details, have natural paragraph breaks, and never sound like AI wrote them.",
-    "user": "Create a 400-800 word r/AITAH post based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Opening line with ages and relationship context\n2. Background (2-3 paragraphs — what led up to this)\n3. The Incident (what you did / what happened)\n4. Aftermath (who's mad, who agrees with you, specific reactions)\n5. Your uncertainty (why you're posting — genuine conflict)\n6. End with 'AITAH?' or 'So, AITAH?'\n\nRULES:\n- Write in first-person, casual Reddit voice\n- Include specific, grounding details (ages, timeframes, locations)\n- Show BOTH sides having valid points\n- Use natural language — contractions, run-on sentences, parenthetical asides\n- Paragraph breaks where a real person would pause\n- No TL;DR unless the post exceeds 600 words\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+    "system": "<role>\nYou are a veteran Reddit contributor who writes morally ambiguous conflict stories for r/AITAH. Your posts are indistinguishable from real Reddit posts — casual first-person voice, specific ages and relationship details, natural paragraph breaks. You've written viral posts that hit 10K+ upvotes because readers genuinely can't decide who's right.\n</role>\n\n<context>\nr/AITAH is a subreddit where people describe interpersonal conflicts and ask if they were wrong. The best posts generate 50/50 debate in comments. Readers are skeptical of posts that sound \"written\" — authenticity is everything. Posts that feel AI-generated get called out and downvoted immediately.\n</context>\n\n<constraints>\n- 400-800 words\n- First-person, casual Reddit voice with contractions, run-on sentences, parenthetical asides\n- Include specific ages and relationship context in opening line\n- Both parties MUST have genuinely defensible positions\n- Natural paragraph breaks where a real person would pause\n- No TL;DR unless exceeding 600 words\n- NEVER use: \"little did I know\", \"that's when things got interesting\", \"unbeknownst to me\", \"this will probably get buried\", \"obligatory mobile formatting\", \"a wave of\", \"I could feel my heart\", \"the room fell silent\", \"needless to say\"\n</constraints>\n\n<expectation>\nA successful post makes the reader stop scrolling, read the whole thing, and genuinely struggle with their judgment. The moral dilemma is ambiguous enough that the top comments will be split between NTA and YTA. The voice sounds like a real 25-35 year old typing on their phone at 11pm after a bad day.\n</expectation>",
+    "user": "<task>\nWrite an r/AITAH post based on the story seed below.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\n1. Opening line with ages and relationship context\n2. Background (2-3 paragraphs — what led up to this)\n3. The Incident (what you did / what happened)\n4. Aftermath (who's mad, who agrees with you, specific reactions)\n5. Your uncertainty (why you're posting — genuine conflict)\n6. End with 'AITAH?' or 'So, AITAH?'\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the post now:"
   },
   "compatibility": {
     "perfectMatch": [
@@ -93,5 +93,5 @@
       "argument"
     ]
   },
-  "exampleOutput": "My (28F) sister (32F) asked me to be her maid of honor. I said yes, but I have one condition - I won't wear the dress she picked.\n\nSo some context. My sister and I have always been close, but she can be... particular. Like, she planned her wedding Pinterest board when she was 19 and hasn't changed a single pin since. I love her but she's intense about this stuff.\n\nThe dress she picked for the bridesmaids is bright neon pink. Like, traffic cone pink. It's skin-tight, floor-length, and costs $400. I tried it on and I genuinely looked terrible — the color washes me out completely and the cut doesn't work for my body type. I'm not being dramatic, my mom saw the photos and physically winced.\n\nI told my sister I'd happily be her maid of honor but could I please wear something in a similar style but different color? I even offered to pay for both dresses so she wouldn't be out anything. I found three alternatives that matched her 'aesthetic' perfectly.\n\nShe lost it. Said I was being 'selfish on HER day' and that the whole bridal party has to match exactly or the photos will be 'ruined.' I pointed out that her other bridesmaid (her college friend) is 5'2\" and I'm 5'10\" — we're not going to match regardless.\n\nThat was apparently the wrong thing to say because now she's uninvited me from the bridal party entirely. Not just demoted — uninvited. She said if I can't support her '100% without conditions' then she doesn't want me up there.\n\nMy parents are split. Dad thinks my sister is overreacting. Mom thinks I should 'just wear the dress and keep the peace' because 'it's only one day.' My sister's fiancé texted me privately saying he thinks the dress is ugly too but he's 'staying out of it.'\n\nThe thing is, I would have just worn it if it was like $100 or even $200. But $400 for something that makes me look and feel awful? When I offered alternatives? I don't think that's unreasonable.\n\nBut maybe I'm wrong. Maybe you do just suck it up for your sister's wedding regardless. I keep going back and forth.\n\nAITAH?"
+  "exampleOutput": ""
 }

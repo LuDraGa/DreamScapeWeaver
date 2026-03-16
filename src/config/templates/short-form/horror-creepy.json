@@ -6,19 +6,17 @@
   "description": "Quick horror stories with unsettling twists that viewers will rewatch",
   "duration": "30-60s",
   "wordCount": 120,
-  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "platforms": [
+    "tiktok",
+    "instagram-reels",
+    "youtube-shorts"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["horror", "thriller"],
-    "intensity": {
-      "stakes": 7,
-      "darkness": 9,
-      "pace": 8,
-      "twist": 9,
-      "realism": 6,
-      "catharsis": 3,
-      "moralClarity": 4
-    },
+    "genres": [
+      "horror",
+      "thriller"
+    ],
     "avoidPhrases": [
       "little did I know",
       "plot twist",
@@ -30,8 +28,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for short-form horror content optimized for TikTok/Reels. Generate seeds about creepy situations in mundane settings — apartments, bedrooms, offices, cars, grocery stores. The horror comes from one detail being WRONG. Focus on atmosphere and implication, not monsters or gore. The seed must work in under 60 seconds of narration. NO zombies, no demons, no haunted objects. Real settings, real dread.",
-    "user": "Generate {count} unique horror/creepy story seeds for short-form video. Each seed should be:\n- A normal situation with one deeply unsettling detail\n- 2-3 sentences — setup and the creepy element\n- The horror should work through IMPLICATION in under 60 seconds\n- Grounded in everyday settings (home, work, commute)\n\nExamples of GOOD seeds: finding a photo on your phone you didn't take while you were asleep, your smart home speaker answering a question nobody asked, noticing your reflection blinks when you don't.\n\nExamples of BAD seeds: haunted dolls, zombie attacks, demon summoning, ancient curses.\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in short-form horror content for TikTok and Reels. You design micro-horror premises where one wrong detail in a mundane setting creates instant, visceral unease. Your seeds work through atmosphere and implication — delivering dread in under 60 seconds without a single monster or jump scare.\n</role>\n\n<context>\nShort-form horror is the fastest-growing story genre on TikTok and Reels. The format requires creating genuine unease in 30-60 seconds — no time for slow builds, so every word must contribute to the dread. The best performing horror shorts feature completely normal settings (apartments, bedrooms, phones, mirrors) with one detail that is simply WRONG. Viewers rewatch to catch what they missed, driving algorithmic promotion.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: a normal situation with one specific detail that is deeply wrong\n- The horror must work through IMPLICATION in under 60 seconds of narration\n- Grounded in everyday settings: home, bedroom, phone, car, office, grocery store\n- NO zombies, demons, haunted dolls, ancient curses, or monster reveals\n- NO gore or graphic content — dread through implication only\n- NO \"scary\" as a descriptor — show the wrongness, don't label it\n- Each seed must be distinct in setting and type of unease\n</constraints>\n\n<expectation>\nA great short-form horror seed makes your skin crawl in two sentences. The normal setting feels safe until the wrong detail — and then you can't unsee it. The horror is so specific and visual that a viewer can picture it instantly: the phone photo, the reflection, the sound. A writer should read the seed and immediately feel the tightness in their chest.\n</expectation>",
+    "user": "<task>\nGenerate {count} unique horror/creepy story seeds for short-form video. Each seed must create instant unease through one wrong detail in a mundane setting.\n</task>\n\n<examples>\nGOOD seeds (mundane setting, specific wrongness, instant dread):\n- \"He checks his phone's photo gallery and finds 40 photos taken at 3am. They're all of him sleeping. He lives alone and his phone uses Face ID.\"\n- \"She moves into a new apartment and the smart speaker greets her by name. She hasn't set it up yet. It says 'welcome back.'\"\n- \"A man notices his reflection in the bathroom mirror is wearing a different shirt than he is. He freezes. The reflection doesn't.\"\n\nBAD seeds (cliché, stated horror, generic):\n- \"A haunted doll moves on its own\" (cliché supernatural)\n- \"Something scary is in the closet\" (too vague, no specific wrongness)\n- \"A ghost appears and screams\" (stated horror, no implication)\n</examples>"
   },
   "styleVariants": [
     {
@@ -67,10 +65,26 @@
     "user": "Create a 30-60 second horror/creepy short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Normal setting (establish mundane reality — one line)\n2. First sign (something slightly off)\n3. Escalation (the wrongness becomes undeniable)\n4. The horror (reveal or implication)\n5. No resolution (end in dread)\n\nRULES:\n- 120 words maximum\n- First-person, present or recent past tense\n- Short sentences build tension\n- Horror through IMPLICATION — never explain\n- Sensory details that make the reader uncomfortable\n- End without comfort or resolution\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
-    "perfectMatch": ["creepy", "horror", "terrifying", "disturbing", "haunted"],
-    "goodFit": ["strange", "weird", "unsettling", "eerie", "unexplained"],
+    "perfectMatch": [
+      "creepy",
+      "horror",
+      "terrifying",
+      "disturbing",
+      "haunted"
+    ],
+    "goodFit": [
+      "strange",
+      "weird",
+      "unsettling",
+      "eerie",
+      "unexplained"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["horror", "creepy", "supernatural"]
+    "dreamscapeTypes": [
+      "horror",
+      "creepy",
+      "supernatural"
+    ]
   },
   "exampleOutput": "I moved into my new apartment last week.\n\nEverything seemed normal.\n\nUntil I noticed the previous tenant's mail.\n\nSame name as me. Exact same name.\n\nI googled it.\n\nFound an obituary. From three years ago.\n\nSame apartment number.\n\nCause of death: Unknown.\n\nI told myself it was a coincidence. Common name.\n\nThen I found the journal under the floorboard.\n\nThe last entry:\n\n\"The new tenant moves in next week. Same name as me. Exact same name.\"\n\nIt was dated three years ago.\n\nI'm on the top floor.\n\nBut the footsteps above me just started again."
 }

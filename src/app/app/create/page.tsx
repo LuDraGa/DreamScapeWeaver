@@ -34,14 +34,13 @@ const FEEDBACK_CHIPS = [
 ]
 import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
-import { PRESETS, DIALS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
-import type { Dreamscape, OutputVariant, DialState, IntensityValues, Template, TemplateCategory, Platform, OutputFormat, AIReviewResult, ReviewOutputParams } from '@/lib/types'
+import { PRESETS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
+import type { Dreamscape, OutputVariant, DialState, Template, TemplateCategory, Platform, OutputFormat, AIReviewResult, ReviewOutputParams } from '@/lib/types'
 import { LabeledSlider } from '@/components/design-system/labeled-slider'
 import { CopyButton } from '@/components/design-system/copy-button'
 import { PromptInspector } from '@/components/dev-tools/prompt-inspector'
 import {
   buildPresetPrompt,
-  buildDreamscapePrompt,
   buildEnhancementPrompt,
   buildOutputPrompt,
   type PromptData,
@@ -68,20 +67,6 @@ const TEMPLATE_CATEGORY_DIAL: Record<TemplateCategory, { platform: Platform; out
   'marketing':        { platform: 'blog',   outputFormat: 'short-story' },
 }
 
-/**
- * Helper: Randomize intensity values (1-10) for dreamscape generation
- */
-function randomizeIntensity(): IntensityValues {
-  return {
-    stakes: Math.floor(Math.random() * 10) + 1,
-    darkness: Math.floor(Math.random() * 10) + 1,
-    pace: Math.floor(Math.random() * 10) + 1,
-    twist: Math.floor(Math.random() * 10) + 1,
-    realism: Math.floor(Math.random() * 10) + 1,
-    catharsis: Math.floor(Math.random() * 10) + 1,
-    moralClarity: Math.floor(Math.random() * 10) + 1,
-  }
-}
 
 /**
  * Create Page - 4-step story generation workflow
@@ -124,8 +109,6 @@ export default function CreatePage() {
   const [genCount, setGenCount] = useState(3)
   const [genLoading, setGenLoading] = useState(false)
   const [genResults, setGenResults] = useState<Dreamscape[]>([])
-  const [genIntensity, setGenIntensity] = useState<IntensityValues>(() => randomizeIntensity())
-  const [showGenAdvanced, setShowGenAdvanced] = useState(false)
 
   // Preset state (Step B) - Power User Mode
   const [selectedPreset, setSelectedPreset] = useState(settings.defaultPreset)
@@ -146,7 +129,6 @@ export default function CreatePage() {
       outputFormat: preset.outputFormat,
       wordCount: preset.wordCount,
       tone: preset.tone,
-      intensity: preset.intensity,
       avoidPhrases: settings.avoidPhrases,
       cohesionStrictness: 5,
     }
@@ -217,6 +199,11 @@ export default function CreatePage() {
       )
       systemPrompt = editedSystemPrompt || sp
       userPrompt = editedUserPrompt || up
+
+      // CoT: inject actual character profile for review context
+      if (output.characterProfile) {
+        systemPrompt = systemPrompt.replace('{character}', output.characterProfile)
+      }
     } else {
       systemPrompt = editedSystemPrompt || 'Default generation prompt (no template)'
       userPrompt = editedUserPrompt || chunks.map((c) => c.text).join('\n\n')
@@ -255,7 +242,6 @@ export default function CreatePage() {
     showGenPanel,
     genVibe,
     genCount,
-    genIntensity,
     selectedTemplate,
     generatedOutputs,
     activeVariant,
@@ -531,20 +517,18 @@ Write the next part, continuing from where the story left off.`
   }
 
   const handleGenerateDreamscapes = async () => {
-    // Only randomize intensity for non-power users
-    // Power users manually control intensity via advanced controls
-    if (!settings.powerUserMode) {
-      const randomizedIntensity = randomizeIntensity()
-      console.log('🎲 Randomized intensity (non-power user):', randomizedIntensity)
-      setGenIntensity(randomizedIntensity)
-    }
-
     setGenLoading(true)
     try {
       const results = await api.dreamscapes.generate({
         count: genCount,
         vibe: genVibe,
-        intensity: genIntensity,
+        seedPrompt: selectedTemplate?.seedPrompt,
+        templateId: selectedTemplate?.id,
+        templateContext: selectedTemplate ? {
+          displayName: selectedTemplate.displayName,
+          category: selectedTemplate.category,
+          description: selectedTemplate.description,
+        } : undefined,
       })
       setGenResults(results)
       showToast(`Generated ${results.length} ideas!`)
@@ -632,6 +616,11 @@ Write the next part, continuing from where the story left off.`
         )
         systemPrompt = (editedSystemPrompt || sp)
         userPrompt = (editedUserPrompt || up)
+
+        // CoT: inject actual character profile into system prompt for review context
+        if (output.characterProfile) {
+          systemPrompt = systemPrompt.replace('{character}', output.characterProfile)
+        }
       } else {
         systemPrompt = editedSystemPrompt || 'Default generation prompt (no template)'
         userPrompt = editedUserPrompt || chunks.map((c) => c.text).join('\n\n')
@@ -676,7 +665,6 @@ Write the next part, continuing from where the story left off.`
         chunks,
         goalPreset: enhanceGoal as any,
         customGoal: customEnhanceGoal,
-        intensity: genIntensity,
         avoidPhrases: dialState.avoidPhrases,
       })
       setEnhanceResult(result)
@@ -716,28 +704,10 @@ Write the next part, continuing from where the story left off.`
       outputFormat: preset.outputFormat,
       wordCount: preset.wordCount,
       tone: preset.tone,
-      intensity: preset.intensity,
       genres: dialState.genres,
       avoidPhrases: dialState.avoidPhrases,
       cohesionStrictness: dialState.cohesionStrictness,
     })
-  }
-
-  const randomizeDialIntensity = () => {
-    const preset = PRESETS.find((p) => p.id === selectedPreset)
-    if (!preset) return
-
-    const randomized = Object.fromEntries(
-      Object.entries(preset.intensity).map(([key, value]) => [
-        key,
-        Math.max(1, Math.min(10, value + Math.floor(Math.random() * 5) - 2)),
-      ])
-    ) as unknown as IntensityValues
-
-    setDialState((prev) => ({
-      ...prev,
-      intensity: randomized,
-    }))
   }
 
   // ============================================================
@@ -793,7 +763,7 @@ Write the next part, continuing from where the story left off.`
     setGenerating(true)
     try {
       // Build prompts from template (with style variant + rubric + fewShot)
-      const { systemPrompt, userPrompt } = buildPromptFromTemplate(template, dreamscape, selectedStyleVariant)
+      const { systemPrompt, userPrompt, characterSystemPrompt, characterUserPrompt } = buildPromptFromTemplate(template, dreamscape, selectedStyleVariant)
 
       // Map template category → platform/format for storage and display
       const { platform, outputFormat } = TEMPLATE_CATEGORY_DIAL[template.category] ?? { platform: 'blog', outputFormat: 'series' }
@@ -805,7 +775,6 @@ Write the next part, continuing from where the story left off.`
         outputFormat,
         wordCount: template.wordCount,
         tone: template.settings.tone,
-        intensity: template.settings.intensity,
         genres: template.settings.genres,
         avoidPhrases: template.settings.avoidPhrases,
         cohesionStrictness: 5,
@@ -816,11 +785,14 @@ Write the next part, continuing from where the story left off.`
       const finalUserPrompt = (isAdmin && editedUserPrompt) ? editedUserPrompt : userPrompt
 
       // Generate using template — pass template prompts directly to LLM
+      // CoT templates include character prompts for two-call flow
       const outputs = await api.outputs.generate({
         dreamscape,
         dialState: templateDialState,
         systemPromptOverride: finalSystemPrompt,
         userPromptOverride: finalUserPrompt,
+        characterSystemPrompt,
+        characterUserPrompt,
       })
 
       setGeneratedOutputs(outputs)
@@ -870,7 +842,6 @@ Write the next part, continuing from where the story left off.`
           outputFormat,
           wordCount: selectedTemplate.wordCount,
           tone: selectedTemplate.settings.tone,
-          intensity: selectedTemplate.settings.intensity,
           genres: selectedTemplate.settings.genres,
           avoidPhrases: selectedTemplate.settings.avoidPhrases,
           cohesionStrictness: 5,
@@ -1065,9 +1036,13 @@ Write the next part, continuing from where the story left off.`
                                 const results = await api.dreamscapes.generate({
                                   count: genCount,
                                   vibe: genVibe,
-                                  intensity: genIntensity,
                                   seedPrompt: selectedTemplate?.seedPrompt,
                                   templateId: selectedTemplate?.id,
+                                  templateContext: selectedTemplate ? {
+                                    displayName: selectedTemplate.displayName,
+                                    category: selectedTemplate.category,
+                                    description: selectedTemplate.description,
+                                  } : undefined,
                                 })
                                 setGenResults(results)
                                 showToast(`Generated ${results.length} ideas!`)
@@ -1487,66 +1462,6 @@ Write the next part, continuing from where the story left off.`
               </Button>
             </div>
 
-            {/* Advanced Intensity Controls (Power User Feature) */}
-            <div
-              data-advanced-feature="true"
-              className={settings.powerUserMode ? 'mb-3' : 'hidden'}
-            >
-              <button
-                onClick={() => setShowGenAdvanced(!showGenAdvanced)}
-                className="flex items-center gap-2 text-xs font-medium text-text-muted hover:text-text-primary transition-colors mb-2"
-              >
-                {showGenAdvanced ? (
-                  <ChevronUpIcon className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronDownIcon className="w-3.5 h-3.5" />
-                )}
-                Advanced Intensity
-              </button>
-
-              {showGenAdvanced && (
-                <div className="space-y-1.5 p-3 rounded-lg bg-[rgba(15,23,42,0.4)] border border-[#1e293b]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] uppercase tracking-wide text-text-muted">
-                      Manual Override
-                    </span>
-                    <button
-                      onClick={() => setGenIntensity(randomizeIntensity())}
-                      className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-[rgba(30,41,59,0.6)] text-text-muted hover:text-text-primary border border-[#334155] transition-colors"
-                    >
-                      🎲 Randomize
-                    </button>
-                  </div>
-                  <div className="grid gap-1.5">
-                    {Object.entries(DIALS).map(([key, dial]) => (
-                      <div key={key} className="flex items-center gap-2">
-                        <label className="text-[10px] w-20 text-text-muted shrink-0">
-                          {dial.label}
-                        </label>
-                        <input
-                          type="range"
-                          min={dial.min}
-                          max={dial.max}
-                          value={genIntensity[key as keyof IntensityValues]}
-                          onChange={(e) =>
-                            setGenIntensity((prev) => ({
-                              ...prev,
-                              [key]: Number(e.target.value),
-                            }))
-                          }
-                          className="flex-1 h-1 bg-[rgba(30,41,59,0.6)] rounded-lg appearance-none cursor-pointer accent-primary"
-                          style={{ maxWidth: '20vw' }}
-                        />
-                        <span className="text-[10px] w-6 text-right text-text-muted font-mono">
-                          {genIntensity[key as keyof IntensityValues]}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
             {genLoading && (
               <div className="grid gap-2">
                 {Array.from({ length: genCount }).map((_, i) => (
@@ -1943,28 +1858,6 @@ Write the next part, continuing from where the story left off.`
                 </div>
               </div>
 
-              {/* Intensity Dials */}
-              <div>
-                <label className="text-xs font-medium mb-3 block text-text-secondary">Intensity Dials</label>
-                <div className="space-y-2">
-                  {Object.entries(DIALS).map(([key, dial]) => (
-                    <LabeledSlider
-                      key={key}
-                      label={dial.label}
-                      value={dialState.intensity?.[key as keyof IntensityValues] || 5}
-                      onChange={(v) =>
-                        setDialState((s) => ({
-                          ...s,
-                          intensity: { ...s.intensity, [key]: v },
-                        }))
-                      }
-                      min={dial.min}
-                      max={dial.max}
-                    />
-                  ))}
-                </div>
-              </div>
-
               {/* Cohesion */}
               <LabeledSlider
                 label="Cohesion Strictness"
@@ -2022,18 +1915,6 @@ Write the next part, continuing from where the story left off.`
                 />
               </div>
 
-              {/* Randomize Button */}
-              <button
-                onClick={randomizeDialIntensity}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all hover:opacity-80"
-                style={{
-                  background: 'rgba(30,41,59,0.6)',
-                  color: '#94a3b8',
-                  border: '1px solid #334155',
-                }}
-              >
-                🎲 Randomize Intensity Dials
-              </button>
             </div>
           )}
         </ThemedCard>

@@ -7,16 +7,7 @@
     "platform": "reddit",
     "outputFormat": "reddit-post",
     "wordCount": 800,
-    "tone": "narrative",
-    "intensity": {
-      "stakes": 7,
-      "darkness": 5,
-      "pace": 6,
-      "twist": 7,
-      "realism": 9,
-      "catharsis": 6,
-      "moralClarity": 4
-    }
+    "tone": "narrative"
   },
   {
     "id": "petty-revenge",
@@ -26,16 +17,7 @@
     "platform": "reels",
     "outputFormat": "reel-script",
     "wordCount": 300,
-    "tone": "dialogue",
-    "intensity": {
-      "stakes": 4,
-      "darkness": 3,
-      "pace": 9,
-      "twist": 6,
-      "realism": 7,
-      "catharsis": 9,
-      "moralClarity": 7
-    }
+    "tone": "dialogue"
   },
   {
     "id": "psych-thriller",
@@ -45,16 +27,7 @@
     "platform": "reddit",
     "outputFormat": "short-story",
     "wordCount": 1500,
-    "tone": "narrative",
-    "intensity": {
-      "stakes": 9,
-      "darkness": 8,
-      "pace": 3,
-      "twist": 9,
-      "realism": 6,
-      "catharsis": 5,
-      "moralClarity": 2
-    }
+    "tone": "narrative"
   },
   {
     "id": "romance",
@@ -64,16 +37,7 @@
     "platform": "reddit",
     "outputFormat": "short-story",
     "wordCount": 1000,
-    "tone": "dialogue",
-    "intensity": {
-      "stakes": 5,
-      "darkness": 2,
-      "pace": 5,
-      "twist": 4,
-      "realism": 7,
-      "catharsis": 8,
-      "moralClarity": 6
-    }
+    "tone": "dialogue"
   },
   {
     "id": "pro-revenge",
@@ -83,15 +47,6 @@
     "platform": "reddit",
     "outputFormat": "reddit-post",
     "wordCount": 2000,
-    "tone": "narrative",
-    "intensity": {
-      "stakes": 8,
-      "darkness": 6,
-      "pace": 5,
-      "twist": 8,
-      "realism": 8,
-      "catharsis": 10,
-      "moralClarity": 8
-    }
+    "tone": "narrative"
   }
 ]

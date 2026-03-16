@@ -8,6 +8,8 @@ import unexpectedTwist from '@/config/templates/short-form/unexpected-twist.json
 import dramaConfession from '@/config/templates/short-form/drama-confession.json'
 import lifeLesson from '@/config/templates/short-form/life-lesson.json'
 import aitah from '@/config/templates/reddit/aitah.json'
+import aitahA from '@/config/templates/reddit/aitah-a.json'
+import aitahB from '@/config/templates/reddit/aitah-b.json'
 import tifu from '@/config/templates/reddit/tifu.json'
 import pettyRevenge from '@/config/templates/reddit/petty-revenge.json'
 import nosleep from '@/config/templates/reddit/nosleep.json'
@@ -58,6 +60,8 @@ import brandStory from '@/config/templates/marketing/brand-story.json'
 // Source (Reddit) → Adapt (Short-form) → Extend (Long-form)
 const HERO_TEMPLATE_IDS = new Set([
   'reddit-aitah',              // Reddit — moral dilemma
+  'reddit-aitah-a',            // Reddit — AITAH A/B test: CoT character development
+  'reddit-aitah-b',            // Reddit — AITAH A/B test: direct generation (control)
   'reddit-tifu',               // Reddit — relatable/funny
   'reddit-petty-revenge',      // Reddit — satisfying payoff
   'reddit-nosleep',            // Reddit — horror/thriller
@@ -82,6 +86,8 @@ const ALL_TEMPLATES: Template[] = [
   lifeLesson,
   // Reddit templates
   aitah,
+  aitahA,
+  aitahB,
   tifu,
   pettyRevenge,
   nosleep,
@@ -240,6 +246,8 @@ export function buildPromptFromTemplate(
 ): {
   systemPrompt: string
   userPrompt: string
+  characterSystemPrompt?: string
+  characterUserPrompt?: string
 } {
   // Get dreamscape text
   const dreamscapeText =
@@ -282,8 +290,19 @@ The story seed above contains ${dreamscape.chunks.length} [Fragment] sections. Y
   userPrompt = userPrompt.replace('{selfCheckRubric}', rubricText)
   userPrompt = userPrompt.replace('{fewShotExcerpt}', fewShotText)
 
+  // Build character prompts for CoT templates (two-call flow)
+  let characterSystemPrompt: string | undefined
+  let characterUserPrompt: string | undefined
+  if (template.characterPrompt) {
+    characterSystemPrompt = template.characterPrompt.system
+    characterUserPrompt = template.characterPrompt.user
+      .replace('{dreamscape}', dreamscapeText)
+  }
+
   return {
     systemPrompt: template.promptTemplate.system,
     userPrompt,
+    characterSystemPrompt,
+    characterUserPrompt,
   }
 }

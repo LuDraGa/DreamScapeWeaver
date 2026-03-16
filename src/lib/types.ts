@@ -31,20 +31,9 @@ export interface DialState {
   outputFormat: OutputFormat
   wordCount: number
   tone: Tone
-  intensity: IntensityValues
   genres?: string[]
   avoidPhrases: string[]
   cohesionStrictness: number // 1-10
-}
-
-export interface IntensityValues {
-  stakes: number // 1-10
-  darkness: number // 1-10
-  pace: number // 1-10
-  twist: number // 1-10
-  realism: number // 1-10
-  catharsis: number // 1-10
-  moralClarity: number // 1-10
 }
 
 // Output
@@ -60,6 +49,7 @@ export interface OutputVariant {
   feedback?: string[] // Feedback chip IDs
   notes?: string
   performanceSnapshots?: PerformanceSnapshot[]
+  characterProfile?: string // CoT character profile (from character-first generation)
 }
 
 export interface PerformanceSnapshot {
@@ -81,14 +71,6 @@ export interface Preset {
   outputFormat: OutputFormat
   wordCount: number
   tone: Tone
-  intensity: IntensityValues
-}
-
-export interface Dial {
-  label: string
-  min: number
-  max: number
-  description?: string
 }
 
 export interface PlatformConfig {
@@ -141,12 +123,18 @@ export interface Template {
   settings: {
     tone: Tone
     genres: string[]
-    intensity: IntensityValues
     avoidPhrases: string[]
   }
   promptTemplate: {
     system: string
     user: string
+  }
+  // CoT character-first generation (optional — triggers two-call flow)
+  // Call 1: build OP character from seed (gpt-5-mini)
+  // Call 2: write story as that character (gpt-5.4)
+  characterPrompt?: {
+    system: string
+    user: string  // uses {dreamscape} variable
   }
   // Template-aware seed generation (optional — falls back to generic if absent)
   seedPrompt?: {
@@ -187,6 +175,7 @@ export interface BillingConfig {
     seed_generation: number
     enhancement: number
     output_generation: number
+    character_generation: number
     part_transform: number
     ai_review: number
   }
@@ -231,7 +220,7 @@ export interface TopupPackConfig {
 export type SubscriptionStatus = 'active' | 'cancelled' | 'past_due'
 export type CreditLedgerType = 'subscription_grant' | 'topup_purchase' | 'generation_usage' | 'expiry_sweep' | 'signup_bonus'
 export type CreditBucket = 'subscription' | 'topup'
-export type GenerationActionType = 'seed' | 'enhance' | 'output' | 'transform' | 'review'
+export type GenerationActionType = 'seed' | 'enhance' | 'output' | 'transform' | 'review' | 'character'
 
 export interface Subscription {
   id: string
@@ -335,20 +324,24 @@ export interface AppSettings {
 export interface GenerateDreamscapesParams {
   count: number
   vibe?: string
-  intensity: IntensityValues
   // Template-aware seed generation — overrides generic seed prompt
   seedPrompt?: {
     system: string
     user: string
   }
   templateId?: string
+  // Template context for generic seed prompt (when no seedPrompt provided)
+  templateContext?: {
+    displayName: string
+    category: string
+    description: string
+  }
 }
 
 export interface EnhanceDreamscapeParams {
   chunks: DreamscapeChunk[]
   goalPreset: EnhancementGoalId
   customGoal?: string
-  intensity: IntensityValues
   avoidPhrases: string[]
 }
 
@@ -364,6 +357,9 @@ export interface GenerateOutputsParams {
   systemPromptOverride?: string
   userPromptOverride?: string
   styleVariantId?: string
+  // CoT character-first generation (two-call flow)
+  characterSystemPrompt?: string
+  characterUserPrompt?: string
 }
 
 // Auth types

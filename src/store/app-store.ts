@@ -94,7 +94,6 @@ export const useAppStore = create<AppState>()(
                 outputFormat: preset.outputFormat,
                 wordCount: preset.wordCount,
                 tone: preset.tone,
-                intensity: preset.intensity,
                 avoidPhrases: get().settings.avoidPhrases,
                 cohesionStrictness: 5,
               }

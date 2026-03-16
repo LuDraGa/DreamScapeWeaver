@@ -6,19 +6,17 @@
   "description": "SFX catalog with timing and intensity specifications for audio production",
   "duration": "Production doc",
   "wordCount": 300,
-  "platforms": ["podcast", "radio-drama", "audiobook"],
+  "platforms": [
+    "podcast",
+    "radio-drama",
+    "audiobook"
+  ],
   "settings": {
     "tone": "script",
-    "genres": ["production", "audio"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 5,
-      "pace": 6,
-      "twist": 5,
-      "realism": 9,
-      "catharsis": 5,
-      "moralClarity": 7
-    },
+    "genres": [
+      "production",
+      "audio"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,22 @@
     "user": "Create a sound effects list based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- 20-30 specific SFX needed\n- For each SFX:\n  * Timestamp or scene\n  * Specific sound description\n  * Volume level (subtle/normal/prominent)\n  * Reverb/spatial notes if needed\n- Group by scene or location\n- Prioritize story-critical sounds\n- 300 words maximum\n\nWrite the SFX list now:"
   },
   "compatibility": {
-    "perfectMatch": ["action", "environment", "object", "movement"],
-    "goodFit": ["story", "scene", "location"],
+    "perfectMatch": [
+      "action",
+      "environment",
+      "object",
+      "movement"
+    ],
+    "goodFit": [
+      "story",
+      "scene",
+      "location"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["environmental", "action-based"]
+    "dreamscapeTypes": [
+      "environmental",
+      "action-based"
+    ]
   },
   "exampleOutput": "HOME OFFICE:\n- Computer fan hum (constant, subtle, looped)\n- Mouse click (sharp, deliberate, 3x)\n- Keyboard typing (frustrated rhythm, 5 seconds)\n- Chair creak (normal, wood on carpet)\n- Router beep (electronic, increasing frequency)\n- Paper rustle (subtle, background)\n\nEXTERIOR:\n- Footsteps on concrete (normal, measured pace)\n- Distant traffic (subtle, ambient)\n- Birds chirping (suburban, background)\n- Doorbell chime (warm, welcoming)\n\nDOOR/ENTRY:\n- Door knock (firm, 3 knocks)\n- Door open (smooth, well-maintained)\n- Door close (soft, careful)\n\nBASEMENT:\n- Server hum (electronic, constant)\n- Hard drive clicks (periodic, mechanical)\n- Monitor power-on (electronic hum)\n- Papers shuffling (crisp, deliberate)\n- Keyboard mechanical clicks (precise)"
 }

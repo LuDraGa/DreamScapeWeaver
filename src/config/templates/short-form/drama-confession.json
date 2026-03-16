@@ -6,19 +6,17 @@
   "description": "Emotional revelations and vulnerable storytelling that spark deep engagement",
   "duration": "60-90s",
   "wordCount": 175,
-  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "platforms": [
+    "tiktok",
+    "instagram-reels",
+    "youtube-shorts"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["drama", "confession"],
-    "intensity": {
-      "stakes": 8,
-      "darkness": 7,
-      "pace": 6,
-      "twist": 6,
-      "realism": 9,
-      "catharsis": 6,
-      "moralClarity": 4
-    },
+    "genres": [
+      "drama",
+      "confession"
+    ],
     "avoidPhrases": [
       "little did I know",
       "wait for it",
@@ -29,8 +27,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for emotional confession/drama short-form content. Generate seeds about real human vulnerabilities — regrets, hidden truths, relationship fractures, quiet sacrifices, moments of shame or grace. The confession should feel like something someone has carried for a long time. NO melodrama, no celebrity fantasies, no over-the-top tragedy. Grounded in real life.",
-    "user": "Generate {count} unique drama/confession story seeds for short-form video. Each seed should be:\n- A specific emotional truth or secret someone has been carrying\n- 2-3 sentences describing the confession and its emotional weight\n- Grounded in everyday relationships (friends, family, partners, coworkers)\n- The confession should make the reader pause and FEEL something\n\nExamples of GOOD seeds: realizing you were the toxic one in a friendship, a promise you broke that still haunts you, the moment you stopped trying to fix a relationship, a sacrifice nobody knows about.\n\nExamples of BAD seeds: celebrity encounters, lottery wins, anything requiring supernatural elements.\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in emotional confession content for short-form video (TikTok, Reels, Shorts). You design vulnerable, intimate premises about real human experiences — regrets, hidden truths, quiet sacrifices, moments of shame or grace. Your seeds make people stop scrolling and FEEL something.\n</role>\n\n<context>\nShort-form drama/confession content thrives on raw emotional honesty in under 90 seconds. The best performing videos feature specific, personal revelations that viewers relate to on a deep level — not melodrama, but quiet truths people carry. The confession must be specific enough to visualize (a text message, a look, a silence) and universal enough that millions of people feel it. Every word must earn its place.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: a specific emotional truth or secret AND its weight on the person carrying it\n- Grounded in everyday relationships: friends, family, partners, coworkers\n- Must include at least one specific, concrete detail (an object, a moment, a phrase)\n- NO melodrama or over-the-top tragedy — understatement is more powerful\n- NO celebrity fantasies, lottery wins, or supernatural elements\n- NO generic emotions (\"I'm sad about something\") — always specific\n- Each seed must be distinct in relationship type and emotional register\n</constraints>\n\n<expectation>\nA great confession seed makes you pause mid-scroll. It presents something so specific and honest that you feel the weight of it — even in just two sentences. The best seeds trigger recognition: \"I've felt that exact thing.\" A writer should read the seed and immediately hear the voice of someone saying it quietly, as if they've never told anyone before.\n</expectation>",
+    "user": "<task>\nGenerate {count} unique drama/confession story seeds for short-form video. Each seed must present a specific emotional truth someone has been carrying.\n</task>\n\n<examples>\nGOOD seeds (specific, vulnerable, weighted):\n- \"She realized she was the toxic one when she found herself rehearsing arguments in the shower — arguments about things that hadn't happened yet. Her ex had said exactly that, and she'd called him crazy.\"\n- \"He's kept his late mother's last voicemail for six years. He plays it when he can't sleep. He's terrified of the day his phone dies and takes her voice with it.\"\n- \"She told her best friend she was happy for her engagement. Then she went home and cried for three hours. Not because she wanted him — because she wanted what they had.\"\n\nBAD seeds (generic, melodramatic, ungrounded):\n- \"Someone is sad about a breakup\" (too vague — WHO? WHAT specifically hurts?)\n- \"A celebrity confesses their darkest secret\" (not relatable)\n- \"A tragic accident changes everything\" (melodrama, no specific emotional truth)\n</examples>"
   },
   "styleVariants": [
     {
@@ -66,10 +64,27 @@
     "user": "Create a 60-90 second drama/confession short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Emotional hook (vulnerable admission or specific detail)\n2. Context (brief — who, what relationship)\n3. The confession (raw honesty, no sugar-coating)\n4. The specific detail (makes it real and unforgettable)\n5. The landing (unresolved or quietly devastating)\n\nRULES:\n- 175 words maximum\n- First-person, intimate tone\n- Short sentences, line breaks for pacing\n- Specific details over generic emotions\n- NO melodrama — understatement is more powerful\n- Each line should earn its place\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
-    "perfectMatch": ["confession", "secret", "never told anyone", "truth is", "admit"],
-    "goodFit": ["regret", "guilt", "shame", "burden", "emotional", "hidden"],
+    "perfectMatch": [
+      "confession",
+      "secret",
+      "never told anyone",
+      "truth is",
+      "admit"
+    ],
+    "goodFit": [
+      "regret",
+      "guilt",
+      "shame",
+      "burden",
+      "emotional",
+      "hidden"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["emotional", "confession", "drama"]
+    "dreamscapeTypes": [
+      "emotional",
+      "confession",
+      "drama"
+    ]
   },
   "exampleOutput": "I need to confess something I've never told anyone.\n\nMy best friend died five years ago. Car accident.\n\nEveryone thinks I've moved on.\n\nBut I haven't.\n\nBecause we had a fight the night before. A stupid, meaningless fight about nothing.\n\nThe last thing I said to her was \"I don't care.\"\n\nShe texted me the next morning: \"Can we talk?\"\n\nI left her on read.\n\nTwo hours later, she was gone.\n\nI keep that text thread. I've never deleted it.\n\nSometimes I type replies. Long ones. Apologies. Everything I wish I'd said.\n\nI just never hit send.\n\nBecause where would they even go?\n\nI'm sorry, Sarah. I cared. I always cared."
 }

@@ -110,6 +110,7 @@ credit_costs:
   seed_generation: 500
   enhancement: 400
   output_generation: 1150
+  character_generation: 500      # CoT character-first step (gpt-5-mini, same cost as seed)
   part_transform: 300
   ai_review: 2500               # gpt-5.4 with reasoning_effort:high (~10x gpt-5-mini cost)
 

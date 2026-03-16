@@ -6,19 +6,17 @@
   "description": "Satisfying payback stories that hook viewers in the first 3 seconds",
   "duration": "30-60s",
   "wordCount": 150,
-  "platforms": ["tiktok", "instagram-reels", "youtube-shorts"],
+  "platforms": [
+    "tiktok",
+    "instagram-reels",
+    "youtube-shorts"
+  ],
   "settings": {
     "tone": "narrative",
-    "genres": ["revenge", "drama"],
-    "intensity": {
-      "stakes": 4,
-      "darkness": 3,
-      "pace": 9,
-      "twist": 7,
-      "realism": 7,
-      "catharsis": 10,
-      "moralClarity": 6
-    },
+    "genres": [
+      "revenge",
+      "drama"
+    ],
     "avoidPhrases": [
       "little did I know",
       "plot twist",
@@ -30,8 +28,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for short-form revenge content optimized for TikTok/Reels. Generate seeds about minor everyday injustices with creative payback potential. The wrongdoing should be specific and relatable — something that would make anyone's blood boil a little. The revenge must be proportional and clever, never violent. NO criminal activity, no workplace harassment, no physical confrontation.",
-    "user": "Generate {count} unique revenge story seeds for short-form video. Each seed should be:\n- A specific, relatable injustice (petty but genuinely annoying)\n- 2-3 sentences describing the situation and the creative payback\n- The revenge should be CLEVER and proportional — not cruel\n- Fast-paced enough for a 30-60 second video\n\nExamples of GOOD seeds: neighbor who keeps stealing your parking spot, someone who cuts in line every day, coworker who takes credit for your work in meetings.\n\nExamples of BAD seeds: anything requiring violence, illegal activity, or disproportionate revenge.\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in short-form revenge content optimized for TikTok and Reels. You design fast-paced, satisfying payback scenarios where a specific everyday injustice meets clever, proportional revenge. Your seeds hook in one sentence and deliver catharsis in under 60 seconds.\n</role>\n\n<context>\nShort-form revenge stories are designed for maximum engagement in 30-60 seconds. The format demands: immediate hook (state the injustice), minimal setup, creative payback, and a satisfying punchline. Unlike Reddit pettyrevenge (which can build slowly), short-form revenge must grab attention instantly and deliver the payoff fast. The revenge must feel clever and proportional — viewers share stories where the punishment perfectly fits the crime.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: the specific injustice AND the creative payback\n- The injustice must be immediately relatable — stated in one punchy line\n- The revenge must be CLEVER and proportional — never violent or cruel\n- Fast enough for 30-60 seconds of narration\n- Grounded in everyday settings: work, neighbors, roommates, dating, commute\n- NO criminal activity, workplace harassment, or physical confrontation\n- Each seed must be distinct in setting and revenge style\n</constraints>\n\n<expectation>\nA great short-form revenge seed makes you want to high-five the narrator. The injustice is stated so specifically that you feel the frustration immediately, and the payback is so perfectly proportional that you can't help but smile. A writer should read the seed and immediately hear the deadpan narration: hook, setup, revenge, punchline. Done.\n</expectation>",
+    "user": "<task>\nGenerate {count} unique revenge story seeds for short-form video. Each seed must pair a specific injustice with clever, satisfying payback.\n</task>\n\n<examples>\nGOOD seeds (specific injustice, creative payback, fast-paced):\n- \"A coworker takes credit for her presentation in front of the entire team. She doesn't say anything — she just makes sure the next presentation has her name watermarked on every slide and a version history link in the footer.\"\n- \"Her roommate eats her labeled food every week and denies it. She starts making two portions of everything — one normal, one with ghost pepper extract. The roommate suddenly develops a 'sensitivity.'\"\n- \"A guy's date spends the whole dinner on her phone. When the check comes, she says 'you're paying, right?' He splits the bill, pays his half in exact change, and leaves a generous tip for the waiter. She gets the leftovers.\"\n\nBAD seeds (vague, violent, or cruel):\n- \"Someone gets revenge on a bully\" (too vague — WHO? HOW?)\n- \"He punches the guy who wronged him\" (violence, not creative revenge)\n- \"She destroys her ex's car\" (illegal, disproportionate)\n</examples>"
   },
   "styleVariants": [
     {
@@ -67,10 +65,26 @@
     "user": "Create a 30-60 second revenge short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Hook (the injustice — one punchy line)\n2. Failed attempt (tried being nice)\n3. The plan (got creative)\n4. Execution (the revenge in action)\n5. Payoff (reaction + resolution)\n\nRULES:\n- 150 words maximum\n- First-person, deadpan narrative tone\n- State the injustice IMMEDIATELY — no buildup to the problem\n- Short sentences, fast pacing\n- The revenge must be clever, not violent\n- End with a satisfying punchline\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
   },
   "compatibility": {
-    "perfectMatch": ["revenge", "payback", "justice", "karma", "got back at"],
-    "goodFit": ["conflict", "wronged", "unfair", "deserved", "teach a lesson"],
+    "perfectMatch": [
+      "revenge",
+      "payback",
+      "justice",
+      "karma",
+      "got back at"
+    ],
+    "goodFit": [
+      "conflict",
+      "wronged",
+      "unfair",
+      "deserved",
+      "teach a lesson"
+    ],
     "checkType": "conflict-based",
-    "dreamscapeTypes": ["conflict", "revenge", "injustice"]
+    "dreamscapeTypes": [
+      "conflict",
+      "revenge",
+      "injustice"
+    ]
   },
   "exampleOutput": "So my coworker kept stealing my lunch from the break room fridge.\n\nEvery. Single. Day.\n\nI asked nicely. I left notes. Nothing worked.\n\nSo I made a \"special\" sandwich.\n\nLoaded it with Carolina Reaper hot sauce. Extra spicy mayo. The works.\n\nLabeled it clearly: MY LUNCH. DO NOT EAT.\n\nNext day? I hear screaming from the break room.\n\nHe's chugging milk straight from the carton. Face red. Eyes watering.\n\nHe looks at me. I look at him.\n\nI shrug. \"I like spicy food.\"\n\nHe never touched my lunch again.\n\nAnd I started bringing normal sandwiches.\n\nBut he doesn't know that."
 }

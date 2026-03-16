@@ -6,19 +6,17 @@
   "description": "Supplemental footage list with timing and context for editors",
   "duration": "Production doc",
   "wordCount": 400,
-  "platforms": ["youtube", "documentary", "commercial"],
+  "platforms": [
+    "youtube",
+    "documentary",
+    "commercial"
+  ],
   "settings": {
     "tone": "script",
-    "genres": ["production", "editorial"],
-    "intensity": {
-      "stakes": 5,
-      "darkness": 5,
-      "pace": 6,
-      "twist": 5,
-      "realism": 8,
-      "catharsis": 5,
-      "moralClarity": 7
-    },
+    "genres": [
+      "production",
+      "editorial"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,22 @@
     "user": "Create a B-roll list based on this story:\n\n{dreamscape}\n\nREQUIREMENTS:\n- List 15-25 B-roll shots\n- Group by category/location\n- Include:\n  * What to capture\n  * Why it matters for the story\n  * When to use it (which part of narrative)\n  * Duration needed (3s, 5s, 10s)\n- Mix of wide/medium/close shots\n- Focus on visual storytelling\n- 400 words maximum\n\nFormat:\nLOCATION - HOME OFFICE\n- Router close-up (5s) - Use during discovery\n- WiFi admin screen (3s) - Show device list reveal\n\nWrite the B-roll list now:"
   },
   "compatibility": {
-    "perfectMatch": ["location", "objects", "environment", "setting"],
-    "goodFit": ["story", "narrative", "scene"],
+    "perfectMatch": [
+      "location",
+      "objects",
+      "environment",
+      "setting"
+    ],
+    "goodFit": [
+      "story",
+      "narrative",
+      "scene"
+    ],
     "checkType": "story-based",
-    "dreamscapeTypes": ["narrative", "environmental"]
+    "dreamscapeTypes": [
+      "narrative",
+      "environmental"
+    ]
   },
   "exampleOutput": "HOME OFFICE:\n- Router blinking lights, ECU (5s) - Opening tension\n- Computer screen glow on face (3s) - Discovery moment\n- WiFi device list scrolling (10s) - Plot reveal\n- Empty coffee cup, desk clutter (3s) - Character detail\n\nNEIGHBOR'S HOUSE:\n- Exterior establishing shot (5s) - Location intro\n- Doorbell button press, CU (2s) - Anticipation\n- Welcome mat detail (3s) - Suburban normalcy contrast\n\nBASEMENT:\n- Monitor screens array, wide (7s) - Revelation\n- Cables and equipment, details (5s) - Technical atmosphere"
 }

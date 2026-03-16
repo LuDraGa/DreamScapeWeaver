@@ -6,19 +6,17 @@
   "description": "Email or survey requesting customer feedback and reviews with guiding questions",
   "duration": "Email",
   "wordCount": 250,
-  "platforms": ["email", "survey", "feedback"],
+  "platforms": [
+    "email",
+    "survey",
+    "feedback"
+  ],
   "settings": {
     "tone": "mixed",
-    "genres": ["customer-service", "marketing"],
-    "intensity": {
-      "stakes": 4,
-      "darkness": 1,
-      "pace": 4,
-      "twist": 2,
-      "realism": 10,
-      "catharsis": 6,
-      "moralClarity": 9
-    },
+    "genres": [
+      "customer-service",
+      "marketing"
+    ],
     "avoidPhrases": []
   },
   "promptTemplate": {
@@ -26,10 +24,21 @@
     "user": "Create a testimonial request using this story as context:\n\n{dreamscape}\n\nREQUIREMENTS:\n- Personal, warm tone\n- Reference their experience\n- Explain why testimonials matter\n- Provide guiding questions (3-5)\n- Make it easy (multiple options)\n- Incentive if appropriate\n- Thank you/appreciation\n- 250 words maximum\n\nWrite the request now:"
   },
   "compatibility": {
-    "perfectMatch": ["success", "result", "transformation", "satisfaction"],
-    "goodFit": ["experience", "outcome", "benefit"],
+    "perfectMatch": [
+      "success",
+      "result",
+      "transformation",
+      "satisfaction"
+    ],
+    "goodFit": [
+      "experience",
+      "outcome",
+      "benefit"
+    ],
     "checkType": "any",
-    "dreamscapeTypes": ["customer-success"]
+    "dreamscapeTypes": [
+      "customer-success"
+    ]
   },
   "exampleOutput": "Subject: Quick favor? Your story could help others\n\nHey [Name],\n\nHope NetworkGuard Pro is still working great for you!\n\nI'm reaching out because your experience—discovering those unauthorized devices and taking control of your network—is exactly the kind of story that helps other people realize they need this.\n\nWould you mind sharing a quick testimonial?\n\nHere are a few questions to spark ideas (answer any/all):\n\n1. What problem were you having before NetworkGuard Pro?\n2. What surprised you when you first scanned your network?\n3. How has your internet performance changed?\n4. Who would you recommend this to?\n5. What's the best part about having complete visibility?\n\n**THREE EASY OPTIONS:**\n• Reply to this email with your thoughts (2-3 sentences is perfect)\n• Record a quick video (30 seconds, phone quality is fine)\n• Leave a review here: [link]\n\nAs a thank you, I'll send you a $25 Amazon gift card once we feature your testimonial.\n\nNo pressure at all—only if you're genuinely happy with the product.\n\nThanks for being an awesome customer!\n\n[Name]\nCustomer Success, NetworkGuard"
 }

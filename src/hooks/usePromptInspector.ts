@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react'
 import { PRESETS } from '@/lib/config'
 import {
   buildPresetPrompt,
-  buildDreamscapePrompt,
+  buildSeedPrompt,
   buildEnhancementPrompt,
   buildOutputPrompt,
   type PromptData,
 } from '@/lib/prompt-builders'
 import { buildPromptFromTemplate } from '@/lib/templates'
 import { uid } from '@/lib/utils'
-import type { DialState, Template, IntensityValues, Dreamscape, ReviewOutputParams } from '@/lib/types'
+import type { DialState, Template, Dreamscape, ReviewOutputParams } from '@/lib/types'
 import { buildReviewSystemPrompt, buildReviewUserPrompt } from '@/lib/adapters/review-prompts'
 
 export type InspectorFocus = 'default' | 'split' | 'continue' | 'review'
@@ -34,7 +34,6 @@ interface UsePromptInspectorParams {
   showGenPanel: boolean
   genVibe: string
   genCount: number
-  genIntensity: IntensityValues
   selectedTemplate: Template | null
   generatedOutputs: any[]
   activeVariant: number
@@ -55,7 +54,6 @@ export function usePromptInspector({
   showGenPanel,
   genVibe,
   genCount,
-  genIntensity,
   selectedTemplate,
   generatedOutputs,
   activeVariant,
@@ -129,7 +127,6 @@ export function usePromptInspector({
           chunks,
           goalPreset: enhanceGoal,
           customGoal: customEnhanceGoal,
-          intensity: dialState.intensity,
           avoidPhrases: dialState.avoidPhrases,
         })
       )
@@ -137,10 +134,15 @@ export function usePromptInspector({
     // Step 0: Dreamscape — generation prompt when Gen panel is open
     else if (step === 0 && showGenPanel) {
       setPromptData(
-        buildDreamscapePrompt({
+        buildSeedPrompt({
           count: genCount,
           vibe: genVibe,
-          intensity: genIntensity,
+          seedPrompt: selectedTemplate?.seedPrompt,
+          templateContext: selectedTemplate ? {
+            displayName: selectedTemplate.displayName,
+            category: selectedTemplate.category,
+            description: selectedTemplate.description,
+          } : undefined,
         })
       )
     }
@@ -176,22 +178,38 @@ export function usePromptInspector({
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
-        const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, tempDreamscape)
-        setPromptData({
-          step: 'Template (Step 1)',
-          messages: [
-            { role: 'system', content: systemPrompt, variables: {} },
-            { role: 'user', content: userPrompt, variables: {} },
-          ],
-          fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
-        })
+        const { systemPrompt, userPrompt, characterSystemPrompt, characterUserPrompt } = buildPromptFromTemplate(selectedTemplate, tempDreamscape)
+
+        // CoT templates: show character prompt + story prompt (with placeholder)
+        if (characterSystemPrompt && characterUserPrompt) {
+          setPromptData({
+            step: 'Template (Step 1) — CoT: Character → Story',
+            messages: [
+              { role: 'system', content: '— CALL 1: CHARACTER GENERATION (gpt-5-mini) —', variables: {} },
+              { role: 'system', content: characterSystemPrompt, variables: {} },
+              { role: 'user', content: characterUserPrompt, variables: {} },
+              { role: 'system', content: '— CALL 2: STORY GENERATION (gpt-5.4) —', variables: {} },
+              { role: 'system', content: systemPrompt, variables: {} },
+              { role: 'user', content: userPrompt, variables: {} },
+            ],
+            fullPrompt: `— CALL 1: CHARACTER (gpt-5-mini) —\n\n${characterSystemPrompt}\n\n${characterUserPrompt}\n\n— CALL 2: STORY (gpt-5.4) —\n\n${systemPrompt}\n\n${userPrompt}`,
+          })
+        } else {
+          setPromptData({
+            step: 'Template (Step 1)',
+            messages: [
+              { role: 'system', content: systemPrompt, variables: {} },
+              { role: 'user', content: userPrompt, variables: {} },
+            ],
+            fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
+          })
+        }
       } else if (powerUserMode) {
         setPromptData(
           buildPresetPrompt({
             preset: currentPreset,
             platform: dialState.platform,
             format: dialState.outputFormat,
-            intensity: dialState.intensity,
             genres,
             tone: dialState.tone,
             wordCount: dialState.wordCount,
@@ -218,7 +236,6 @@ export function usePromptInspector({
         setPromptData(
           buildOutputPrompt({
             dreamscape,
-            intensity: dialState.intensity,
             platform: dialState.platform,
             format: dialState.outputFormat,
             wordCount: dialState.wordCount,
@@ -236,14 +253,33 @@ export function usePromptInspector({
           updatedAt: new Date().toISOString(),
         }
         const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, tempDreamscape)
-        setPromptData({
-          step: 'Output Generation (Step 2)',
-          messages: [
-            { role: 'system', content: systemPrompt, variables: {} },
-            { role: 'user', content: userPrompt, variables: {} },
-          ],
-          fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
-        })
+
+        // If active output has a characterProfile, inject it into the system prompt to show what was actually sent
+        const activeOutput = generatedOutputs[activeVariant]
+        const charProfile = activeOutput?.characterProfile
+        const resolvedSystemPrompt = charProfile
+          ? systemPrompt.replace('{character}', charProfile)
+          : systemPrompt
+
+        if (charProfile) {
+          setPromptData({
+            step: 'Output Generation (Step 2) — CoT: character injected',
+            messages: [
+              { role: 'system', content: resolvedSystemPrompt, variables: {} },
+              { role: 'user', content: userPrompt, variables: {} },
+            ],
+            fullPrompt: `${resolvedSystemPrompt}\n\n${userPrompt}`,
+          })
+        } else {
+          setPromptData({
+            step: 'Output Generation (Step 2)',
+            messages: [
+              { role: 'system', content: systemPrompt, variables: {} },
+              { role: 'user', content: userPrompt, variables: {} },
+            ],
+            fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
+          })
+        }
       }
     }
     // Step 3: Rate & Save (power user mode only)
@@ -252,7 +288,6 @@ export function usePromptInspector({
       setPromptData(
         buildOutputPrompt({
           dreamscape,
-          intensity: dialState.intensity,
           platform: dialState.platform,
           format: dialState.outputFormat,
           wordCount: dialState.wordCount,
@@ -274,7 +309,6 @@ export function usePromptInspector({
     showEnhanceDrawer,
     genVibe,
     genCount,
-    genIntensity,
     selectedTemplate,
     generatedOutputs,
     activeVariant,

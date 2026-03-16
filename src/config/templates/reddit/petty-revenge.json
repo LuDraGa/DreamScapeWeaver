@@ -6,20 +6,16 @@
   "description": "Satisfying small-scale revenge stories with creative payback",
   "duration": "2-3min read",
   "wordCount": 400,
-  "platforms": ["reddit"],
+  "platforms": [
+    "reddit"
+  ],
   "subreddit": "pettyrevenge",
   "settings": {
     "tone": "narrative",
-    "genres": ["revenge", "comedy"],
-    "intensity": {
-      "stakes": 4,
-      "darkness": 3,
-      "pace": 7,
-      "twist": 7,
-      "realism": 8,
-      "catharsis": 10,
-      "moralClarity": 6
-    },
+    "genres": [
+      "revenge",
+      "comedy"
+    ],
     "avoidPhrases": [
       "little did I know",
       "that's when things got interesting",
@@ -30,8 +26,8 @@
     ]
   },
   "seedPrompt": {
-    "system": "You are a story seed generator for r/pettyrevenge content. Generate realistic petty injustice scenarios — annoying neighbors, rude coworkers, inconsiderate roommates, parking space thieves, line cutters. The wrongdoing should be MINOR but PERSISTENT and genuinely annoying. Seeds must suggest creative payback potential. NO violence, no illegal activity, no fantasy.",
-    "user": "Generate {count} unique r/pettyrevenge story seeds. Each seed should be:\n- A realistic, petty injustice (minor but annoying wrongdoing that repeats)\n- 2-3 sentences describing the situation and hinting at creative payback\n- Grounded in everyday settings (workplace, apartment, neighborhood, commute)\n- The wrongdoer should be someone the narrator interacts with regularly\n\nExamples of GOOD seed topics: coworker who steals lunches, neighbor who parks in your spot, roommate who never cleans, someone who always cuts the coffee line.\n\nExamples of BAD seed topics: corporate espionage, supernatural revenge, anything requiring physical confrontation.\n\nGenerate the seeds now."
+    "system": "<role>\nYou are a story seed architect specializing in r/pettyrevenge content. You design everyday injustice scenarios paired with creative, proportional payback. Your seeds feature annoying wrongdoers who deserve exactly what's coming to them and clever narrators who find the perfect way to deliver it.\n</role>\n\n<context>\nr/pettyrevenge is a subreddit for stories about small-scale, creative revenge against people who are consistently annoying or inconsiderate. The best posts feature a persistent, specific injustice that the narrator tries to resolve normally before getting creative. The revenge is clever and proportional — never violent or illegal. Readers come for the satisfaction of seeing someone get exactly what they deserve.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: the specific recurring injustice AND hint at creative payback potential\n- The wrongdoing must be MINOR but PERSISTENT and genuinely annoying\n- The wrongdoer must be someone the narrator interacts with regularly (neighbor, coworker, roommate)\n- Grounded in everyday settings: apartments, offices, parking lots, shared spaces\n- NO violence, no illegal activity, no disproportionate revenge\n- NO fantasy or supernatural elements\n- Each seed must be distinct in setting and revenge style\n</constraints>\n\n<expectation>\nA great petty revenge seed makes you feel the frustration of the injustice AND immediately start imagining clever payback options. The wrongdoing is specific enough that readers viscerally relate (\"I've HAD that neighbor\"). The revenge potential is hinted at but not spelled out — a writer should read the seed and think \"oh, I know EXACTLY how to get them back.\"\n</expectation>",
+    "user": "<task>\nGenerate {count} unique r/pettyrevenge story seeds. Each seed must feature a persistent minor injustice with creative payback potential.\n</task>\n\n<examples>\nGOOD seeds (specific injustice, recurring, creative payback potential):\n- \"A coworker has been stealing lunches from the office fridge for months. HR says there's nothing they can do without proof. The narrator just bought a bag of Carolina Reapers.\"\n- \"A neighbor runs their leaf blower at 6am every Saturday morning despite multiple polite requests. They happen to share a wall with the narrator's home theater system.\"\n- \"A roommate never does dishes but labels all their food with passive-aggressive notes. The narrator notices the roommate's parking permit is up for renewal next week.\"\n\nBAD seeds (vague, violent, or disproportionate):\n- \"Someone is annoying at work\" (too vague — WHO? HOW?)\n- \"A bully gets punched\" (violence, not petty revenge)\n- \"A neighbor's car gets keyed\" (illegal, disproportionate)\n</examples>"
   },
   "styleVariants": [
     {
@@ -67,10 +63,26 @@
     "user": "Create a 300-500 word r/pettyrevenge post based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. The injustice (what the wrongdoer keeps doing)\n2. Failed normal attempts (asking nicely, leaving notes, etc.)\n3. The plan (how the narrator got creative)\n4. The execution (the revenge in action)\n5. The payoff (wrongdoer's reaction, resolution)\n\nRULES:\n- Deadpan, slightly smug narrative tone\n- The revenge must be PETTY, not serious\n- Show that normal attempts failed first\n- Make the payback creative and proportional\n- First-person, casual Reddit voice\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
   },
   "compatibility": {
-    "perfectMatch": ["revenge", "payback", "got back", "served them right", "deserved"],
-    "goodFit": ["annoying", "rude", "inconsiderate", "justice", "karma"],
+    "perfectMatch": [
+      "revenge",
+      "payback",
+      "got back",
+      "served them right",
+      "deserved"
+    ],
+    "goodFit": [
+      "annoying",
+      "rude",
+      "inconsiderate",
+      "justice",
+      "karma"
+    ],
     "checkType": "conflict-based",
-    "dreamscapeTypes": ["revenge", "petty-conflict", "annoying-behavior"]
+    "dreamscapeTypes": [
+      "revenge",
+      "petty-conflict",
+      "annoying-behavior"
+    ]
   },
   "exampleOutput": "My neighbor parks in front of my driveway. Every. Single. Day.\n\nI've asked nicely. Left notes. He doesn't care.\n\nSo I got creative.\n\nI noticed he has an HOA violation for his lawn (it's way too long). I also noticed he leaves for work at exactly 7:30am.\n\nSo every morning at 7:00am, I started parking MY car in front of my own driveway.\n\nThen I'd leave for my morning jog. 45-minute jog.\n\nHe'd have to wait for me to get back to move my car. Made him late three days in a row.\n\nDay four, I get back from my jog to find a note: \"Can you please not block your own driveway in the mornings? I need to get to work.\"\n\nI wrote back: \"Can you please not block my driveway at all? I need to use it.\"\n\nHe parks on his own property now.\n\nAnd I still take my morning jogs, but now I don't have to wake up early just to inconvenience him.\n\nPetty? Absolutely. Effective? 100%."
 }

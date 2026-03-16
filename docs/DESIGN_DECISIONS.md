@@ -526,6 +526,36 @@ New outputs get the full current shape. Old outputs silently fill gaps with defa
 
 ---
 
+## Prompt Architecture: XML-Structured Hybrid Framework
+
+**Decision**: All template prompts use an XML-tagged hybrid framework combining the Modular Framework (Role, Context, Task, Constraints, Format, Examples) with RISEN's Expectation block. Chain-of-Thought is used only for the enhancement step.
+
+**Full reference**: [docs/PROMPT_FRAMEWORK.md](PROMPT_FRAMEWORK.md)
+
+**Key structural rules**:
+
+1. **System prompt carries identity + rules** — `<role>`, `<context>`, `<constraints>`, `<expectation>` XML blocks. These are static per template and get higher attention weight from the LLM.
+2. **User prompt carries the brief + input** — `<task>`, `<story_seed>`, `<style>`, `<structure>`, `<reference_example>`, `<quality_check>` XML blocks. These contain per-generation variables.
+3. **XML tags for all sections** — clear optical separation so the LLM distinguishes instruction types from content.
+4. **`<expectation>` block in system prompt** — qualitative description of what "great" looks like (e.g., "reader stops scrolling and genuinely struggles with their judgment"), not a mechanical checklist.
+5. **CoT prefill for enhancement only** — enhancement is a transformation task (analyze → preserve → improve), not a creative generation task. Story generation does NOT use CoT.
+6. **Avoid-phrases in system prompt `<constraints>`** — not in user prompt. Higher attention weight = more reliable enforcement.
+
+**Rationale**:
+- System prompt content gets higher attention weight in GPT-4o and Claude — constraints placed there are followed more reliably
+- XML tags provide unambiguous boundaries between instruction types — the LLM knows what's a rule vs. what's content
+- One universal structure across all template categories (reddit, short-form, long-form, marketing, production) — same skeleton, different fills
+- CoT is counterproductive for creative generation (constrains rather than enables creativity) but valuable for transformation tasks where the model needs to analyze before acting
+
+**Anti-patterns**:
+- ❌ One-line system prompts ("You are a writer") — wastes the highest-attention-weight slot
+- ❌ Dumping all instructions in user prompt — constraints get lower attention weight
+- ❌ Plain text without XML tags — model can't distinguish instruction types
+- ❌ Using CoT for story output generation — creative writing doesn't benefit from reasoning traces
+- ❌ Generic expectations ("be engaging") — gives the model no concrete quality target
+
+---
+
 ## Summary: Key Principles
 
 1. **Feature flags**: Always in Settings, never URL params
@@ -538,6 +568,7 @@ New outputs get the full current shape. Old outputs silently fill gaps with defa
 8. **Library**: Two-tab (Seeds / Content), hook-first cards, multi-select NOT filters
 9. **Lineage**: DAG model, breadcrumb navigation (no graph visualization)
 10. **Quality pipeline**: selfCheckRubric + fewShotExcerpt + styleModifier = zero-cost quality layers
+11. **Prompt architecture**: XML-tagged hybrid framework — system prompt carries identity/rules, user prompt carries brief/input, CoT for enhancement only ([full spec](PROMPT_FRAMEWORK.md))
 
 ---
 
