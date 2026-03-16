@@ -11,9 +11,10 @@ import {
 } from '@/lib/prompt-builders'
 import { buildPromptFromTemplate } from '@/lib/templates'
 import { uid } from '@/lib/utils'
-import type { DialState, Template, IntensityValues, Dreamscape } from '@/lib/types'
+import type { DialState, Template, IntensityValues, Dreamscape, ReviewOutputParams } from '@/lib/types'
+import { buildReviewSystemPrompt, buildReviewUserPrompt } from '@/lib/adapters/review-prompts'
 
-export type InspectorFocus = 'default' | 'split' | 'continue'
+export type InspectorFocus = 'default' | 'split' | 'continue' | 'review'
 
 interface Chunk {
   id: string
@@ -39,6 +40,7 @@ interface UsePromptInspectorParams {
   activeVariant: number
   splitGuidance: string
   continueGuidance: string
+  reviewParams: ReviewOutputParams | null
 }
 
 export function usePromptInspector({
@@ -59,6 +61,7 @@ export function usePromptInspector({
   activeVariant,
   splitGuidance,
   continueGuidance,
+  reviewParams,
 }: UsePromptInspectorParams) {
   const [promptData, setPromptData] = useState<PromptData | null>(null)
   const [inspectorFocus, setInspectorFocus] = useState<InspectorFocus>('default')
@@ -96,6 +99,21 @@ export function usePromptInspector({
         messages: [
           { role: 'system', content: systemPrompt, variables: {} },
           { role: 'user', content: userPrompt, variables: { continueGuidance } },
+        ],
+        fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
+      })
+      return
+    }
+
+    // Review focus — show the exact prompt that will be sent for AI review
+    if (inspectorFocus === 'review' && reviewParams) {
+      const systemPrompt = buildReviewSystemPrompt(reviewParams)
+      const userPrompt = buildReviewUserPrompt(reviewParams)
+      setPromptData({
+        step: 'AI Review (GPT-5.4)',
+        messages: [
+          { role: 'system', content: systemPrompt, variables: {} },
+          { role: 'user', content: userPrompt, variables: { templateName: reviewParams.templateName } },
         ],
         fullPrompt: `${systemPrompt}\n\n${userPrompt}`,
       })
@@ -263,6 +281,7 @@ export function usePromptInspector({
     splitGuidance,
     continueGuidance,
     powerUserMode,
+    reviewParams,
   ])
 
   return { promptData, setPromptData, inspectorFocus, setInspectorFocus }
