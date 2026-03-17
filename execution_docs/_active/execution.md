@@ -1,59 +1,44 @@
 # StoryWeaver - Active Execution
 
-## Task: Remove Intensity Dials + Enhance Generic Seed Prompt
+## Task: CoT Character-First for TIFU, NoSleep, YouTube Story Time
 
-**Session**: 2026-03-16
-**Context**: Remove all intensity dials (unused complexity), rewrite generic seed generation prompt with XML framework, wire template context into seed gen for both modes.
+**Session**: 2026-03-17
+**Context**: Adding two-call character-first generation to 3 more hero templates. Infrastructure already in place from AITAH implementation.
 
 ## Execution Status
 
-### ✅ Completed Tasks
+### ✅ Completed (CoT Character-First)
 
-- [x] Step 1: Types + config foundation — removed `IntensityValues`, `Dial` type, `intensity` from `DialState`, `Preset`, `Template.settings`, `GenerateDreamscapesParams`, `EnhanceDreamscapeParams`. Added `templateContext` to `GenerateDreamscapesParams`.
-- [x] Step 2: Deleted `dials.json`, removed `DIALS` export from config.ts, removed `getDial()`
-- [x] Step 3: Removed `settings.intensity` from all 48 template JSON files
-- [x] Step 4: Core logic — removed `buildIntensityPrompt()`, `adjustIntensity()` from openai.ts, stripped intensity from `buildSystemPrompt()`, cleaned prompt-builders.ts, mock.ts
-- [x] Step 5: API routes — removed intensity from dreamscapes/generate route, added templateContext
-- [x] Step 6: UI + state — removed `randomizeIntensity`, `genIntensity`, `showGenAdvanced`, `randomizeDialIntensity`, intensity sliders UI, `DIALS` import from create page. Removed intensity from app-store.ts.
-- [x] Step 7: Generic seed prompt rewrite — `buildGenericSeedPrompt()` with full XML framework (`<role>`, `<context>`, `<template_context>`, `<constraints>`, `<expectation>`, `<examples>`). Template context injected when template selected but no seedPrompt.
-- [x] Step 8: Power user wiring — `handleGenerateDreamscapes` now passes `selectedTemplate?.seedPrompt`, `templateId`, and `templateContext`
-- [x] Step 9: usePromptInspector.ts — removed `genIntensity` param and all intensity references
-- [x] Step 10: Docs — updated PROMPT_FRAMEWORK.md (seed prompts now use XML), CLAUDE.md (removed dials references, updated key concepts)
-- [x] Step 11: Build verification — passes clean
+- [x] r/TIFU — added characterPrompt, upgraded promptTemplate to XML + {character}
+- [x] r/NoSleep — added characterPrompt, upgraded promptTemplate to XML + {character}
+- [x] YouTube Story Time — added characterPrompt, upgraded promptTemplate to XML + {character}
+- [x] Build verification — `pnpm build` passes clean
 
-### ✅ Completed (B2)
+### ✅ Completed (Short-Form Structure + Word Count Fix)
 
-- [x] Upgrade 11 hero template seedPrompts to XML structure (manually crafted per template)
+- [x] Drama/Confession — wordCount 175→250 (range 200-300), duration 80-120s, XML promptTemplate, structure overhaul
+- [x] Unexpected Twist — wordCount 120→225 (range 175-275), duration 60-110s, XML promptTemplate, structure overhaul
+- [x] Revenge Story — wordCount 150→275 (range 225-325), duration 90-130s, XML promptTemplate, structure overhaul
+- [x] Horror/Creepy — wordCount 120→200 (range 150-250), duration 60-100s, XML promptTemplate, structure overhaul
+- [x] Build verification — `pnpm build` passes clean
+
+### ✅ Completed (r/PettyRevenge CoT + Word Count Fix)
+
+- [x] r/PettyRevenge — wordCount 400→600 (range 450-750), duration 3-5min, added characterPrompt (8 dimensions: occupation, pettiness style, smugness, rule relationship), XML promptTemplate with {character}, word budget allocation
+- [x] Build verification — `pnpm build` passes clean
 
 ## Changes Made
 
 ### Files Modified
-- `src/lib/types.ts` — removed IntensityValues, Dial; stripped intensity from DialState, Preset, Template.settings, GenerateDreamscapesParams, EnhanceDreamscapeParams; added templateContext
-- `src/lib/config.ts` — removed DIALS export, Dial import, getDial()
-- `src/config/presets.json` — removed intensity from all 5 presets
-- 48 template JSON files — removed settings.intensity
-- `src/lib/adapters/openai.ts` — removed buildIntensityPrompt, adjustIntensity; added buildGenericSeedPrompt with XML framework; stripped intensity from buildSystemPrompt and enhanceDreamscape
-- `src/lib/adapters/mock.ts` — removed intensity from enhance prompt call
-- `src/lib/prompt-builders.ts` — removed all intensity references and DIALS import
-- `src/app/api/dreamscapes/generate/route.ts` — removed intensity, added templateContext
-- `src/app/app/create/page.tsx` — removed all intensity state/UI/imports, wired seedPrompt+templateContext into both generate flows
-- `src/hooks/usePromptInspector.ts` — removed genIntensity param and all intensity references
-- `src/store/app-store.ts` — removed intensity from initial dialState
-- `docs/PROMPT_FRAMEWORK.md` — updated seed generation section (XML structure)
-- `CLAUDE.md` — removed dials references, updated key concepts
+- `src/config/templates/reddit/tifu.json` — added characterPrompt, upgraded promptTemplate to XML with {character} placeholder, added voice consistency rubric check
+- `src/config/templates/reddit/nosleep.json` — added characterPrompt, upgraded promptTemplate to XML with {character} placeholder, added narrator voice rubric check
+- `src/config/templates/long-form/youtube-story-time.json` — added characterPrompt, upgraded promptTemplate to XML with {character} placeholder, added narrator voice rubric check
+- `src/config/templates/short-form/drama-confession.json` — wordCount 175→250, duration 80-120s, XML promptTemplate with line-break-as-beat structure
+- `src/config/templates/short-form/unexpected-twist.json` — wordCount 120→225, duration 60-110s, XML promptTemplate with dual-narrative structure (false story + real story)
+- `src/config/templates/short-form/revenge-story.json` — wordCount 150→275, duration 90-130s, XML promptTemplate with lopsided word budget (55% to execution)
+- `src/config/templates/short-form/horror-creepy.json` — wordCount 120→200, duration 60-100s, XML promptTemplate with tension-ratchet structure
+- `src/config/templates/reddit/petty-revenge.json` — wordCount 400→600, added characterPrompt (8 dimensions), XML promptTemplate with {character} placeholder, word budget allocation, voice consistency rubric check
 
-### Files Deleted
-- `src/config/dials.json`
+---
 
-## Implementation Notes
-
-### Generic Seed Prompt (buildGenericSeedPrompt)
-- Full XML structure: `<role>`, `<context>`, `<constraints>`, `<expectation>` in system prompt
-- `<task>`, `<format>`, `<examples>` in user prompt
-- When template is selected but has no seedPrompt, `<template_context>` block is injected with template name, category, and description
-- Good/bad examples included (3 each with explanations)
-- Vibe inserted into `<task>` when provided
-
-### Template Context Flow
-- Normal mode: template's seedPrompt OR generic with templateContext → already worked, now also passes templateContext
-- Power user mode: now also passes selectedTemplate?.seedPrompt and templateContext (was missing before)
+*This document tracks active implementation progress*

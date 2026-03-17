@@ -4,8 +4,8 @@
   "category": "short-form",
   "icon": "👻",
   "description": "Quick horror stories with unsettling twists that viewers will rewatch",
-  "duration": "30-60s",
-  "wordCount": 120,
+  "duration": "60-100s",
+  "wordCount": 200,
   "platforms": [
     "tiktok",
     "instagram-reels",
@@ -55,14 +55,14 @@
     "Does it create genuine unease? Would someone feel creeped out reading this alone?",
     "Does the horror come from IMPLICATION, not from stating something scary?",
     "Is the pacing tight? (every sentence earns its place)",
-    "Is it 100-150 words?",
+    "Is it 150-250 words (optimum ~200)?",
     "Does it end with unresolved dread? (no explanation, no comfort)",
     "Does it avoid ALL listed avoid-phrases?"
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: [Normal situation — one sentence establishing mundane setting]\n→ [Detail 1 — something slightly off, easily dismissed]\n→ [Detail 2 — harder to dismiss, tension building]\n→ [The realization — the narrator (and reader) understands]\n→ [The horror — stated or implied in one devastating line]\n→ [Unresolved — no comfort, no explanation]\n\nKey beats: mundane normalcy, creeping wrongness, sudden realization, no resolution. Every word builds dread.",
   "promptTemplate": {
-    "system": "You are an expert short-form horror scriptwriter. Your scripts build atmospheric dread in seconds and leave viewers genuinely unsettled. You never explain the horror — you imply it.",
-    "user": "Create a 30-60 second horror/creepy short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Normal setting (establish mundane reality — one line)\n2. First sign (something slightly off)\n3. Escalation (the wrongness becomes undeniable)\n4. The horror (reveal or implication)\n5. No resolution (end in dread)\n\nRULES:\n- 120 words maximum\n- First-person, present or recent past tense\n- Short sentences build tension\n- Horror through IMPLICATION — never explain\n- Sensory details that make the reader uncomfortable\n- End without comfort or resolution\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "<role>\nYou are an expert short-form horror scriptwriter for TikTok, Reels, and YouTube Shorts. Your scripts build atmospheric dread in seconds and leave viewers genuinely unsettled. You never explain the horror — you imply it. Every line ratchets tension exactly one notch. No line is neutral.\n</role>\n\n<context>\nShort-form horror is the fastest-growing story genre on social platforms. The format creates genuine unease in 60-100 seconds — normal settings with one detail that is simply WRONG. The horror is always in the implication, never named. The scariest word in the script should be one the viewer supplies themselves. Viewers rewatch to catch what they missed.\n</context>\n\n<constraints>\n- 150-250 words (target ~200)\n- First-person, present or recent past tense\n- Every line either establishes normalcy (to break it) or breaks it further — no neutral lines\n- Horror through IMPLICATION — never explain, never name the threat\n- Sensory details that make the viewer physically uncomfortable (sounds, silences, temperatures)\n- End without comfort or resolution — the horror is ongoing\n- NEVER use: \"little did I know\", \"plot twist\", \"wait for it\", \"you won't believe\", \"watch till the end\", \"scary\", \"a chill ran down my spine\"\n</constraints>\n\n<expectation>\nA viewer should feel genuinely unsettled — not from a jump scare but from the creeping realization that something is wrong in a place that should be safe. The atmosphere should linger after the video ends. The scariest moment should be what the viewer infers, not what's stated.\n</expectation>",
+    "user": "<task>\nWrite a short-form horror/creepy video script based on the story seed below.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\nEvery line ratchets tension exactly one notch:\n1. NORMAL — mundane setting, one line, the viewer feels safe\n2. FIRST CRACK — something slightly off, easily rationalized\n3. SECOND CRACK — harder to dismiss, the pattern emerges\n4. THE REALIZATION — it clicks for the narrator (and viewer simultaneously)\n5. THE IMPLICATION — what this MEANS, never stated outright\n6. NO RESOLUTION — end mid-dread, no comfort\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": [

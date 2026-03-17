@@ -4,8 +4,8 @@
   "category": "short-form",
   "icon": "💔",
   "description": "Emotional revelations and vulnerable storytelling that spark deep engagement",
-  "duration": "60-90s",
-  "wordCount": 175,
+  "duration": "80-120s",
+  "wordCount": 250,
   "platforms": [
     "tiktok",
     "instagram-reels",
@@ -54,14 +54,14 @@
     "Does the confession feel genuinely vulnerable? Would someone hesitate before sharing this?",
     "Is the emotional weight specific, not generic? (specific detail > vague sadness)",
     "Does it use SHORT sentences and line breaks for dramatic pacing?",
-    "Is it 150-200 words?",
+    "Is it 200-300 words (optimum ~250)?",
     "Does it sound like a real person speaking, not a writer writing?",
     "Does it avoid ALL listed avoid-phrases?"
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'I need to confess something.' OR a specific detail that implies the confession.\n→ [The context — who, what relationship, when]\n→ [The weight — what happened, what was said or not said]\n→ [The detail that makes it real — a specific object, text, moment]\n→ [The emotional truth — what it means, what it cost]\n→ [The landing — unresolved, lingering, or quietly devastating]\n\nKey beats: vulnerability without self-pity, specific over generic, pauses between lines, no neat resolution.",
   "promptTemplate": {
-    "system": "You are an expert short-form scriptwriter specializing in emotionally vulnerable, intimate confession content. Your scripts create deep connection through honest, raw storytelling. Every line earns its place.",
-    "user": "Create a 60-90 second drama/confession short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Emotional hook (vulnerable admission or specific detail)\n2. Context (brief — who, what relationship)\n3. The confession (raw honesty, no sugar-coating)\n4. The specific detail (makes it real and unforgettable)\n5. The landing (unresolved or quietly devastating)\n\nRULES:\n- 175 words maximum\n- First-person, intimate tone\n- Short sentences, line breaks for pacing\n- Specific details over generic emotions\n- NO melodrama — understatement is more powerful\n- Each line should earn its place\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "<role>\nYou are an expert short-form scriptwriter specializing in emotionally vulnerable, intimate confession content for TikTok, Reels, and YouTube Shorts. Your scripts create deep connection through honest, raw storytelling. Every line earns its place. Every line break is a dramatic beat.\n</role>\n\n<context>\nShort-form confession videos stop the scroll through radical specificity and emotional honesty. The format is closer to spoken word than prose — each line stands alone, and the pauses between lines ARE the emotion. Viewers share confessions that make them feel seen. Understatement always hits harder than melodrama.\n</context>\n\n<constraints>\n- 200-300 words (target ~250)\n- First-person, intimate tone — like telling someone quietly for the first time\n- Every line break is a dramatic beat — lines must stand alone\n- Specific details over generic emotions (a text message > \"sadness\")\n- NO melodrama — understatement is more powerful\n- Each line must earn its place — if it doesn't add weight, cut it\n- NEVER use: \"little did I know\", \"wait for it\", \"you won't believe\", \"watch till the end\", \"keep watching\", \"this is so hard to say\"\n</constraints>\n\n<expectation>\nA viewer should feel a lump in their throat. Not from manipulation — from recognition. The confession should feel so specific and honest that people think \"I've carried something like that.\" The specific detail — an object, a text, a silence — should be the thing that makes it real.\n</expectation>",
+    "user": "<task>\nWrite a short-form drama/confession video script based on the story seed below.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\n1. THE ADMISSION — one line that stops the scroll\n2. THE PERSON — who, what relationship (1-2 lines max)\n3. THE WEIGHT — what happened, what was said or not said (bulk of the words)\n4. THE ANCHOR DETAIL — one specific object, text, or moment that makes it visceral\n5. THE QUIET LANDING — unresolved, lingering, no neat bow\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": [

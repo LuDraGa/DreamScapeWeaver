@@ -4,8 +4,8 @@
   "category": "short-form",
   "icon": "😈",
   "description": "Satisfying payback stories that hook viewers in the first 3 seconds",
-  "duration": "30-60s",
-  "wordCount": 150,
+  "duration": "90-130s",
+  "wordCount": 275,
   "platforms": [
     "tiktok",
     "instagram-reels",
@@ -55,14 +55,14 @@
     "Does the hook grab attention in the first line? (state the injustice immediately)",
     "Is the revenge creative and proportional? (clever, not cruel)",
     "Is the payoff genuinely satisfying? Would someone share this?",
-    "Is it 125-175 words?",
+    "Is it 225-325 words (optimum ~275)?",
     "Does the pacing move FAST? (short sentences, quick escalation)",
     "Does it avoid ALL listed avoid-phrases?"
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: '[The injustice, stated in one punchy line.]'\n→ 'I tried being nice. [Brief failed attempt.]'\n→ 'So I got creative.' OR 'Fine. Game on.'\n→ [The revenge — what the narrator did, described with deadpan precision]\n→ [The payoff — wrongdoer's reaction]\n→ [Smug one-liner closing]\n\nKey beats: immediate hook, failed niceness, creative payback, satisfying payoff, deadpan delivery throughout.",
   "promptTemplate": {
-    "system": "You are an expert short-form scriptwriter specializing in satisfying revenge stories. Your scripts hook in 3 seconds, deliver creative payback, and leave viewers wanting to share. Deadpan delivery is your signature.",
-    "user": "Create a 30-60 second revenge short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Hook (the injustice — one punchy line)\n2. Failed attempt (tried being nice)\n3. The plan (got creative)\n4. Execution (the revenge in action)\n5. Payoff (reaction + resolution)\n\nRULES:\n- 150 words maximum\n- First-person, deadpan narrative tone\n- State the injustice IMMEDIATELY — no buildup to the problem\n- Short sentences, fast pacing\n- The revenge must be clever, not violent\n- End with a satisfying punchline\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "<role>\nYou are an expert short-form scriptwriter specializing in satisfying revenge stories for TikTok, Reels, and YouTube Shorts. Your scripts hook in 3 seconds, deliver creative payback with deadpan precision, and leave viewers wanting to share. The revenge is always the star — it gets the most words and the most detail.\n</role>\n\n<context>\nShort-form revenge stories are among the most shared content on social platforms. The format demands: immediate hook (state the injustice in ONE line), minimal setup, then let the revenge breathe. Viewers come for the payback — the plan and execution should get the bulk of the runtime. Deadpan delivery makes creative revenge land harder.\n</context>\n\n<constraints>\n- 225-325 words (target ~275)\n- First-person, deadpan narrative tone\n- The injustice is ONE punchy line — no buildup to the problem\n- The revenge gets ~60% of the word budget (plan + execution + payoff)\n- The revenge must be CLEVER and proportional — never violent or cruel\n- Short sentences, fast pacing, smug delivery\n- NEVER use: \"little did I know\", \"plot twist\", \"wait for it\", \"you won't believe what happened next\", \"watch till the end\", \"that's when things got interesting\", \"sweet revenge\"\n</constraints>\n\n<expectation>\nA viewer should want to high-five the narrator. The injustice makes them feel the frustration immediately, and the payback is so perfectly proportional and creative that they can't help but share it. The deadpan delivery makes it funnier — the narrator barely acknowledges they did anything.\n</expectation>",
+    "user": "<task>\nWrite a short-form revenge video script based on the story seed below.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\nWord budget allocation:\n1. THE INJUSTICE — one punchy line, immediate, no buildup (~5%)\n2. FAILED NICE — tried the normal route, didn't work (~10%)\n3. \"FINE.\" — the turn. One line. (~2%)\n4. THE PLAN + EXECUTION — deadpan precision, step by step. This is the fun part. (~55%)\n5. THE PAYOFF — their reaction + smug punchline (~28%)\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": [

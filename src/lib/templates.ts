@@ -8,8 +8,6 @@ import unexpectedTwist from '@/config/templates/short-form/unexpected-twist.json
 import dramaConfession from '@/config/templates/short-form/drama-confession.json'
 import lifeLesson from '@/config/templates/short-form/life-lesson.json'
 import aitah from '@/config/templates/reddit/aitah.json'
-import aitahA from '@/config/templates/reddit/aitah-a.json'
-import aitahB from '@/config/templates/reddit/aitah-b.json'
 import tifu from '@/config/templates/reddit/tifu.json'
 import pettyRevenge from '@/config/templates/reddit/petty-revenge.json'
 import nosleep from '@/config/templates/reddit/nosleep.json'
@@ -59,9 +57,7 @@ import brandStory from '@/config/templates/marketing/brand-story.json'
 // Hero templates — the curated set shown to normal users (cascade-informed selection)
 // Source (Reddit) → Adapt (Short-form) → Extend (Long-form)
 const HERO_TEMPLATE_IDS = new Set([
-  'reddit-aitah',              // Reddit — moral dilemma
-  'reddit-aitah-a',            // Reddit — AITAH A/B test: CoT character development
-  'reddit-aitah-b',            // Reddit — AITAH A/B test: direct generation (control)
+  'reddit-aitah',              // Reddit — moral dilemma (CoT character-first)
   'reddit-tifu',               // Reddit — relatable/funny
   'reddit-petty-revenge',      // Reddit — satisfying payoff
   'reddit-nosleep',            // Reddit — horror/thriller
@@ -86,8 +82,6 @@ const ALL_TEMPLATES: Template[] = [
   lifeLesson,
   // Reddit templates
   aitah,
-  aitahA,
-  aitahB,
   tifu,
   pettyRevenge,
   nosleep,

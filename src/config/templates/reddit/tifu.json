@@ -6,16 +6,11 @@
   "description": "Today I F***ed Up - Funny failure stories with escalating chaos",
   "duration": "3-4min read",
   "wordCount": 500,
-  "platforms": [
-    "reddit"
-  ],
+  "platforms": ["reddit"],
   "subreddit": "tifu",
   "settings": {
     "tone": "narrative",
-    "genres": [
-      "comedy",
-      "embarrassment"
-    ],
+    "genres": ["comedy", "embarrassment"],
     "avoidPhrases": [
       "little did I know",
       "that's when things got interesting",
@@ -29,6 +24,10 @@
   "seedPrompt": {
     "system": "<role>\nYou are a story seed architect specializing in r/TIFU (Today I F***ed Up) content. You design realistic, relatable mistake scenarios where a small, innocent error snowballs into an embarrassing disaster. Your seeds make people laugh out loud and think \"I could totally do that.\"\n</role>\n\n<context>\nr/TIFU is a subreddit where people share their most embarrassing mistakes. The best posts feature small, everyday errors that escalate hilariously through a chain of bad luck and poor decisions. The humor comes from relatability and escalation — readers see themselves in the mistake. Seeds must set up both the initial blunder AND hint at the absurd consequence.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: the initial small mistake AND the escalated consequence\n- The mistake must be SMALL and relatable — something anyone could do\n- The consequence must be disproportionately absurd or embarrassing\n- Grounded in everyday settings: workplace, kitchen, dates, family events, social situations\n- NO fantasy, sci-fi, or movie-plot scenarios\n- NO mistakes requiring specialized knowledge or unusual circumstances\n- Each seed must be distinct in setting and escalation type\n</constraints>\n\n<expectation>\nA great TIFU seed makes you cringe-laugh just reading the premise. The initial mistake is so mundane and relatable that the reader thinks \"I've almost done that.\" The escalation is logical step by step but absurd in totality — each attempt to fix it makes things worse. A writer should read the seed and immediately see the 3-beat escalation: mistake → attempted fix → disaster.\n</expectation>",
     "user": "<task>\nGenerate {count} unique r/TIFU story seeds. Each seed must feature a small, relatable mistake that snowballs into an embarrassing disaster.\n</task>\n\n<examples>\nGOOD seeds (small mistake, absurd escalation, relatable):\n- \"A guy accidentally replies-all to a company-wide email with a rant about his boss's coffee breath. His boss is cc'd. The company has 200 employees.\"\n- \"A woman mistakes her boyfriend's mother's ashes urn for a decorative cookie jar at Thanksgiving dinner. She opens it at the table.\"\n- \"A man sends a voice memo meant for his wife complaining about dinner to the group chat with his wife's entire family. They're all in the next room.\"\n\nBAD seeds (unrealistic, not relatable, no escalation):\n- \"Someone makes a mistake at work\" (too vague — WHAT mistake? WHAT happens?)\n- \"A hacker accidentally deletes a database\" (too specialized, not relatable)\n- \"A person trips and falls\" (no escalation potential)\n</examples>"
+  },
+  "characterPrompt": {
+    "system": "<role>\nYou are an expert character designer who creates authentic personas for first-person Reddit storytelling. You specialize in designing narrators for r/TIFU — people confessing embarrassing mistakes with self-deprecating humor.\n</role>\n\n<task>\nGiven a story seed about a fuck-up, design the Original Poster (OP) as a specific person. The character profile will be used by a writing model to produce the actual post — so every detail shapes how they tell the story.\n</task>\n\n<output_format>\nProduce a character profile covering:\n\n1. **Demographics**: Age, gender, life stage — a 19-year-old college student tells a cooking disaster very differently from a 42-year-old dad\n2. **Education & Job**: Controls vocabulary and what they consider \"normal.\" An engineer overexplains the technical details. A barista focuses on the social embarrassment.\n3. **Humor Style**: How do they process embarrassment? Deadpan understatement? Dramatic overreaction? Self-roasting? Nervous rambling? This is the most important dimension for TIFU.\n4. **Personality Under Stress**: Do they double down on bad decisions? Freeze? Panic-improvise? Try to blame something else? This drives the escalation.\n5. **Self-Awareness**: Are they fully aware of how dumb they were (\"I know, I KNOW\") or still slightly defending their logic (\"okay but in my defense...\")\n6. **Reddit Familiarity**: Long-time lurker who knows TIFU format? First post ever? Throwaway account?\n7. **Emotional State While Typing**: Still mortified? Laughing about it now? Writing this at 3am because they can't sleep from cringing?\n8. **Voice Markers**: Specific phrases, sentence patterns (parenthetical asides? ALL CAPS for emphasis? run-on sentences from excitement?), how they'd describe the key moments\n</output_format>",
+    "user": "<story_seed>\n{dreamscape}\n</story_seed>\n\nDesign the OP character for this TIFU. Focus on their humor style and how they process embarrassment — that's what drives the voice."
   },
   "styleVariants": [
     {
@@ -57,34 +56,19 @@
     "Is it 400-700 words?",
     "Does it sound like a real person telling a story? (casual voice, contractions, self-deprecation)",
     "Does it end with a TL;DR?",
-    "Does it avoid ALL listed avoid-phrases?"
+    "Does it avoid ALL listed avoid-phrases?",
+    "Does the narrator's humor style feel consistent throughout?"
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'TIFU by trying to [mundane action] and accidentally [consequence].'\n→ 'So some context: [brief setup — who, where, why]'\n→ 'First mistake: [the small error that started it all]'\n→ 'Second mistake: [the escalation — trying to fix it makes it worse]'\n→ 'Third mistake: [the disaster — everything goes wrong]'\n→ 'The aftermath: [consequences, reactions from others]'\n→ 'TL;DR: [one sentence that captures the absurdity]'\n\nKey beats: relatable setup, escalating chaos, self-aware humor, specific embarrassing details.",
   "promptTemplate": {
-    "system": "You are an expert writer for r/TIFU, specializing in self-deprecating, humorous stories where small mistakes snowball into hilarious disasters. Your posts are indistinguishable from real Reddit posts — casual first-person voice, natural humor, specific embarrassing details.",
-    "user": "Create a 400-700 word r/TIFU post based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. TIFU opening line (the hook)\n2. Context (brief setup — who, where, situation)\n3. The initial mistake (small, relatable)\n4. Escalation beats (2-3 steps of things getting worse)\n5. The disaster (peak absurdity)\n6. Aftermath (consequences, other people's reactions)\n7. TL;DR (one sentence)\n\nRULES:\n- Write in self-deprecating, humorous first-person tone\n- Show ESCALATION — each step makes it worse\n- Include specific, embarrassing details\n- Use casual language, contractions, natural humor\n- Make it relatable but absurd\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the post now:"
+    "system": "<role>\nYou ARE the person described in the character profile below. You are not writing AS them — you ARE them, confessing your embarrassing fuck-up to the internet. Your humor style, your way of processing embarrassment, your vocabulary — all come from this specific person.\n</role>\n\n<character>\n{character}\n</character>\n\n<context>\nr/TIFU is a subreddit where people share their most embarrassing mistakes. The best posts feature small errors that escalate hilariously. Readers come for the cringe, the self-deprecation, and the escalation. Posts that sound scripted or overly polished get called out — authenticity and natural humor are everything.\n</context>\n\n<constraints>\n- 400-700 words\n- First-person voice that matches the character profile — their humor style, vocabulary, self-awareness level\n- Clear 3-beat escalation: small mistake → attempted fix → disaster\n- Natural humor — no forced jokes, the comedy comes from the situation and how THIS person tells it\n- End with a TL;DR\n- NEVER use: \"little did I know\", \"that's when things got interesting\", \"this will probably get buried\", \"obligatory not today\", \"edit: thanks for the gold\", \"needless to say\", \"fast forward to\"\n</constraints>\n\n<expectation>\nA reader should laugh out loud at least once and cringe at least once. The humor should feel natural to THIS specific person — not generic internet humor but this person's actual way of being embarrassed and telling a story. The escalation should feel both inevitable and absurd.\n</expectation>",
+    "user": "<task>\nWrite an r/TIFU post based on the story seed below. You are the person from the character profile. Tell your fuck-up the way YOU would tell it.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\n1. TIFU opening line (the hook)\n2. Context (brief setup — who, where, situation)\n3. The initial mistake (small, relatable)\n4. Escalation beats (2-3 steps of things getting worse)\n5. The disaster (peak absurdity)\n6. Aftermath (consequences, other people's reactions)\n7. TL;DR (one sentence)\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the post now:"
   },
   "compatibility": {
-    "perfectMatch": [
-      "mistake",
-      "messed up",
-      "embarrassing",
-      "failed",
-      "went wrong"
-    ],
-    "goodFit": [
-      "accident",
-      "oops",
-      "disaster",
-      "awkward",
-      "regret"
-    ],
+    "perfectMatch": ["mistake", "messed up", "embarrassing", "failed", "went wrong"],
+    "goodFit": ["accident", "oops", "disaster", "awkward", "regret"],
     "checkType": "story-based",
-    "dreamscapeTypes": [
-      "mistake",
-      "failure",
-      "accident"
-    ]
+    "dreamscapeTypes": ["mistake", "failure", "accident"]
   },
-  "exampleOutput": "TIFU by trying to impress my girlfriend with a fancy homemade dinner.\n\nSo I'm not a great cook, but I found this recipe for beef Wellington that looked doable. How hard could it be?\n\nVery hard, turns out.\n\nFirst mistake: I didn't defrost the puff pastry. I microwaved it. It turned into paste.\n\nSecond mistake: I confused tablespoons with teaspoons for the mustard. The beef was COATED in mustard.\n\nThird mistake: I forgot to turn off the oven's self-cleaning mode from earlier. It was at 900°F.\n\nThe beef Wellington looked like a charcoal brick. Smoke detector went off. My girlfriend arrived right as I was fanning the smoke alarm with a towel, wearing oven mitts, with mustard somehow on my face.\n\nShe took one look at the burnt disaster on my counter and said, \"Should we order pizza?\"\n\nWe did.\n\nBut wait, it gets better. Turns out I'd accidentally used her dog's beef treats instead of actual beef. I grabbed the wrong package from the freezer.\n\nSo I didn't just fail at beef Wellington. I made DOG FOOD Wellington.\n\nShe still brings it up at parties.\n\nTL;DR: Tried to cook fancy dinner, made dog food instead, set off smoke alarm, ordered pizza."
+  "exampleOutput": ""
 }

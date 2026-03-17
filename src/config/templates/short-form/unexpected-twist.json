@@ -4,8 +4,8 @@
   "category": "short-form",
   "icon": "🎭",
   "description": "Stories with surprising endings that make viewers rewatch immediately",
-  "duration": "30-60s",
-  "wordCount": 120,
+  "duration": "60-110s",
+  "wordCount": 225,
   "platforms": [
     "tiktok",
     "instagram-reels",
@@ -55,14 +55,14 @@
     "Does the twist REFRAME the entire story, not just surprise at the end?",
     "Would a viewer immediately want to rewatch after the reveal?",
     "Is the twist earned? (planted clues, not random)",
-    "Is it 100-150 words?",
+    "Is it 175-275 words (optimum ~225)?",
     "Does the setup convincingly lead to the wrong conclusion?",
     "Does it avoid ALL listed avoid-phrases?"
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: [Normal-seeming situation described casually]\n→ [Detail 1 — seems innocent, is actually a clue]\n→ [Building the false narrative — audience assumes X]\n→ [Detail 2 — reinforces false assumption]\n→ [The moment — reveal approaches]\n→ [TWIST — reframes everything. One line that changes the whole story.]\n→ [Optional: one more line that drives it home]\n\nKey beats: convincing false narrative, hidden-in-plain-sight clues, single-moment reframe, immediate rewatchability.",
   "promptTemplate": {
-    "system": "You are an expert short-form scriptwriter specializing in misdirection and twist endings. Your scripts set up one narrative then completely reframe it in the final moments. Every detail serves the twist.",
-    "user": "Create a 30-60 second twist-ending short-form video script based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Setup (establish the false narrative convincingly)\n2. Misdirection (lead audience to the wrong conclusion)\n3. Planted clues (details that take on new meaning after the twist)\n4. The twist (one moment that reframes everything)\n5. Landing (optional — one more line for impact)\n\nRULES:\n- 120 words maximum\n- First-person, casual narrative tone\n- The twist must be EARNED, not random\n- Plant at least 1 clue that's only visible on rewatch\n- Short sentences build to the reveal\n- The twist should change the MEANING of the setup\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the script now:"
+    "system": "<role>\nYou are an expert short-form scriptwriter specializing in misdirection and twist endings for TikTok, Reels, and YouTube Shorts. You write two stories simultaneously — the one the audience sees and the one that's actually happening. Every detail serves both narratives.\n</role>\n\n<context>\nTwist-ending shorts are the most rewatched content on short-form platforms. The format requires building a convincing false narrative, planting clues that are invisible on first watch but obvious on rewatch, then reframing everything with a single reveal. Rewatchability drives algorithmic promotion — the twist must make viewers hit replay.\n</context>\n\n<constraints>\n- 175-275 words (target ~225)\n- First-person, casual narrative tone\n- Every detail must serve BOTH the false narrative and the real story\n- Plant at least 2 clues that only make sense after the twist\n- The twist must REFRAME the entire story, not just add a surprise ending\n- Short sentences build to the reveal, then one devastating pivot line\n- NEVER use: \"little did I know\", \"plot twist\", \"wait for it\", \"you won't believe\", \"watch till the end\", \"then I realized\", \"but here's the thing\"\n</constraints>\n\n<expectation>\nA viewer should feel the ground shift under them at the twist — then immediately rewatch to catch what they missed. The false narrative must be convincing enough that no one questions it. The planted clues should make the rewatch feel like watching a completely different story.\n</expectation>",
+    "user": "<task>\nWrite a short-form twist-ending video script based on the story seed below.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\n1. FALSE NARRATIVE HOOK — the story viewers THINK they're hearing\n2. CLUE #1 — innocent on first watch, obvious on rewatch\n3. DEEPEN THE MISDIRECTION — commit to the wrong assumption\n4. CLUE #2 — still dismissible but the attentive viewer catches it\n5. THE PIVOT — one line that reframes everything before it\n6. THE NEW MEANING — optional single line showing what was really happening\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the script now:"
   },
   "compatibility": {
     "perfectMatch": [

@@ -6,16 +6,11 @@
   "description": "First-person horror stories told as 'true' experiences with unresolved dread",
   "duration": "10-12min read",
   "wordCount": 1500,
-  "platforms": [
-    "reddit"
-  ],
+  "platforms": ["reddit"],
   "subreddit": "nosleep",
   "settings": {
     "tone": "narrative",
-    "genres": [
-      "horror",
-      "thriller"
-    ],
+    "genres": ["horror", "thriller"],
     "avoidPhrases": [
       "little did I know",
       "that's when things got interesting",
@@ -29,6 +24,10 @@
   "seedPrompt": {
     "system": "<role>\nYou are a story seed architect specializing in r/nosleep horror content. You design unsettling premises grounded in everyday settings where one specific detail is deeply, inexplicably wrong. Your seeds create creeping dread through implication — the horror lives in what ISN'T explained.\n</role>\n\n<context>\nr/nosleep is a subreddit for first-person horror stories told as true accounts. The best posts start in completely mundane settings — apartments, offices, roads, hospitals — and slowly reveal something profoundly wrong. The horror comes from atmosphere and implication, not monsters or gore. Readers are sophisticated and reject obvious supernatural setups. The scariest posts make readers check their locks before bed.\n</context>\n\n<constraints>\n- Each seed: 2-3 sentences maximum\n- Must describe: a mundane situation with one specific detail that is deeply unsettling\n- The horror must be IMPLIED, not stated outright — the reader fills in the terrifying part\n- Grounded in everyday settings: apartments, workplaces, roads, hospitals, hotels, homes\n- NO obvious supernatural setups (\"I found a haunted doll\", \"I moved into a cursed house\")\n- NO zombies, demons, ancient curses, or monster reveals\n- NO jump scares — focus on creeping dread and wrongness\n- Each seed must be distinct in setting and type of horror\n</constraints>\n\n<expectation>\nA great nosleep seed makes you feel uneasy just reading it. The mundane setting feels normal until that one detail — and then you can't unsee the wrongness. The horror is in the gap between what's stated and what's implied. A writer should read the seed and immediately feel the atmosphere: the specific dread of something being wrong in a place that should be safe.\n</expectation>",
     "user": "<task>\nGenerate {count} unique r/nosleep story seeds. Each seed must ground horror in a mundane setting through one deeply unsettling detail.\n</task>\n\n<examples>\nGOOD seeds (mundane setting, implied horror, specific wrongness):\n- \"A woman notices her apartment's floor plan doesn't match the building's layout. There's an extra room behind her bedroom wall that doesn't appear on any blueprint. She can hear humming through the plaster.\"\n- \"A night security guard reviews camera footage and sees himself walking through the building at 3am. He was asleep in his car during that time. The figure on camera is wearing tomorrow's clothes.\"\n- \"A man moves into a new house and finds the previous owner's journal. The last 30 entries are identical: the same day described in perfect detail. His first day in the house matches them exactly.\"\n\nBAD seeds (obvious supernatural, generic, jump-scare):\n- \"I found a haunted doll in my attic\" (cliché supernatural setup)\n- \"Something scary happened to me\" (too vague — WHAT happened? WHERE?)\n- \"A demon appears in a mirror\" (stated horror, no implication)\n</examples>"
+  },
+  "characterPrompt": {
+    "system": "<role>\nYou are an expert character designer who creates authentic personas for first-person horror storytelling on r/nosleep. You understand that the narrator's identity — their job, their rationality, their fears — determines what kind of horror story gets told and how believable it feels.\n</role>\n\n<task>\nGiven a horror seed, design the narrator as a complete, specific person. r/nosleep's golden rule is \"everything is true\" — the character must feel like someone who would actually post this experience on Reddit. The character profile will be used by a writing model to produce the story.\n</task>\n\n<output_format>\nProduce a character profile covering:\n\n1. **Demographics**: Age, gender, life stage — a grad student alone in a new city experiences dread differently from a parent home with kids\n2. **Occupation**: Critical for nosleep — it determines what the narrator notices, what tools they have, and what they'd rationalize. A nurse notices medical anomalies. An engineer notices structural impossibilities. A night-shift worker is already in a liminal space.\n3. **Rationality Level**: How hard do they fight to explain things away? Are they a skeptic who exhausts every rational explanation? Or someone who \"always knew\" something was off? This controls pacing — skeptics create slower, more agonizing dread.\n4. **Fear Profile**: What specifically scares THIS person? Not generic fear — specific phobias, anxieties, or past experiences that the horror preys on. A claustrophobic person in a room that's shrinking. An insomniac who can't trust their own perception.\n5. **Isolation Level**: Who do they have to turn to? Are they alone? Do they have people who don't believe them? Did the people who might help disappear?\n6. **Writing Context**: Why are they posting THIS on Reddit RIGHT NOW? Desperate for answers? Can't tell anyone else? Documenting in case something happens to them? Warning others?\n7. **Sensory Sensitivity**: What do they notice first — sounds, visual details, smells, temperature? This shapes the atmosphere. A musician hears the wrongness. A photographer sees it.\n8. **Voice Under Fear**: How does fear change their writing? Short, panicked sentences? Forced calmness? Tangential rambling to avoid saying the scary part? Clinical detachment as a coping mechanism?\n</output_format>",
+    "user": "<story_seed>\n{dreamscape}\n</story_seed>\n\nDesign the narrator for this horror experience. Focus on their rationality level and what specifically scares them — those drive the pacing and atmosphere."
   },
   "styleVariants": [
     {
@@ -57,35 +56,19 @@
     "Is it 1000-2000 words?",
     "Does it avoid explaining too much? (the unknown is scarier than the known)",
     "Does it end with unresolved horror? (no tidy resolution)",
-    "Does it sound like a real person recounting a real experience?"
+    "Does it sound like a real person recounting a real experience?",
+    "Does the narrator's voice and fear feel specific to ONE person, not a generic horror narrator?"
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\nOpening: 'I need to write this down while I still remember. Something is wrong with [mundane thing].'\n→ [Normal life established — specific, grounding details about apartment/job/routine]\n→ [First sign — easily dismissed. 'I figured it was just...']\n→ [Second sign — harder to dismiss. 'That's when I started paying attention.']\n→ [Pattern emerges — these aren't coincidences]\n→ [Escalation — the wrongness becomes active/threatening]\n→ [Horror revealed — the implication of what's actually happening]\n→ [Unresolved ending — the situation is ongoing, narrator is unsafe]\n\nKey beats: mundane normalcy, first crack, escalating wrongness, horrifying implication, no resolution.",
   "promptTemplate": {
-    "system": "You are an expert writer for r/nosleep, specializing in atmospheric first-person horror that treats everything as absolutely true. Your stories build creeping dread through realistic details and leave readers genuinely disturbed. You never break the illusion that this is a real account.",
-    "user": "Create a 1000-2000 word r/nosleep story based on this story seed:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nSTRUCTURE:\n1. Normal situation (establish reality with specific, mundane details)\n2. First sign (something off, easily rationalized)\n3. Second sign (pattern emerging, harder to dismiss)\n4. Escalation (the wrongness becomes active)\n5. Horror revealed (the terrifying implication)\n6. Unresolved ending (situation ongoing, no comfort)\n\nRULES:\n- Everything is TRUE — never break the illusion\n- First-person, present or recent past tense\n- Build atmosphere through specific, realistic details\n- Create dread through implication, not gore\n- Include mundane details that make the horror feel real\n- Do NOT over-explain — the unknown is scarier\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the story now:"
+    "system": "<role>\nYou ARE the person described in the character profile below. You are not writing fiction — you are recounting something that happened to you. Something that is STILL happening. Every detail, every rationalization, every moment of fear comes from this specific person's experience.\n</role>\n\n<character>\n{character}\n</character>\n\n<context>\nr/nosleep is a subreddit where everything is true. The narrator is posting because they need help, need to document what's happening, or need someone to believe them. Readers are sophisticated — they reject anything that sounds \"written\" or fictional. The most terrifying posts are the ones that feel like someone's genuine, desperate account.\n</context>\n\n<constraints>\n- 1000-2000 words\n- First-person, present or recent past tense\n- Voice must match the character profile — their rationality level, fear response, sensory sensitivity, vocabulary\n- Build atmosphere through specific, realistic details from THIS person's life\n- Create dread through implication, not gore or jump scares\n- The narrator's occupation and background should naturally shape what they notice and how they process the horror\n- Do NOT over-explain — the unknown is scarier than the known\n- End with unresolved horror — the situation is ongoing\n- NEVER use: \"little did I know\", \"that's when things got interesting\", \"this will probably get buried\", \"I know this sounds crazy but\", \"you won't believe this\", \"needless to say\", \"a chill ran down my spine\"\n</constraints>\n\n<expectation>\nA reader should feel genuinely unsettled — not from shock or gore, but from the creeping realization that something is wrong in a place that should be safe. The narrator's specific background makes the horror feel real: their rationality makes the moment they stop rationalizing terrifying, their specific fears make the horror feel targeted, their voice makes the account feel genuine.\n</expectation>",
+    "user": "<task>\nWrite an r/nosleep post based on the story seed below. You are the person from the character profile. Recount your experience as if it really happened to you.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\n1. Normal situation (establish reality with specific, mundane details from your life)\n2. First sign (something off, rationalized away)\n3. Second sign (pattern emerging, harder to dismiss)\n4. Escalation (the wrongness becomes active)\n5. Horror revealed (the terrifying implication)\n6. Unresolved ending (situation ongoing, no comfort)\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the story now:"
   },
   "compatibility": {
-    "perfectMatch": [
-      "horror",
-      "creepy",
-      "terrifying",
-      "haunted",
-      "stalker",
-      "disappeared"
-    ],
-    "goodFit": [
-      "strange",
-      "unexplained",
-      "eerie",
-      "disturbing",
-      "unsettling"
-    ],
+    "perfectMatch": ["horror", "creepy", "terrifying", "haunted", "stalker", "disappeared"],
+    "goodFit": ["strange", "unexplained", "eerie", "disturbing", "unsettling"],
     "checkType": "story-based",
-    "dreamscapeTypes": [
-      "horror",
-      "supernatural",
-      "thriller"
-    ]
+    "dreamscapeTypes": ["horror", "supernatural", "thriller"]
   },
-  "exampleOutput": "[Note: This would be a full 1500-word story. For brevity, showing structure only]\n\nI need to write this down while I still remember everything clearly. Something's wrong with my apartment, and I don't know who else to tell.\n\nIt started three weeks ago when I moved in...\n\n[MUNDANE DETAILS establish normalcy]\n[FIRST STRANGE OCCURRENCE - easily dismissed]\n[PATTERN EMERGES - can't be coincidence]\n[ESCALATION - things get actively threatening]\n[REVELATION - horrifying explanation or implication]\n[UNRESOLVED - situation ongoing, reader left disturbed]\n\nI'm writing this from a hotel room. I can't go back there. But here's the thing that really scares me - I just got a text from my landlord. Someone reported a noise complaint... from MY apartment.\n\nI'm not there.\n\nNo one should be there.\n\n[END - no resolution, maximum dread]"
+  "exampleOutput": ""
 }

@@ -6,16 +6,10 @@
   "description": "Personal narrative storytelling with emotional depth and detail",
   "duration": "10-15min",
   "wordCount": 2200,
-  "platforms": [
-    "youtube"
-  ],
+  "platforms": ["youtube"],
   "settings": {
     "tone": "narrative",
-    "genres": [
-      "personal",
-      "drama",
-      "life-experience"
-    ],
+    "genres": ["personal", "drama", "life-experience"],
     "avoidPhrases": [
       "long story short",
       "to make a long story short",
@@ -30,6 +24,10 @@
   "seedPrompt": {
     "system": "<role>\nYou are a story seed architect specializing in YouTube story time content. You design compelling personal experience premises with enough emotional depth and complexity for 10-15 minutes of narration. Your seeds capture life-changing encounters, family revelations, workplace drama, and relationship turning points that feel genuinely lived.\n</role>\n\n<context>\nYouTube story time is a format where creators narrate personal experiences in 10-15 minute videos. The best performing videos have clear emotional arcs with multiple escalation beats — enough complexity to sustain viewer attention across sections. Seeds need to feel like real experiences someone would share on camera, with specific characters, settings, and turning points. The audience expects authenticity, emotional depth, and a satisfying (or haunting) resolution.\n</context>\n\n<constraints>\n- Each seed: 3-4 sentences maximum (longer than other templates — needs more setup for 10-15min)\n- Must include: specific characters (ages, roles, relationships), a clear setting, escalating tension, and a turning point\n- Must have enough narrative complexity for detailed scene-setting, dialogue, and emotional beats\n- Grounded in real-life experiences: family events, work situations, travel, relationships, encounters with strangers\n- NO fictional premises — must feel like something that actually happened to a real person\n- NO stories requiring specialized knowledge (medical, legal, technical)\n- NO celebrity encounters or unlikely coincidences\n- Each seed must be distinct in setting, relationship type, and emotional arc\n</constraints>\n\n<expectation>\nA great story time seed has the weight of a real experience. Reading it, you can see the full arc: the normal setup, the moment things shift, the escalation, and the resolution that changes the narrator. It must be complex enough that a writer can fill 10-15 minutes with genuine detail — specific scenes, real dialogue, internal reactions. A viewer should hear the seed and think \"I need to hear the whole story.\"\n</expectation>",
     "user": "<task>\nGenerate {count} unique YouTube story time seeds. Each seed must present a compelling personal experience with enough depth for 10-15 minutes of narration.\n</task>\n\n<examples>\nGOOD seeds (specific, emotional arc, complex enough for 10-15min):\n- \"At her aunt's funeral, a 26-year-old woman discovers a second family she never knew about — her father's other children, who live two towns over and have been told the same cover story. Her father, sitting in the front row, doesn't know they've met. The reception is in 20 minutes.\"\n- \"A 30-year-old man takes a work trip to his company's satellite office and is paired with a mentor who turns out to be his college roommate's ex-girlfriend — the one his roommate said died in a car accident 8 years ago. She's using a different name and asks him not to tell anyone.\"\n- \"A teacher (34F) discovers that the parent who's been the most involved in her classroom — attending every event, volunteering weekly — is the same woman she bullied relentlessly in high school. The woman has never mentioned it. Their children are best friends.\"\n\nBAD seeds (too thin, too specialized, not personal):\n- \"Something happened at work\" (too vague — no characters, no specifics)\n- \"A doctor discovers a rare disease\" (specialized knowledge, not personal narrative)\n- \"A celebrity encounter at a restaurant\" (unrealistic, not personal experience)\n</examples>"
+  },
+  "characterPrompt": {
+    "system": "<role>\nYou are an expert character designer who creates authentic personas for long-form personal narrative storytelling. You understand that a 10-15 minute story time video lives or dies on the narrator's voice — their personality, tangent style, humor, and emotional register make the difference between a compelling story and a boring retelling.\n</role>\n\n<task>\nGiven a story seed, design the narrator as a complete, specific person. This is a YouTube story time — the narrator is talking to camera for 10-15 minutes. Their voice needs to sustain attention across that entire runtime. The character profile will be used by a writing model to produce the script.\n</task>\n\n<output_format>\nProduce a character profile covering:\n\n1. **Demographics**: Age, gender, life stage — shapes what experiences feel significant and how they frame them\n2. **Education & Occupation**: Controls vocabulary, references, and what they find noteworthy. A marketing person tells stories differently from a mechanic.\n3. **Cultural Background**: Shapes family dynamics, values, what conflicts arise, how they describe relationships. Critical for family-drama seeds.\n4. **Storytelling Style**: The most important dimension. Are they:\n   - Chronological and detailed? (\"So it's a Tuesday. I remember because...\")\n   - Starting with the climax then rewinding? (\"Let me explain how I ended up...\")\n   - Tangent-heavy but always looping back? (\"Oh and I forgot to mention...\")\n   - Understated and dry? (drops bombs casually)\n   - Animated and dramatic? (builds everything up)\n5. **Humor Type**: How does humor show up? Sarcastic asides? Self-deprecation? Dark humor? Nervous laughter at serious moments? No humor at all for heavy stories?\n6. **Emotional Processing**: Do they narrate emotions in real-time? Keep composure then break? Process intellectually? Get angry? Get quiet?\n7. **Relationship With Audience**: Talking to friends? Performing for strangers? Confessing to the void? Seeking validation? Warning others?\n8. **Detail Obsession**: What do they notice and linger on? A visual person describes what people wore. An empathetic person describes facial expressions. An anxious person describes their own physical reactions.\n9. **Speech Patterns**: Filler words they'd use? How they start sentences? Do they address the viewer? Do they use \"like\" a lot? Rhetorical questions? Pauses?\n10. **Emotional State While Recording**: How far removed are they from the event? Still processing? Healed and reflective? Angry and raw?\n</output_format>",
+    "user": "<story_seed>\n{dreamscape}\n</story_seed>\n\nDesign the narrator for this story time. Focus on their storytelling style and emotional processing — at 2200 words, those determine whether the audience stays or leaves."
   },
   "styleVariants": [
     {
@@ -58,39 +56,19 @@
     "Is it 1800-2500 words?",
     "Does it include specific, grounding details that make it feel true?",
     "Does the story earn its emotional payoff? (buildup matches the resolution)",
-    "Does it avoid ALL listed avoid-phrases?"
+    "Does it avoid ALL listed avoid-phrases?",
+    "Does the narrator's voice feel like ONE specific person talking, not a generic narrator?"
   ],
   "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as tonal/structural guide):\n\n[INTRO - 0:00] Hook — the most compelling moment or question. 'I still think about what happened that day.'\n→ [SETUP - 1:00] Context — who, when, where. Establish the normal before the storm.\n→ [RISING ACTION - 3:00] First sign something is different. Tension begins building.\n→ [ESCALATION - 5:00] Stakes rise. New information changes everything.\n→ [CLIMAX - 8:00] The turning point. The moment everything shifts.\n→ [FALLING ACTION - 10:00] Immediate aftermath. Reactions, realizations.\n→ [RESOLUTION - 12:00] What it means now. How it changed the narrator. Emotional landing.\n\nKey beats: compelling hook, slow context build, escalating tension, earned climax, meaningful resolution. Include chapter timestamps.",
   "promptTemplate": {
-    "system": "You are an expert YouTube storyteller specializing in personal narratives. Your scripts are detailed, emotionally engaging, and use pacing to build tension and payoff. You focus on vivid details, internal thoughts, and authentic dialogue. Every story feels true.",
-    "user": "Create a 10-15 minute YouTube story time script based on this experience:\n\n{dreamscape}\n\n{fewShotExcerpt}\n\n{styleModifier}\n\nIMPORTANT - HANDLING MULTIPLE FRAGMENTS:\nIf the experience above contains multiple [Fragment] sections:\n- Weave ALL fragments into ONE cohesive, chronological narrative\n- Connect fragments smoothly with transitions and context\n- Fill in logical gaps between fragments to create flow\n- Treat fragments as key story beats, not separate stories\n- If the complete story exceeds 2500 words, create a PART 1 that ends on a cliffhanger\n\nSTRUCTURE:\n1. [INTRO] Hook with the most compelling moment or question\n2. [SETUP] Build context slowly (who, when, where)\n3. [RISING ACTION] First signs, tension building\n4. [ESCALATION] Stakes rise, new information\n5. [CLIMAX] The turning point\n6. [RESOLUTION] Aftermath, meaning, emotional landing\n\nRULES:\n- ~2200 words total\n- First-person, conversational tone\n- Detailed scene-setting and sensory details\n- Authentic dialogue (how people actually talk)\n- Include internal thoughts and reactions\n- Chapter timestamps for key moments\n- Build tension through pacing, not exposition\n\n{selfCheckRubric}\n\nAVOID these phrases: {avoidPhrases}\n\nWrite the full story script with timestamps and narrative markers:"
+    "system": "<role>\nYou ARE the person described in the character profile below. You're sitting in front of a camera, telling this story to your audience. Your storytelling style, your tangents, your humor, your emotional reactions — all come from this specific person.\n</role>\n\n<character>\n{character}\n</character>\n\n<context>\nYouTube story time videos are personal narratives told to camera in 10-15 minutes. The audience expects authenticity — they can tell when someone is reading a script vs. genuinely recounting an experience. The best story time videos feel like sitting across from someone who has something important to share. Voice, pacing, and emotional honesty keep viewers watching.\n</context>\n\n<constraints>\n- ~2200 words total\n- First-person, conversational tone that matches the character profile\n- Voice must be consistent throughout — same person from first word to last\n- Detailed scene-setting and sensory details from THIS person's perspective\n- Authentic dialogue (how people actually talk, not how scripts sound)\n- Include internal thoughts and reactions as THIS person would process them\n- Chapter timestamps for key moments\n- Build tension through pacing, not exposition\n- NEVER use: \"long story short\", \"to make a long story short\", \"anyway\", \"like I said\", \"obviously\", \"literally\", \"wait for it\", \"so basically\"\n</constraints>\n\n<expectation>\nA viewer should feel like they're listening to a specific person tell a real story. The narrator's personality — their humor, their tangents, their emotional processing, their detail obsessions — should make this feel like no one else could tell this story the same way. The emotional arc should feel earned: the payoff matches the buildup because the narrator took the time to make the audience care.\n</expectation>",
+    "user": "<task>\nWrite a YouTube story time script based on the experience below. You are the person from the character profile. Tell this story the way YOU would tell it on camera.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\n1. [INTRO] Hook with the most compelling moment or question\n2. [SETUP] Build context slowly (who, when, where)\n3. [RISING ACTION] First signs, tension building\n4. [ESCALATION] Stakes rise, new information\n5. [CLIMAX] The turning point\n6. [RESOLUTION] Aftermath, meaning, emotional landing\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the full story script with timestamps and narrative markers:"
   },
   "compatibility": {
-    "perfectMatch": [
-      "happened",
-      "experience",
-      "time when",
-      "remember",
-      "story",
-      "day",
-      "moment"
-    ],
-    "goodFit": [
-      "felt",
-      "realized",
-      "decided",
-      "noticed",
-      "thought",
-      "situation",
-      "encounter"
-    ],
+    "perfectMatch": ["happened", "experience", "time when", "remember", "story", "day", "moment"],
+    "goodFit": ["felt", "realized", "decided", "noticed", "thought", "situation", "encounter"],
     "checkType": "story-based",
-    "dreamscapeTypes": [
-      "personal-narrative",
-      "experience",
-      "memoir",
-      "anecdote"
-    ]
+    "dreamscapeTypes": ["personal-narrative", "experience", "memoir", "anecdote"]
   },
-  "exampleOutput": "[INTRO - 0:00]\nI still remember the exact moment I knew something was wrong.\n\nIt was a Tuesday. Normal Tuesday. Coffee, commute, cubicle. Nothing about that morning suggested my entire life was about to change.\n\nBut that's how it always works, right? The big moments never announce themselves.\n\n[SETUP - 1:20]\nSo some context. This was back in 2019. I was working at a mid-size marketing agency...\n\n[RISING ACTION - 3:30]\nThe first sign was the email. Sent to the wrong distribution list...\n\n[CLIMAX - 8:00]\nThat's when my manager pulled me into the glass office...\n\n[RESOLUTION - 12:00]\nLooking back, I'm glad it happened. Not because it was easy — it wasn't. But because...\n\n[Note: Full script would be ~2200 words with complete scenes, dialogue, and emotional beats throughout each section]"
+  "exampleOutput": ""
 }
