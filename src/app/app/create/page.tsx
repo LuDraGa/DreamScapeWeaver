@@ -67,6 +67,23 @@ const TEMPLATE_CATEGORY_DIAL: Record<TemplateCategory, { platform: Platform; out
   'marketing':        { platform: 'blog',   outputFormat: 'short-story' },
 }
 
+/**
+ * Apply word count override to prompt text.
+ * Replaces all word count references (ranges, tildes, targets, expansion guidance)
+ * with the override values to eliminate contradictions.
+ */
+function applyWordCountOverride(text: string, wc: number, lo: number, hi: number): string {
+  return text
+    .replace(/\d{3,5}\s*[-–]\s*\d{3,5}\s*words/g, `${lo}-${hi} words`)           // "1000-2000 words"
+    .replace(/~\d{3,5}\s*words/g, `~${wc} words`)                                  // "~1500 words"
+    .replace(/\(target\s*~\d{3,5}\)/g, `(target ~${wc})`)                          // "(target ~1500)"
+    .replace(/\.\s*If (?:your draft is |)under \d{3,5},\s*expand by[^.]*\./g, '.') // strip expansion guidance
+    .replace(/If under \d{3,5},\s*expand by[^.]*\./g, '')                          // strip expansion guidance
+    .replace(/\s*Do NOT summarize more than two nights in a single sentence\./g, '') // strip summarize rule
+    .replace(/under\s*\d{3,5}/g, `under ${lo}`)                                    // "under 1300"
+    .replace(/below\s*\d{3,5}/g, `below ${lo}`)                                    // "below 1300"
+}
+
 
 /**
  * Create Page - 4-step story generation workflow
@@ -171,6 +188,7 @@ export default function CreatePage() {
   const [showPromptEditor, setShowPromptEditor] = useState(false)
   const [editedSystemPrompt, setEditedSystemPrompt] = useState('')
   const [editedUserPrompt, setEditedUserPrompt] = useState('')
+  const [editedWordCount, setEditedWordCount] = useState<number | null>(null)
 
   // AI Review state (admin-only)
   const [aiReview, setAiReview] = useState<AIReviewResult | null>(null)
@@ -204,9 +222,29 @@ export default function CreatePage() {
       if (output.characterProfile) {
         systemPrompt = systemPrompt.replace('{character}', output.characterProfile)
       }
+
+      // Reflect word count override in inspector preview (same logic as generation)
+      if (isAdmin && editedWordCount !== null && editedWordCount !== selectedTemplate.wordCount) {
+        const wc = editedWordCount
+        const lo = Math.round(wc * 0.9)
+        const hi = Math.round(wc * 1.1)
+        systemPrompt = applyWordCountOverride(systemPrompt, wc, lo, hi)
+        userPrompt = applyWordCountOverride(userPrompt, wc, lo, hi)
+        systemPrompt += `\n\n⚠️ HARD WORD LIMIT: Your response MUST be ${lo}-${hi} words. Count carefully. Do NOT exceed ${hi} words under any circumstances. Cut scenes, compress details, or end earlier — but stay within ${lo}-${hi} words. This is the highest-priority constraint.`
+        userPrompt = `⚠️ WORD LIMIT: ${lo}-${hi} words maximum. This overrides all other length instructions.\n\n` + userPrompt
+      }
     } else {
       systemPrompt = editedSystemPrompt || 'Default generation prompt (no template)'
       userPrompt = editedUserPrompt || chunks.map((c) => c.text).join('\n\n')
+    }
+
+    const wcOverride = isAdmin && editedWordCount !== null && selectedTemplate && editedWordCount !== selectedTemplate.wordCount
+    const effectiveWordCount = wcOverride ? editedWordCount : selectedTemplate?.wordCount
+    let effectiveRubric = selectedTemplate?.selfCheckRubric
+    if (wcOverride && effectiveRubric && editedWordCount !== null) {
+      const lo = Math.round(editedWordCount * 0.9)
+      const hi = Math.round(editedWordCount * 1.1)
+      effectiveRubric = effectiveRubric.map((r) => applyWordCountOverride(r, editedWordCount, lo, hi))
     }
 
     return {
@@ -217,13 +255,13 @@ export default function CreatePage() {
       templateName: selectedTemplate?.displayName,
       templateCategory: selectedTemplate?.category,
       templatePlatforms: selectedTemplate?.platforms,
-      selfCheckRubric: selectedTemplate?.selfCheckRubric,
+      selfCheckRubric: effectiveRubric,
       styleVariantUsed: selectedStyleVariant
         ? selectedTemplate?.styleVariants?.find((v) => v.id === selectedStyleVariant)?.name
         : selectedTemplate?.styleVariants?.[0]?.name,
-      wordCountTarget: selectedTemplate?.wordCount,
+      wordCountTarget: effectiveWordCount,
     }
-  }, [generatedOutputs, activeVariant, chunks, selectedTemplate, currentDreamscape, selectedStyleVariant, editedSystemPrompt, editedUserPrompt])
+  }, [generatedOutputs, activeVariant, chunks, selectedTemplate, currentDreamscape, selectedStyleVariant, editedSystemPrompt, editedUserPrompt, editedWordCount, isAdmin])
 
   const {
     promptData: inspectorPromptData,
@@ -621,12 +659,34 @@ Write the next part, continuing from where the story left off.`
         if (output.characterProfile) {
           systemPrompt = systemPrompt.replace('{character}', output.characterProfile)
         }
+
+        // Reflect word count override for AI review context (same logic as generation)
+        if (isAdmin && editedWordCount !== null && editedWordCount !== selectedTemplate.wordCount) {
+          const wc = editedWordCount
+          const lo = Math.round(wc * 0.9)
+          const hi = Math.round(wc * 1.1)
+          systemPrompt = applyWordCountOverride(systemPrompt, wc, lo, hi)
+          userPrompt = applyWordCountOverride(userPrompt, wc, lo, hi)
+          systemPrompt += `\n\n⚠️ HARD WORD LIMIT: Your response MUST be ${lo}-${hi} words. Count carefully. Do NOT exceed ${hi} words under any circumstances. Cut scenes, compress details, or end earlier — but stay within ${lo}-${hi} words. This is the highest-priority constraint.`
+          userPrompt = `⚠️ WORD LIMIT: ${lo}-${hi} words maximum. This overrides all other length instructions.\n\n` + userPrompt
+        }
       } else {
         systemPrompt = editedSystemPrompt || 'Default generation prompt (no template)'
         userPrompt = editedUserPrompt || chunks.map((c) => c.text).join('\n\n')
       }
 
       const dreamscapeText = chunks.map((c) => c.text).join('\n\n')
+
+      // When word count override is active, transform the rubric to match
+      const wcOverrideActive = isAdmin && editedWordCount !== null && selectedTemplate && editedWordCount !== selectedTemplate.wordCount
+      const effectiveWordCount = wcOverrideActive ? editedWordCount : selectedTemplate?.wordCount
+      let effectiveRubric = selectedTemplate?.selfCheckRubric
+      if (wcOverrideActive && effectiveRubric) {
+        const wc = editedWordCount!
+        const lo = Math.round(wc * 0.9)
+        const hi = Math.round(wc * 1.1)
+        effectiveRubric = effectiveRubric.map((r) => applyWordCountOverride(r, wc, lo, hi))
+      }
 
       const review = await api.outputs.review({
         dreamscapeText,
@@ -636,11 +696,11 @@ Write the next part, continuing from where the story left off.`
         templateName: selectedTemplate?.displayName,
         templateCategory: selectedTemplate?.category,
         templatePlatforms: selectedTemplate?.platforms,
-        selfCheckRubric: selectedTemplate?.selfCheckRubric,
+        selfCheckRubric: effectiveRubric,
         styleVariantUsed: selectedStyleVariant
           ? selectedTemplate?.styleVariants?.find((v) => v.id === selectedStyleVariant)?.name
           : selectedTemplate?.styleVariants?.[0]?.name,
-        wordCountTarget: selectedTemplate?.wordCount,
+        wordCountTarget: effectiveWordCount,
       })
 
       setAiReview(review)
@@ -781,8 +841,31 @@ Write the next part, continuing from where the story left off.`
       }
 
       // Use admin-edited prompts if available, otherwise use template prompts
-      const finalSystemPrompt = (isAdmin && editedSystemPrompt) ? editedSystemPrompt : systemPrompt
-      const finalUserPrompt = (isAdmin && editedUserPrompt) ? editedUserPrompt : userPrompt
+      const usingAdminEdit = isAdmin && !!editedSystemPrompt
+      let finalSystemPrompt = usingAdminEdit ? editedSystemPrompt : systemPrompt
+      let finalUserPrompt = (isAdmin && editedUserPrompt) ? editedUserPrompt : userPrompt
+
+      // Word count override — replaces all word count references in both prompts
+      // AND appends a high-priority override as safety net
+      const wordCountOverrideActive = isAdmin && editedWordCount !== null && editedWordCount !== template.wordCount
+      if (wordCountOverrideActive) {
+        const wc = editedWordCount!
+        const lo = Math.round(wc * 0.9)
+        const hi = Math.round(wc * 1.1)
+        finalSystemPrompt = applyWordCountOverride(finalSystemPrompt, wc, lo, hi)
+        finalUserPrompt = applyWordCountOverride(finalUserPrompt, wc, lo, hi)
+        // Append hard constraint at end of system prompt
+        finalSystemPrompt += `\n\n⚠️ HARD WORD LIMIT: Your response MUST be ${lo}-${hi} words. Count carefully. Do NOT exceed ${hi} words under any circumstances. Cut scenes, compress details, or end earlier — but stay within ${lo}-${hi} words. This is the highest-priority constraint.`
+        // Also prepend reminder at start of user prompt
+        finalUserPrompt = `⚠️ WORD LIMIT: ${lo}-${hi} words maximum. This overrides all other length instructions.\n\n` + finalUserPrompt
+        templateDialState.wordCount = wc
+        console.log('[Admin Edit] Word count override:', wc, '(template default:', template.wordCount, ')')
+      }
+
+      if (usingAdminEdit) {
+        console.log('[Admin Edit] Using edited prompts for generation')
+        console.log('[Admin Edit] System prompt length:', finalSystemPrompt.length, 'User prompt length:', finalUserPrompt.length)
+      }
 
       // Generate using template — pass template prompts directly to LLM
       // CoT templates include character prompts for two-call flow
@@ -1153,6 +1236,7 @@ Write the next part, continuing from where the story left off.`
                             const { systemPrompt, userPrompt } = buildPromptFromTemplate(selectedTemplate, dreamscape, selectedStyleVariant)
                             setEditedSystemPrompt(systemPrompt)
                             setEditedUserPrompt(userPrompt)
+                            setEditedWordCount(selectedTemplate.wordCount)
                           }
                           setShowPromptEditor(!showPromptEditor)
                         }}
@@ -1172,6 +1256,24 @@ Write the next part, continuing from where the story left off.`
                               className="w-full px-3 py-2 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500 resize-y"
                               rows={8}
                             />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-amber-400 mb-1 block">Word Count Override</label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="number"
+                                min={100}
+                                max={10000}
+                                step={50}
+                                value={editedWordCount ?? ''}
+                                onChange={(e) => setEditedWordCount(e.target.value ? Number(e.target.value) : null)}
+                                className="w-32 px-3 py-1.5 text-xs font-mono bg-[rgba(15,23,42,0.6)] border border-[#334155] rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-amber-500"
+                                placeholder="e.g. 800"
+                              />
+                              <span className="text-[10px] text-text-muted">
+                                Template default: {selectedTemplate.wordCount} — overrides all word count instructions in both prompts
+                              </span>
+                            </div>
                           </div>
                           <div>
                             <label className="text-xs font-medium text-amber-400 mb-1 block">User Prompt</label>

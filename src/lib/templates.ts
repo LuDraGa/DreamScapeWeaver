@@ -29,6 +29,7 @@ import soundDesign from '@/config/templates/video-production/sound-design.json'
 import editingGuide from '@/config/templates/video-production/editing-guide.json'
 import colorPalette from '@/config/templates/video-production/color-palette.json'
 import vfxRequirements from '@/config/templates/video-production/vfx-requirements.json'
+import aiScenePrompts from '@/config/templates/video-production/ai-scene-prompts.json'
 
 // Audio Production templates
 import podcastOutline from '@/config/templates/audio-production/podcast-outline.json'
@@ -66,10 +67,11 @@ const HERO_TEMPLATE_IDS = new Set([
   'short-revenge-story',       // Short-form — punchy revenge Reels
   'short-horror-creepy',       // Short-form — horror Reels
   'long-youtube-story-time',   // Long-form — YouTube deep-dive (shared endpoint)
+  'video-ai-scene-prompts',    // Video — AI video model scene prompts (Seedance/Kling/Runway)
 ])
 
 // Categories that contain hero templates
-const HERO_CATEGORIES = new Set<TemplateCategory>(['reddit', 'short-form', 'long-form'])
+const HERO_CATEGORIES = new Set<TemplateCategory>(['reddit', 'short-form', 'long-form', 'video-production'])
 
 // All templates
 const ALL_TEMPLATES: Template[] = [
@@ -103,6 +105,7 @@ const ALL_TEMPLATES: Template[] = [
   editingGuide,
   colorPalette,
   vfxRequirements,
+  aiScenePrompts,
   // Audio Production templates
   podcastOutline,
   interviewQuestions,

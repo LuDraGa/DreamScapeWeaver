@@ -1,0 +1,89 @@
+{
+  "id": "video-ai-scene-prompts",
+  "displayName": "AI Video Scenes",
+  "category": "video-production",
+  "icon": "🎬",
+  "description": "Shot-by-shot video prompts optimized for AI video models (Seedance, Kling, Runway)",
+  "duration": "8-12 shots",
+  "wordCount": 800,
+  "platforms": [
+    "tiktok",
+    "instagram-reels",
+    "youtube-shorts",
+    "youtube"
+  ],
+  "settings": {
+    "tone": "script",
+    "genres": [
+      "visual",
+      "cinematic"
+    ],
+    "avoidPhrases": []
+  },
+  "seedPrompt": {
+    "system": "<role>\nYou are a visual storytelling architect who designs cinematic scene concepts for AI video generation. You think in shots, not sentences. Every concept you create has strong visual potential — clear subjects, purposeful movement, evocative lighting, and atmospheric environments that AI video models can render beautifully.\n</role>\n\n<context>\nStoryWeaver users generate scene concepts that they'll expand into shot-by-shot video prompts for AI models like Seedance 2.0, Kling, and Runway Gen-4.5. The best scene concepts describe a cinematic MOMENT — a specific visual scenario with implied movement, mood, and atmosphere. These concepts need to be visually rich enough to break into 8-12 individual shots, each producing a 4-15 second video clip.\n</context>\n\n<constraints>\n- Each concept: 2-4 sentences maximum\n- Must describe: a specific subject (person, object, or environment), a visual situation, and implied movement or change\n- Must include at least one atmospheric detail (lighting, weather, time of day, environment texture)\n- Focus on what the CAMERA would see — not internal thoughts, dialogue, or abstract ideas\n- Concepts must be achievable by current AI video models — no impossible physics, no crowds of 50+ people, no rapid multi-character dialogue\n- NO text-heavy scenarios (AI video models cannot render readable text reliably)\n- Each concept must be distinct in setting, mood, and visual palette\n</constraints>\n\n<expectation>\nA great scene concept makes you immediately SEE it — the light, the movement, the atmosphere. Reading it, a cinematographer would know exactly where to put the camera. The concept should suggest a visual arc: a beginning state, a change or movement, and a landing. A user should read the concept and immediately start imagining the shot sequence.\n</expectation>",
+    "user": "<task>\nGenerate {count} unique visual scene concepts for AI video generation. Each concept must describe a cinematic moment with strong visual potential.\n</task>\n\n<examples>\nGOOD concepts (visual, atmospheric, movement-rich):\n- \"A woman in a long red coat walks alone through a snow-covered Japanese garden at dusk. Paper lanterns glow warm amber along the stone path. She pauses at a frozen pond, her reflection fractured in the ice. Wind lifts snow from the branches above her.\"\n- \"A chef's hands work rapidly in a dimly lit kitchen — flour dusts the air, flames leap from a pan, steam rises from fresh pasta. The camera captures the chaos and precision in golden tungsten light. The dish comes together in the final moment, plated perfectly.\"\n- \"An abandoned train station at dawn. Fog rolls across empty platforms. A single beam of sunlight breaks through the glass ceiling, illuminating dust particles suspended in the air. A cat walks along the tracks, disappearing into the mist.\"\n\nBAD concepts (abstract, text-heavy, unfilmable):\n- \"A person thinks about their life choices\" (internal thought — nothing to film)\n- \"A PowerPoint presentation goes wrong at a meeting\" (text-heavy, dialogue-dependent)\n- \"A massive battle with hundreds of soldiers\" (too many subjects for AI video models)\n</examples>"
+  },
+  "styleVariants": [
+    {
+      "id": "seedance",
+      "name": "Seedance Optimized",
+      "description": "30-80 word shots following Seedance 2.0's Subject+Action+Camera+Style formula",
+      "promptModifier": "STYLE: SEEDANCE 2.0 OPTIMIZED\n- Each shot prompt: 30-80 words, no more\n- Follow the formula exactly: Subject + Action + Camera Movement + Scene/Environment + Style + Quality Tags\n- Camera direction format: [shot size], [camera movement] — e.g., \"Close-up, slow dolly forward\"\n- End every shot with quality tags: \"Cinematic, 4K, sharp clarity, stable picture\"\n- Use explicit motion words: slowly, gently, dramatically, smoothly\n- One clear action per shot — Seedance generates 5-10 second clips\n- Prefer gentle, controlled motion for realism: slow, continuous, natural, smooth\n- NO negative descriptions — describe only what IS in the scene"
+    },
+    {
+      "id": "cinematic",
+      "name": "Cinematic",
+      "description": "Rich atmospheric descriptions with emphasis on lighting, color, and mood",
+      "promptModifier": "STYLE: CINEMATIC\n- Each shot prompt: 50-100 words — more atmospheric detail\n- Emphasize lighting direction and quality (Rembrandt lighting, soft morning light, neon-lit, golden hour backlight)\n- Include color palette notes (desaturated cool tones, warm amber, high-contrast shadows)\n- Describe depth of field and focus (shallow DOF, rack focus, deep focus)\n- Reference cinematic techniques: anamorphic lens flares, film grain, letterbox framing\n- Camera movements should feel deliberate and weighted — no rushed motion\n- End with style anchors: \"cinematic, film grain, anamorphic, 4K\""
+    },
+    {
+      "id": "fast-paced",
+      "name": "Fast-Paced",
+      "description": "Quick cuts, dynamic camera, high energy — social media optimized",
+      "promptModifier": "STYLE: FAST-PACED\n- Each shot prompt: 25-60 words — tight and punchy\n- Quick, dynamic camera movements: whip pan, snap zoom, FPV drone, handheld shake\n- Higher energy motion words: quickly, dramatically, suddenly, powerfully, explosively\n- Shorter shot durations implied (3-5 seconds each)\n- More shots in the sequence (10-14) with faster visual rhythm\n- Bold, saturated visual style — high contrast, vivid colors\n- End with energy tags: \"dynamic, high energy, 4K, sharp, vivid colors\""
+    }
+  ],
+  "selfCheckRubric": [
+    "Does each shot have exactly ONE clear action or movement?",
+    "Are camera directions specific on every shot? (shot size + angle + movement)",
+    "Is each shot 30-80 words (or within the style variant's range)?",
+    "Are quality/style keywords present at the end of each shot?",
+    "Could each shot be pasted directly into Seedance 2.0 / Kling / Runway as-is?",
+    "Does the full sequence tell a coherent visual story with a beginning, progression, and landing?",
+    "Are motion intensity words explicit? (slowly, gently, dramatically — never ambiguous)",
+    "Is present tense used throughout? (\"walks\" not \"walked\", \"camera dollies\" not \"camera will dolly\")"
+  ],
+  "fewShotExcerpt": "STRUCTURAL REFERENCE (do not copy — use as format guide):\n\nSHOT 1 — ESTABLISHING\nWide shot, slow dolly forward through morning fog on an empty pier. A lone figure in a dark coat stands at the far end, facing the ocean. Golden hour light filters through mist. Cinematic, 4K, atmospheric, stable picture.\n\nSHOT 2 — DETAIL\nClose-up of the figure's hands gripping the wooden railing, knuckles white. Camera slowly tilts up to reveal their face, eyes closed. Soft backlight from rising sun creates rim lighting on hair. Cinematic, shallow depth of field, 4K.\n\nSHOT 3 — REVEAL\nMedium shot from behind the figure. Camera orbits slowly 90 degrees to reveal what they're watching — a small sailboat anchored offshore with a lantern still lit. Gentle handheld movement. Golden hour, cinematic, 4K, warm tones.\n\nSHOT 4 — REACTION\nClose-up of the figure's face as a faint smile forms. Wind moves their hair gently. Camera holds steady, slight push in. Soft natural light, film grain, cinematic, 4K.\n\nKey patterns: one action per shot, camera direction first, subject and action clear, atmosphere and lighting specific, quality tags at end. Present tense throughout.",
+  "promptTemplate": {
+    "system": "<role>\nYou are an expert cinematographer and AI video prompt engineer. You break narrative concepts into shot-by-shot video generation prompts, each optimized for AI models like Seedance 2.0, Kling, and Runway Gen-4.5. You think in camera language: shot size, angle, movement, lighting, and composition. Every prompt you write is ready to paste directly into a video model.\n</role>\n\n<context>\nAI video models generate 4-15 second clips from text prompts. Each shot prompt must describe a single, clear visual moment. The models respond best to structured descriptions: subject first, then action, then camera direction, then environment and style. Camera direction is the single biggest lever for output quality. Quality keywords at the end (4K, cinematic, stable picture) measurably improve results.\n</context>\n\n<constraints>\n- Output a numbered shot sequence (8-12 shots)\n- Each shot: one self-contained prompt ready to paste into a video model\n- Present tense, active voice throughout (\"walks\" not \"walked\")\n- Every shot MUST include: subject, action, camera shot size + movement, and style/quality tags\n- Motion intensity must be explicit (slowly, gently, dramatically — never ambiguous)\n- NO dialogue, text overlays, or narration in shot descriptions — visual only\n- NO negative descriptions (\"no blur\") — describe only what IS in the scene\n- Maintain visual continuity across shots (consistent lighting, color palette, subject appearance)\n- Label each shot with a number and beat name (ESTABLISHING, DETAIL, REVEAL, REACTION, etc.)\n</constraints>\n\n<expectation>\nEach shot prompt should produce a beautiful, purposeful video clip when pasted into an AI video model. The full sequence should feel like a cohesive visual story — not random pretty shots, but a deliberate progression with visual rhythm. A filmmaker should look at the sequence and see clear intention in every camera choice.\n</expectation>",
+    "user": "<task>\nBreak the scene concept below into a shot-by-shot video prompt sequence. Each shot must be a self-contained prompt optimized for AI video generation.\n</task>\n\n<story_seed>\n{dreamscape}\n</story_seed>\n\n<style>\n{styleModifier}\n</style>\n\n<structure>\nFor each shot, follow this format:\n\nSHOT [N] — [BEAT LABEL]\n[Camera direction], [subject + action], [environment + lighting], [style + quality tags]\n\nBeat progression:\n1. ESTABLISHING — set the scene, wide shot, atmosphere\n2. APPROACH / INTRODUCTION — bring in the subject\n3. DETAIL — close-up texture, hands, objects, environment detail\n4. ACTION — the core movement or event\n5. REACTION / SHIFT — response, change, turning point\n6-10. PROGRESSION — develop the visual story, vary shot sizes\n11-12. RESOLUTION / LANDING — final visual beat, lingering or impactful\n</structure>\n\n<reference_example>\n{fewShotExcerpt}\n</reference_example>\n\n<quality_check>\n{selfCheckRubric}\n</quality_check>\n\nWrite the shot sequence now:"
+  },
+  "compatibility": {
+    "perfectMatch": [
+      "visual",
+      "scene",
+      "cinematic",
+      "video",
+      "shot",
+      "film"
+    ],
+    "goodFit": [
+      "dramatic",
+      "atmospheric",
+      "action",
+      "moment",
+      "sequence",
+      "movement",
+      "landscape"
+    ],
+    "checkType": "story-based",
+    "dreamscapeTypes": [
+      "visual",
+      "narrative",
+      "action",
+      "atmospheric"
+    ]
+  },
+  "exampleOutput": "SHOT 1 — ESTABLISHING\nWide shot, slow crane descending through dense fog to reveal a narrow cobblestone alley in old Tokyo. Paper lanterns glow warm amber on both sides. Rain falls gently, catching the light. Pre-dawn blue hour. Cinematic, 4K, atmospheric, stable picture.\n\nSHOT 2 — APPROACH\nMedium shot, steady tracking forward down the alley. A woman in a deep red kimono walks ahead, wooden geta sandals clicking on wet stone. Camera follows at walking pace. Warm lantern light on her back, cool shadows ahead. Cinematic, 4K, smooth tracking.\n\nSHOT 3 — DETAIL\nExtreme close-up, static. Raindrops hitting a puddle between cobblestones. The reflection of a paper lantern ripples and reforms. Shallow depth of field, warm amber tones. Cinematic, macro, 4K, sharp clarity.\n\nSHOT 4 — REVEAL\nMedium wide shot, slow dolly right. The woman pauses at a wooden doorway. She slides the door open, warm golden light spills out into the blue rain. Steam rises from inside. Camera holds as light washes over her. Cinematic, 4K, high contrast, stable picture.\n\nSHOT 5 — INTERIOR\nWide shot, static with slight push in. Interior of a small ramen shop — wooden counter, three empty stools, steam rising from broth. A single chef stands behind the counter, backlit by warm tungsten. Intimate, cinematic, 4K, warm tones.\n\nSHOT 6 — ACTION\nMedium close-up, handheld with gentle movement. The chef's hands pull fresh noodles from boiling water, steam billowing upward. Precise, practiced motion. Warm overhead light catches the steam. Cinematic, shallow DOF, 4K.\n\nSHOT 7 — DETAIL\nClose-up, slow tilt down. A completed bowl of ramen is placed on the wooden counter. Steam curls upward, chopsticks laid across the rim. Camera settles. Rich warm tones, cinematic food photography, 4K, sharp clarity.\n\nSHOT 8 — REACTION\nMedium shot, static. The woman sits at the counter, lifts the bowl with both hands, and breathes in the steam. Eyes close. Warm light on her face, rain visible through the window behind her. Cinematic, 4K, intimate, soft focus background.\n\nSHOT 9 — EXTERIOR RETURN\nWide shot, slow pull back through the open doorway into the rain. The warm interior recedes as the camera retreats into the cold blue alley. Rain intensifies slightly. Strong warm/cool contrast. Cinematic, 4K, atmospheric, stable picture.\n\nSHOT 10 — CLOSING\nExtreme wide shot, slow crane ascending. The alley from above — a single warm rectangle of light from the ramen shop doorway in a sea of blue pre-dawn fog. The woman's silhouette visible inside. Camera rises into fog. Cinematic, aerial, 4K, atmospheric."
+}
