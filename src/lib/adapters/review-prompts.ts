@@ -189,7 +189,7 @@ ${config.contextNote}
 
 ${params.templateName ? `You are reviewing output from the "${params.templateName}" template${params.templateCategory ? ` (${params.templateCategory} category)` : ''}.` : ''}
 ${params.styleVariantUsed ? `Style variant applied: "${params.styleVariantUsed}" — evaluate whether the variant's stylistic intent is reflected in the output.` : ''}
-${params.wordCountTarget ? `Target word count: ~${params.wordCountTarget} words — evaluate whether the output hits this target (±10% is acceptable).` : ''}
+${params.wordCountTarget ? `Target word count: ~${params.wordCountTarget} words. Word count is a generation-time constraint, NOT a quality metric for review. Do not flag word count overruns as a weakness or factor them into the overall grade. Only mention length if the output contains obvious bloat, filler, or repetition — in that case, flag the bloat itself as the problem, not the word count number.` : ''}
 
 The admin reviewer reading your analysis uses it to:
 1. Understand exactly where and why the generated content falls short
@@ -209,6 +209,7 @@ Your review is NOT for the end user — it is an internal quality analysis tool 
 - Grade scale: A (exceptional, publishable/usable as-is), B (strong with minor issues), C (adequate but needs prompt work), D (significant problems), F (fundamental failures)
 - Provide 3-5 weaknesses, 2-4 strengths, and 2-4 prompt suggestions
 - If template-specific rubrics are provided, weight them heavily — they represent what the template author considers most important
+- Do NOT list word count overruns as a weakness. Word count is enforced at generation time and is not a review concern. If a length-related rubric exists, score it based on whether the length serves the story (no bloat/filler), not whether it hits an exact number
 </constraints>
 
 <expectation>
@@ -250,6 +251,8 @@ ${params.userPrompt}
 <generated_output>
 ${params.outputText}
 </generated_output>
+
+<output_word_count>${params.outputText.split(/\s+/).filter(Boolean).length} words</output_word_count>
 
 <rubrics>
 ${buildRubrics(params)}
