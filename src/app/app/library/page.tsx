@@ -600,8 +600,9 @@ function ContentTab({
 type LibraryTab = 'seeds' | 'content'
 
 export default function LibraryPage() {
+  const router = useRouter()
   const { isGuest } = useAuth()
-  const { saveDreamscape } = useAppStore()
+  const { saveDreamscape, setCurrentDreamscape } = useAppStore()
 
   const {
     dreamscapes,
@@ -673,6 +674,8 @@ export default function LibraryPage() {
 
     cacheAddDreamscape(newDreamscape)
     await saveDreamscape(newDreamscape).catch(console.error)
+    setCurrentDreamscape(newDreamscape)
+    router.push('/app/create')
   }
 
   // ── render ─────────────────────────────────────────────────────────────────
