@@ -1,148 +1,112 @@
-# Planning: AI Video Scene Prompts Template
+# Planning: Structured Seeds with Detail Toggle
 
 ## Problem
 
-Users want to generate scene descriptions that can be directly used as prompts for AI video generation models (Seedance 2.0, Kling, Runway Gen-4.5). Currently StoryWeaver has no template for this — the video-production category has shot lists, storyboards, etc. for human crews, but nothing for AI video models.
+Seed generation currently outputs a single text blob (1-2 sentences). This:
+- Loses the user's original vibe/concept in favor of template defaults
+- Gives a thin preview — hard to tell if the seed matches the user's vision
+- Gives final generation too little direction — story output can drift from intent
 
-## Research Summary
+Example: User inputs "you realise you aren't living but this is just a flashback of your life before death" with NoSleep Paranoia. Gets surveillance/stalker seeds instead of existential dread.
 
-### What video models expect as input
+## Solution
 
-**Seedance 2.0** (user's preferred model):
-- **30-80 words per shot** — shorter structured prompts outperform long descriptions
-- **Formula**: Subject + Action + Camera + Scene + Style + Constraints
-- **One action per shot** — generates 4-15 second clips
-- Present tense, active voice
-- Camera direction is the biggest quality lever (shot size, angle, movement, stability)
-- Quality keywords appended at end: "4K, cinematic, sharp clarity, stable picture"
-- NO negative prompts — describe what you want, not what to avoid
-- Specific > vague: "a woman in a red wool coat walks through falling snow on cobblestone" not "a person walking outside"
+### 1. New Seed Schema
 
-**Cross-model universal rules**:
-1. One action per shot (all models generate 4-15s clips)
-2. Camera direction is critical (shot size + angle + movement)
-3. Present tense, active voice
-4. Explicit motion intensity (slowly, dramatically, gently)
-5. Style anchoring (cinematic, documentary, commercial, anime)
-6. Quality keywords at end
+Replace `{ text: string }` with:
 
-### Key insight for template design
-
-The template output is NOT a story — it's a **shot sequence** of 8-12 individual prompts, each ready to paste directly into a video model. The dreamscape (story seed) provides the narrative concept, and the template breaks it into cinematic shots.
-
-## Proposed Template
-
-### Template Identity
-
-| Field | Value |
-|-------|-------|
-| `id` | `"video-ai-scene-prompts"` |
-| `displayName` | `"AI Video Scenes"` |
-| `category` | `"video-production"` |
-| `icon` | `"🎬"` |
-| `description` | `"Scene-by-scene video prompts optimized for AI video models (Seedance, Kling, Runway)"` |
-| `duration` | `"8-12 shots"` |
-| `wordCount` | `800` (total across all shots, ~60-80 words each) |
-| `platforms` | `["tiktok", "instagram-reels", "youtube-shorts", "youtube"]` |
-
-### Settings
-
-```json
+```
 {
-  "tone": "script",
-  "genres": ["visual", "cinematic"],
-  "avoidPhrases": []
+  premise: string,        // core idea, 2-3 sentences, well-defined
+  details: string[]       // freeform list — character traits, turning points,
+                          // setting anchors, sensory details, world rules, motifs,
+                          // whatever serves THIS specific idea
 }
 ```
 
-No avoidPhrases needed — video prompts are technical, not narrative.
+Key principle: **details are freeform and idea-dependent**, not a rigid schema. The LLM decides what types of details are relevant for each seed.
 
-### Seed Prompt (XML)
+### 2. Explicit Detail Toggle
 
-The seed generation for this template is unique: instead of narrative story seeds, we need **visual scene concepts** — cinematic moments that would make compelling video sequences.
+New UI control alongside vibe input + count dropdown:
 
-**System**: Expert visual storyteller who designs cinematic scene concepts with strong visual potential. Focuses on movement, lighting, environment, and emotion that translate well to AI video generation.
+- **Sparse**: Premise is suggestive but defined. 0-2 details only if essential to the concept. Good for open-ended exploration.
+- **Rich**: Premise is concrete and specific. 3-6 details covering character, setting, turning points, sensory anchors, etc. Good for when user has a clear vision.
 
-**User**: Generate {count} visual scene concepts. Each should describe a cinematic moment with subject, environment, lighting, and implied movement.
+Toggle is a segmented control or similar simple two-option UI element.
 
-### Style Variants
+### 3. Prompt Changes
 
-Three variants based on video model optimization:
+Seed generation prompts updated to:
+- Output structured JSON (premise + details) — enforced by Zod via structured outputs
+- Respect detail level toggle (sparse vs rich instruction block)
+- **Anchor to user's vibe more strongly** — the user's input is the foundation of every seed, template style shapes HOW the story is told, not WHAT it's about
 
-1. **Seedance Optimized** — 30-80 words per shot, Subject+Action+Camera+Style formula, quality tags appended
-2. **Cinematic** — Longer, more atmospheric descriptions with emphasis on lighting and color grading
-3. **Fast-Paced** — Quick cuts, dynamic camera movements, high energy, shorter shots
+Applied to both:
+- Generic seed prompt (`config/prompts/seed-generation.json`)
+- Template-specific seedPrompts (all hero templates with custom seedPrompt)
 
-### Story Generation (`promptTemplate`)
+### 4. UI Changes
 
-**System prompt**: Expert cinematographer + AI video prompt engineer. Breaks narrative concepts into shot-by-shot video prompts optimized for AI generation models. Each shot is a self-contained prompt.
+**Seed card display:**
+- Premise shown as main text (like current, but richer)
+- If details exist, collapsible bullet list below
+- Collapsed by default with subtle indicator ("3 details" badge or chevron)
 
-**User prompt**: Takes the dreamscape (story seed) and outputs a numbered shot sequence where each shot follows:
-```
-SHOT [N] — [beat label]
-[30-80 word prompt: subject + action + camera + scene + style + quality]
-```
+**New control:**
+- Detail toggle (Sparse/Rich) added to generation controls panel
+- Local component state like genVibe and genCount
 
-### Self-Check Rubric
+### 5. Type Changes
 
-- Does each shot have exactly ONE clear action?
-- Are camera directions specific? (shot size + angle + movement)
-- Is each shot 30-80 words?
-- Are quality keywords present? (4K, cinematic, etc.)
-- Could each shot be pasted directly into Seedance/Kling/Runway?
-- Does the sequence tell a coherent visual story?
-- Are motion intensity words explicit? (slowly, gently, dramatically)
-
-### Few-Shot Excerpt
-
-Show 3 example shots demonstrating the format:
-```
-SHOT 1 — ESTABLISHING
-Wide shot, slow dolly forward through morning fog on an empty pier. A lone figure in a dark coat stands at the far end, facing the ocean. Golden hour light filters through mist. Cinematic, 4K, atmospheric, stable picture.
-
-SHOT 2 — CLOSE-UP
-Close-up of the figure's hands gripping the wooden railing, knuckles white. Camera slowly tilts up to reveal their face, eyes closed, breathing deeply. Soft backlight from rising sun. Cinematic, shallow depth of field, 4K.
-
-SHOT 3 — REVEAL
-Medium shot from behind the figure. Camera orbits slowly to reveal what they're looking at — a small sailboat anchored just offshore with a lantern still lit. Gentle handheld movement. Golden hour, cinematic, 4K.
-```
-
-### Character Prompt — NOT USED
-
-No characterPrompt for this template. Video prompts describe scenes, not character voices.
-
-### Compatibility
-
-```json
-{
-  "perfectMatch": ["visual", "scene", "cinematic", "video", "shot"],
-  "goodFit": ["dramatic", "atmospheric", "action", "moment", "sequence"],
-  "checkType": "story-based",
-  "dreamscapeTypes": ["visual", "narrative", "action", "atmospheric"]
+```typescript
+// types.ts — DreamscapeChunk
+interface DreamscapeChunk {
+  id: string
+  title: string
+  text: string           // ← premise goes here (backward compatible)
+  details?: string[]     // ← new optional field
 }
 ```
 
-## Key Design Decisions
+Backward compatible — existing seeds without details still render fine.
 
-1. **Output format = paste-ready prompts**: Each shot is a self-contained prompt you can copy directly into Seedance 2.0. Not a script for humans.
+### 6. Downstream: Structured Seed → Story Generation
 
-2. **Shot sequence, not single prompt**: The template generates 8-12 shots that together tell a visual story. Each shot is one 4-15 second clip.
+When a seed is "Used" for final generation:
+- Pass full structured seed (premise + details) into the story generation prompt
+- Prompt builder formats it: premise as the core concept, details as concrete constraints
+- More details = more directed output, fewer details = more creative freedom
 
-3. **Seedance-first optimization**: Since the user prefers Seedance 2.0, the default format follows their Subject+Action+Camera+Style+Quality formula. Style variants can optimize for other models.
+### 7. Zod Schema Change
 
-4. **Category = video-production**: Fits naturally alongside existing shot-list, storyboard, etc. templates. The distinction is that this generates AI model input, not human crew documents.
-
-5. **seedPrompt generates visual concepts**: Unlike narrative templates that generate story conflicts, this template's seeds should describe cinematic visual moments with strong movement, lighting, and emotion potential.
+```typescript
+// openai.ts
+const DreamscapeSeedSchema = z.object({
+  premise: z.string().describe('The core story idea in 2-3 well-defined sentences'),
+  details: z.array(z.string()).describe('Freeform concrete story elements — character traits, turning points, setting details, sensory anchors, world rules, motifs. Include what serves this specific idea.'),
+})
+```
 
 ## File Changes
 
 | File | Change |
 |------|--------|
-| `src/config/templates/video-production/ai-scene-prompts.json` | **NEW** — full hero template |
-| `execution_docs/_active/execution.md` | Track progress |
+| `src/lib/adapters/openai.ts` | Zod schema update, seed mapping, detail-level param |
+| `src/lib/types.ts` | Add `details?: string[]` to DreamscapeChunk |
+| `src/lib/prompt-builders.ts` | Detail-level instruction injection for both generic and template paths |
+| `src/config/prompts/seed-generation.json` | Updated prompt with structured output instructions + detail-level blocks |
+| `src/app/app/create/page.tsx` | Detail toggle UI + structured seed card display |
+| Template seedPrompts (hero templates) | Updated to output structured format with detail-level awareness |
 
-## Questions / Alternatives Considered
+## What We're NOT Touching
 
-- **Should we add model-specific style variants?** (Seedance vs Kling vs Runway) — Proposed yes, as style variants. The Seedance variant is default since user prefers it.
-- **Should it go in a new category like "ai-video"?** — No, video-production is the right home. The category system is about content type, not target audience.
-- **Word count per shot vs total?** — Template wordCount is total (~800). Individual shot length (30-80 words) is enforced in the prompt constraints.
+- Template content/style (templates are fine)
+- Enhancement/stitch flow
+- Library/save logic
+- Output generation prompts (only seed gen changes, downstream just receives richer input)
+
+## Open Questions
+
+- Toggle labels: "Sparse" / "Rich" or "Minimal" / "Detailed" or something else?
+- Should the detail toggle default to Sparse or Rich?

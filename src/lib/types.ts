@@ -22,6 +22,7 @@ export interface DreamscapeChunk {
   id: string
   title: string
   text: string
+  details?: string[]
 }
 
 // Generation config
@@ -321,9 +322,12 @@ export interface AppSettings {
 }
 
 // API interfaces
+export type SeedDetailLevel = 'vibe' | 'detailed'
+
 export interface GenerateDreamscapesParams {
   count: number
   vibe?: string
+  detailLevel?: SeedDetailLevel
   // Template-aware seed generation — overrides generic seed prompt
   seedPrompt?: {
     system: string

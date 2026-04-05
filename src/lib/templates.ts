@@ -246,11 +246,18 @@ export function buildPromptFromTemplate(
   characterSystemPrompt?: string
   characterUserPrompt?: string
 } {
-  // Get dreamscape text
+  // Get dreamscape text (includes details if present)
+  const formatChunk = (c: Dreamscape['chunks'][number]) => {
+    let text = c.text
+    if (c.details?.length) {
+      text += '\n\nStory details:\n' + c.details.map(d => `- ${d}`).join('\n')
+    }
+    return text
+  }
   const dreamscapeText =
     dreamscape.chunks.length === 1
-      ? dreamscape.chunks[0].text
-      : dreamscape.chunks.map((c, i) => `[Fragment ${i + 1}]\n${c.text}`).join('\n\n')
+      ? formatChunk(dreamscape.chunks[0])
+      : dreamscape.chunks.map((c, i) => `[Fragment ${i + 1}]\n${formatChunk(c)}`).join('\n\n')
 
   // Fragment stitching instructions (injected automatically when multiple fragments exist)
   const fragmentStitchingInstructions =

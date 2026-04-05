@@ -35,7 +35,7 @@ const FEEDBACK_CHIPS = [
 import { uid } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { PRESETS, PLATFORMS, OUTPUT_FORMATS, TONES, GENRES } from '@/lib/config'
-import type { Dreamscape, OutputVariant, DialState, Template, TemplateCategory, Platform, OutputFormat, AIReviewResult, ReviewOutputParams } from '@/lib/types'
+import type { Dreamscape, OutputVariant, DialState, Template, TemplateCategory, Platform, OutputFormat, AIReviewResult, ReviewOutputParams, SeedDetailLevel } from '@/lib/types'
 import { LabeledSlider } from '@/components/design-system/labeled-slider'
 import { CopyButton } from '@/components/design-system/copy-button'
 import { PromptInspector } from '@/components/dev-tools/prompt-inspector'
@@ -124,6 +124,7 @@ export default function CreatePage() {
   const [enhanceResult, setEnhanceResult] = useState<any>(null)
   const [genVibe, setGenVibe] = useState('')
   const [genCount, setGenCount] = useState(3)
+  const [genDetailLevel, setGenDetailLevel] = useState<SeedDetailLevel>('vibe')
   const [genLoading, setGenLoading] = useState(false)
   const [genResults, setGenResults] = useState<Dreamscape[]>([])
 
@@ -560,6 +561,7 @@ Write the next part, continuing from where the story left off.`
       const results = await api.dreamscapes.generate({
         count: genCount,
         vibe: genVibe,
+        detailLevel: genDetailLevel,
         seedPrompt: selectedTemplate?.seedPrompt,
         templateId: selectedTemplate?.id,
         templateContext: selectedTemplate ? {
@@ -579,14 +581,15 @@ Write the next part, continuing from where the story left off.`
   }
 
   const handleUseGeneratedIdea = (dreamscape: Dreamscape) => {
+    const source = dreamscape.chunks[0]
     setChunks((prev) => {
       const firstChunk = prev[0]
       if (!firstChunk.text.trim()) {
         // Replace empty first chunk
-        return [{ ...firstChunk, text: dreamscape.chunks[0].text }]
+        return [{ ...firstChunk, text: source.text, details: source.details }]
       }
       // Add as new chunk
-      return [...prev, { id: uid(), title: '', text: dreamscape.chunks[0].text }]
+      return [...prev, { id: uid(), title: '', text: source.text, details: source.details }]
     })
     setGenResults((prev) => prev.filter((d) => d.id !== dreamscape.id))
     showToast('Added to chunks')
@@ -1112,6 +1115,26 @@ Write the next part, continuing from where the story left off.`
                               </SelectContent>
                             </Select>
                           </div>
+                          <div>
+                            <label className="text-xs font-medium mb-1 block text-text-secondary">
+                              Detail
+                            </label>
+                            <div className="flex rounded-md overflow-hidden border border-[#334155]">
+                              {(['vibe', 'detailed'] as const).map((level) => (
+                                <button
+                                  key={level}
+                                  onClick={() => setGenDetailLevel(level)}
+                                  className={`px-3 py-[7px] text-xs font-medium capitalize transition-colors ${
+                                    genDetailLevel === level
+                                      ? 'bg-primary text-white'
+                                      : 'bg-[rgba(15,23,42,0.6)] text-text-muted hover:text-text-primary'
+                                  }`}
+                                >
+                                  {level === 'vibe' ? 'Vibe' : 'Detailed'}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                           <Button
                             onClick={async () => {
                               setGenLoading(true)
@@ -1119,6 +1142,7 @@ Write the next part, continuing from where the story left off.`
                                 const results = await api.dreamscapes.generate({
                                   count: genCount,
                                   vibe: genVibe,
+                                  detailLevel: genDetailLevel,
                                   seedPrompt: selectedTemplate?.seedPrompt,
                                   templateId: selectedTemplate?.id,
                                   templateContext: selectedTemplate ? {
@@ -1152,29 +1176,44 @@ Write the next part, continuing from where the story left off.`
                         )}
 
                         {genResults.length > 0 && !genLoading && (
-                          <div className="grid gap-2 max-h-72 overflow-y-auto">
-                            {genResults.map((d) => (
-                              <div
-                                key={d.id}
-                                className="p-3 rounded-lg flex gap-3 group bg-[rgba(15,23,42,0.6)] border border-[#1e293b]"
-                              >
-                                <p className="text-sm flex-1 text-text-secondary">{d.chunks[0]?.text}</p>
-                                <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={() => handleUseGeneratedIdea(d)}
-                                    className="px-2 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-light"
-                                  >
-                                    Use
-                                  </button>
-                                  <button
-                                    onClick={() => dismissGeneratedIdea(d.id)}
-                                    className="px-2 py-1 rounded text-xs text-text-muted hover:text-text-primary"
-                                  >
-                                    Dismiss
-                                  </button>
+                          <div className="grid gap-2 max-h-96 overflow-y-auto">
+                            {genResults.map((d) => {
+                              const chunk = d.chunks[0]
+                              return (
+                                <div
+                                  key={d.id}
+                                  className="p-3 rounded-lg flex gap-3 group bg-[rgba(15,23,42,0.6)] border border-[#1e293b]"
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-text-secondary">{chunk?.text}</p>
+                                    {chunk?.details && chunk.details.length > 0 && (
+                                      <ul className="mt-2 space-y-1">
+                                        {chunk.details.map((detail, i) => (
+                                          <li key={i} className="text-xs text-text-muted flex gap-1.5">
+                                            <span className="text-primary/60 shrink-0">-</span>
+                                            <span>{detail}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() => handleUseGeneratedIdea(d)}
+                                      className="px-2 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-light"
+                                    >
+                                      Use
+                                    </button>
+                                    <button
+                                      onClick={() => dismissGeneratedIdea(d.id)}
+                                      className="px-2 py-1 rounded text-xs text-text-muted hover:text-text-primary"
+                                    >
+                                      Dismiss
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         )}
                       </ThemedCard>
@@ -1206,6 +1245,31 @@ Write the next part, continuing from where the story left off.`
                           placeholder="Enter your story seed... (e.g., 'A woman refuses to attend her sister's wedding because...')"
                           className="min-h-[120px] bg-[rgba(15,23,42,0.5)] border-[#1e293b] text-text-primary placeholder:text-text-muted"
                         />
+                        {chunk.details && chunk.details.length > 0 && (
+                          <div className="mt-2 p-2.5 rounded-md bg-[rgba(15,23,42,0.3)] border border-[#1e293b]/50">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs font-medium text-text-muted">Story details</span>
+                              <button
+                                onClick={() => {
+                                  setChunks((prev) => prev.map((c) =>
+                                    c.id === chunk.id ? { ...c, details: undefined } : c
+                                  ))
+                                }}
+                                className="text-xs text-text-muted hover:text-text-primary"
+                              >
+                                Clear
+                              </button>
+                            </div>
+                            <ul className="space-y-1">
+                              {chunk.details.map((detail, i) => (
+                                <li key={i} className="text-xs text-text-muted flex gap-1.5">
+                                  <span className="text-primary/60 shrink-0">-</span>
+                                  <span>{detail}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </ThemedCard>
                     ))}
 
@@ -1555,6 +1619,26 @@ Write the next part, continuing from where the story left off.`
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block text-text-secondary">
+                  Detail
+                </label>
+                <div className="flex rounded-md overflow-hidden border border-[#334155]">
+                  {(['vibe', 'detailed'] as const).map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => setGenDetailLevel(level)}
+                      className={`px-3 py-[7px] text-xs font-medium capitalize transition-colors ${
+                        genDetailLevel === level
+                          ? 'bg-primary text-white'
+                          : 'bg-[rgba(15,23,42,0.6)] text-text-muted hover:text-text-primary'
+                      }`}
+                    >
+                      {level === 'vibe' ? 'Vibe' : 'Detailed'}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Button
                 onClick={handleGenerateDreamscapes}
                 disabled={genLoading}
@@ -1573,29 +1657,44 @@ Write the next part, continuing from where the story left off.`
             )}
 
             {genResults.length > 0 && !genLoading && (
-              <div className="grid gap-2 max-h-72 overflow-y-auto">
-                {genResults.map((d) => (
-                  <div
-                    key={d.id}
-                    className="p-3 rounded-lg flex gap-3 group bg-[rgba(15,23,42,0.6)] border border-[#1e293b]"
-                  >
-                    <p className="text-sm flex-1 text-text-secondary">{d.chunks[0]?.text}</p>
-                    <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => handleUseGeneratedIdea(d)}
-                        className="px-2 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-light"
-                      >
-                        Use
-                      </button>
-                      <button
-                        onClick={() => dismissGeneratedIdea(d.id)}
-                        className="px-2 py-1 rounded text-xs text-text-muted hover:text-text-primary"
-                      >
-                        Dismiss
-                      </button>
+              <div className="grid gap-2 max-h-96 overflow-y-auto">
+                {genResults.map((d) => {
+                  const chunk = d.chunks[0]
+                  return (
+                    <div
+                      key={d.id}
+                      className="p-3 rounded-lg flex gap-3 group bg-[rgba(15,23,42,0.6)] border border-[#1e293b]"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-secondary">{chunk?.text}</p>
+                        {chunk?.details && chunk.details.length > 0 && (
+                          <ul className="mt-2 space-y-1">
+                            {chunk.details.map((detail, i) => (
+                              <li key={i} className="text-xs text-text-muted flex gap-1.5">
+                                <span className="text-primary/60 shrink-0">-</span>
+                                <span>{detail}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleUseGeneratedIdea(d)}
+                          className="px-2 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-light"
+                        >
+                          Use
+                        </button>
+                        <button
+                          onClick={() => dismissGeneratedIdea(d.id)}
+                          className="px-2 py-1 rounded text-xs text-text-muted hover:text-text-primary"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </ThemedCard>
@@ -1680,6 +1779,31 @@ Write the next part, continuing from where the story left off.`
                 placeholder="Enter your story seed... (e.g., 'A middle-aged accountant discovers...')"
                 className="min-h-[120px] bg-[rgba(15,23,42,0.5)] border-[#1e293b] text-text-primary placeholder:text-text-muted"
               />
+              {chunk.details && chunk.details.length > 0 && (
+                <div className="mt-2 p-2.5 rounded-md bg-[rgba(15,23,42,0.3)] border border-[#1e293b]/50">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-text-muted">Story details</span>
+                    <button
+                      onClick={() => {
+                        setChunks((prev) => prev.map((c) =>
+                          c.id === chunk.id ? { ...c, details: undefined } : c
+                        ))
+                      }}
+                      className="text-xs text-text-muted hover:text-text-primary"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <ul className="space-y-1">
+                    {chunk.details.map((detail, i) => (
+                      <li key={i} className="text-xs text-text-muted flex gap-1.5">
+                        <span className="text-primary/60 shrink-0">-</span>
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </ThemedCard>
           ))}
 

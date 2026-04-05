@@ -30,7 +30,8 @@ const openai = new OpenAI({
 // ========================================
 
 const DreamscapeSeedSchema = z.object({
-  text: z.string().describe('A 1-2 sentence story premise with clear conflict and intrigue'),
+  premise: z.string().describe('The core story idea in 2-3 well-defined sentences'),
+  details: z.array(z.string()).describe('Freeform concrete story elements — character traits, turning points, setting anchors, sensory details, world rules, motifs. Include whatever serves this specific idea.'),
 })
 
 const DreamscapesResponseSchema = z.object({
@@ -117,6 +118,32 @@ COHESION: ${dialState.cohesionStrictness >= 7 ? 'Stay very close to the seed pre
  * When seedPrompt is provided (template-aware mode), uses template-specific prompts
  * instead of the generic seed generation prompt.
  */
+/**
+ * Detail level instructions appended to seed generation system prompts.
+ * Injected at the adapter level so template seedPrompts don't need editing.
+ */
+function getDetailLevelInstruction(detailLevel: 'vibe' | 'detailed' = 'vibe'): string {
+  const vibeAnchoring = `CRITICAL — VIBE OVERRIDE: If the user provided a vibe/direction/concept, that concept IS the seed. Every seed MUST be fundamentally ABOUT the user's idea — not a tangential riff, not a genre cousin, but a direct exploration of their concept. The template style shapes the TONE and DELIVERY, never the core concept. If the user says "life is a deathbed flashback" then every seed must explore THAT idea, not generic paranoia or surveillance. Violating this rule makes the seed useless.`
+
+  if (detailLevel === 'detailed') {
+    return `\n\n<detail_level>
+${vibeAnchoring}
+
+DETAILED MODE: Generate concrete, well-defined seeds with specific story elements.
+- Premise: 2-3 sentences, concrete and specific
+- Details: 3-6 freeform story elements — character traits, turning points, setting anchors, sensory details, world rules, motifs — include whatever serves this specific idea
+</detail_level>`
+  }
+  return `\n\n<detail_level>
+${vibeAnchoring}
+
+VIBE MODE: Generate suggestive, evocative seeds that capture concept and emotional direction.
+- Premise: 2-3 sentences, captures the mood and core concept
+- Details: include 0-2 only if they are essential to understanding the concept — omit if the idea speaks for itself
+- The seed should feel like a direction, not a blueprint
+</detail_level>`
+}
+
 export async function generateDreamscapes(
   params: GenerateDreamscapesParams
 ): Promise<Dreamscape[]> {
@@ -128,6 +155,10 @@ export async function generateDreamscapes(
       // Template has its own seed prompt — use it directly
       systemPrompt = params.seedPrompt.system
       userPrompt = params.seedPrompt.user.replace('{count}', String(params.count))
+      // Inject user's vibe into template seed prompt (was previously silently dropped)
+      if (params.vibe) {
+        userPrompt += `\n\nThe user's concept/direction (THIS IS THE CORE IDEA — every seed must be about this):\n"${params.vibe}"`
+      }
     } else {
       // Generic seed prompt with XML framework (+ optional template context)
       const prompts = buildGenericSeedPrompt({
@@ -139,13 +170,16 @@ export async function generateDreamscapes(
       userPrompt = prompts.user
     }
 
+    // Append detail level instruction (works for both template and generic paths)
+    systemPrompt += getDetailLevelInstruction(params.detailLevel)
+
     const messages = [
       { role: 'system' as const, content: systemPrompt },
       { role: 'user' as const, content: userPrompt },
     ]
 
     const lt = startLangfuseGeneration('seed-generation', messages, {}, {
-      model: 'gpt-5-mini', metadata: { count: params.count, vibe: params.vibe },
+      model: 'gpt-5-mini', metadata: { count: params.count, vibe: params.vibe, detailLevel: params.detailLevel },
     })
 
     const completion = await openai.beta.chat.completions.parse({
@@ -168,7 +202,8 @@ export async function generateDreamscapes(
         {
           id: uid(),
           title: '',
-          text: seed.text,
+          text: seed.premise,
+          details: seed.details.length > 0 ? seed.details : undefined,
         },
       ],
       createdAt: new Date().toISOString(),
@@ -428,7 +463,13 @@ export async function generateOutputs(
   params: GenerateOutputsParams
 ): Promise<(OutputVariant & { characterProfile?: string })[]> {
   try {
-    const seed = params.dreamscape.chunks.map((c) => c.text).join('\n\n')
+    const seed = params.dreamscape.chunks.map((c) => {
+      let text = c.text
+      if (c.details?.length) {
+        text += '\n\nStory details:\n' + c.details.map(d => `- ${d}`).join('\n')
+      }
+      return text
+    }).join('\n\n')
 
     // Generate single variant (with optional CoT character step)
     const variant = await generateVariant(

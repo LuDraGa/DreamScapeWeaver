@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     const params: GenerateDreamscapesParams = {
       count: body.count,
       vibe: body.vibe,
+      detailLevel: body.detailLevel,
       seedPrompt: body.seedPrompt,
       templateId: body.templateId,
       templateContext: body.templateContext,
