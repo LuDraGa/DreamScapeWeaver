@@ -1,55 +1,64 @@
 # StoryWeaver - Active Execution
 
-## Task: Structured Seeds with Detail Toggle
+## Task: Fix Unexpected Twist template — 4 prompt patches + word count update
 
-**Session**: 2026-03-24
-**Context**: Richer seed generation with premise + freeform details, explicit Vibe/Detailed toggle
+**Session**: 2026-04-05
+**Context**: AI review of the Rewatch Bait variant exposed 4 template bugs. Also increasing default word count from 225 → 475 (450-500 range) based on testing showing 225 is too sparse and 800 is too padded.
 
 ## Execution Status
 
 ### ✅ Completed Tasks
 
-- [x] Update types.ts — add `details?: string[]` to DreamscapeChunk, `SeedDetailLevel` type, `detailLevel` to GenerateDreamscapesParams
-- [x] Update Zod schema in openai.ts — `premise` + `details[]` replacing `text`
-- [x] Add `getDetailLevelInstruction()` — appended to system prompt for both template and generic paths
-- [x] Update seed mapping — `seed.premise` → `chunk.text`, `seed.details` → `chunk.details`
-- [x] Update downstream — `generateOutputs` includes details in seed text passed to story generation
-- [x] Update API route — pass `detailLevel` from body to params
-- [x] Add detail toggle UI (both normal user and power user panels) — segmented "Vibe / Detailed" control
-- [x] Update seed card display (both panels) — shows premise + detail bullets
-- [x] Update `handleUseGeneratedIdea` — preserves details when using a seed
-- [x] Build passes
+- Patched `src/config/templates/short-form/unexpected-twist.json` — all 5 changes applied and verified
 
 ### 🔄 In Progress
 
-*None currently*
+*None*
 
 ### ⏳ Pending Tasks
 
-- [ ] Manual testing with live API
+- Manual retest with same dreamscape
 
 ## Changes Made
 
 ### Files Modified
-- `src/lib/types.ts` — `DreamscapeChunk.details`, `SeedDetailLevel`, `GenerateDreamscapesParams.detailLevel`
-- `src/lib/adapters/openai.ts` — Zod schema, `getDetailLevelInstruction()`, seed mapping, downstream details formatting
-- `src/app/api/dreamscapes/generate/route.ts` — pass `detailLevel`
-- `src/app/app/create/page.tsx` — `genDetailLevel` state, toggle UI, structured seed cards, `handleUseGeneratedIdea` details pass-through
+- `src/config/templates/short-form/unexpected-twist.json`
 
 ### Files Created
-- None
+-
 
 ### Files Deleted
-- None
+-
 
 ## Implementation Notes
 
 ### Key Technical Details
-- Detail level instruction injected at adapter level (appended to system prompt) — works for both template-specific and generic seed prompts without editing templates
-- Zod structured outputs enforce `{ premise, details[] }` schema — LLM must comply
-- Vibe mode: 0-2 details, suggestive premise. Detailed mode: 3-6 details, concrete premise
-- Both modes include instruction: "user's vibe MUST be the conceptual foundation of every seed — template style shapes HOW, not WHAT"
-- Backward compatible: `details` is optional on DreamscapeChunk, existing seeds without it still render fine
+
+5 changes to the template JSON:
+
+1. **wordCount**: 225 → 475 (target range 450-500)
+2. **selfCheckRubric**: word count criterion updated to match
+3. **avoidPhrases**: added meta-commentary phrases ("on first watch", "on replay", "on rewatch", "first run-through", "second watch", "that's the line that")
+4. **promptTemplate.system constraints**:
+   - Word count updated
+   - Spoken voice guardrail added to narrative tone bullet
+   - New rule: structure labels must not appear in output
+   - New rule: no meta-commentary about viewing experience
+5. **promptTemplate.user structure block**:
+   - Added "(Internal planning guide — labels must NOT appear in output)" header
+   - Step 6 expanded: moral realignment if someone was wronged
+
+### Challenges & Solutions
+- All edits are to raw JSON string content — `\n` in the file is literal backslash-n
+
+## Testing Notes
+- Retest with same dreamscape: "My friends wife cheated on him with me..." at default word count
+
+## Developer Actions Required
+- [ ] Regenerate output with same dreamscape using default word count
+- [ ] Verify no clue labels in output
+- [ ] Verify no meta-commentary ("on replay" etc.)
+- [ ] Verify spoken-register voice
 
 ---
 
